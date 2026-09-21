@@ -1,7 +1,7 @@
 function App() {
     return (
         <div>
-            <h1>vokkala woli portal</h1>
+            <h1>Alumni Portal</h1>
         </div>
     );
 }
