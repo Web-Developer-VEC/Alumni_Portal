@@ -1,7 +1,8 @@
+import AppRoutes from "./AppRoutes";
 function App() {
     return (
         <div>
-            <h1>Alumni Portal</h1>
+            <AppRoutes />
         </div>
     );
 }
