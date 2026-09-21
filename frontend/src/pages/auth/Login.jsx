@@ -1,18 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { Mail, User, Lock, Eye, EyeOff, LogIn, UserCog } from "lucide-react";
-import "../auth/LoginForm.css";
-import { toast, ToastContainer } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import {
+    User,
+    Lock,
+    Eye,
+    EyeOff,
+    LogIn,
+} from "lucide-react";
+
+import "../auth/Login.css";
+
+import { ToastContainer } from "react-toastify";
 
 const Login = () => {
 
     const [showPassword, setShowPassword] = useState(false);
+
     const [formData, setFormData] = useState({
         identifier: "",
         password: "",
     });
+
     const [loginError, setLoginError] = useState("");
-    const navigate = useNavigate();
+
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -26,130 +35,186 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(identifier.value);
-        console.log(password.value);
+
+        // Backend login will be added here later
+        console.log("Login Data:", formData);
     };
 
     return (
         <>
-            <ToastContainer position="bottom-right" autoClose="2000" />
-            <div className="login-page">
+            <ToastContainer
+                position="bottom-right"
+                autoClose={2000}
+            />
 
-                {/* Golden Orbit Background */}
-                {/* Golden Orbit Background */}
-                <div className="golden-orbit" aria-hidden="true">
+            <main className="login-page">
 
-                    <div className="orbit-ring orbit-ring-1">
-                        <span className="orbit-dot orbit-dot-1"></span>
-                    </div>
+                {/* Background Decoration */}
+                <div className="login-decoration login-decoration-left"></div>
+                <div className="login-decoration login-decoration-right"></div>
 
-                    <div className="orbit-ring orbit-ring-2">
-                        <span className="orbit-dot orbit-dot-2"></span>
-                    </div>
+                {/* Small decorative lines */}
+                <div className="login-line login-line-one"></div>
+                <div className="login-line login-line-two"></div>
 
-                    <div className="orbit-ring orbit-ring-3">
-                        <span className="orbit-dot orbit-dot-3"></span>
-                    </div>
-
-                    <div className="orbit-ring orbit-ring-4">
-                        <span className="orbit-dot orbit-dot-4"></span>
-                    </div>
-
-                    <div className="orbit-ring orbit-ring-5">
-                        <span className="orbit-dot orbit-dot-5"></span>
-                    </div>
-
-                    <div className="orbit-glow"></div>
-
-                </div>
 
                 {/* Login Card */}
                 <div className="login-card">
 
+                    {/* Heading */}
                     <div className="login-heading">
 
-                        <div className="login-heading__content">
-                            <User
-                                className="login-heading__icon"
-                                size={22}
-                            />
-
-                            <h2>Alumni Portal</h2>
+                        <div className="login-brand-mark">
+                            <User size={24} strokeWidth={2.2} />
                         </div>
 
+                        <h1>ALUMNI PORTAL</h1>
+
+                        <p>
+                            Velammal Engineering College
+                        </p>
+
                     </div>
+
+
+                    {/* Divider */}
+                    <div className="login-divider">
+                        <span></span>
+                        <div></div>
+                        <span></span>
+                    </div>
+
+
                     {/* Form */}
-                    <form className="login-form" onSubmit={handleSubmit}>
+                    <form
+                        className="login-form"
+                        onSubmit={handleSubmit}
+                    >
+
+                        {/* Username */}
                         <div className="login-field">
-                            <label htmlFor="identifier">User Name</label>
+
+                            <label htmlFor="identifier">
+                                USERNAME
+                            </label>
+
                             <div className="login-input">
-                                <User size={18} />
+
+                                <User
+                                    size={19}
+                                    strokeWidth={1.8}
+                                />
+
                                 <input
                                     id="identifier"
                                     name="identifier"
                                     type="text"
-                                    placeholder="Enter your User Name"
+                                    placeholder="Enter your username"
                                     value={formData.identifier}
                                     onChange={handleChange}
                                     autoComplete="username"
                                     required
                                 />
+
                             </div>
+
                         </div>
 
+
+                        {/* Password */}
                         <div className="login-field">
-                            <label htmlFor="password">Password</label>
+
+                            <label htmlFor="password">
+                                PASSWORD
+                            </label>
+
                             <div className="login-input">
-                                <Lock size={18} />
+
+                                <Lock
+                                    size={19}
+                                    strokeWidth={1.8}
+                                />
+
                                 <input
                                     id="password"
                                     name="password"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="DD-MM-YYYY"
+                                    type={
+                                        showPassword
+                                            ? "text"
+                                            : "password"
+                                    }
+                                    placeholder="XXXXXXXXXX"
                                     value={formData.password}
                                     onChange={handleChange}
                                     autoComplete="current-password"
                                     required
                                 />
+
                                 <button
                                     type="button"
-                                    className="login-input__eye"
-                                    onClick={() => setShowPassword((v) => !v)}
-                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                    className="login-input-eye"
+                                    onClick={() =>
+                                        setShowPassword(
+                                            (value) => !value
+                                        )
+                                    }
+                                    aria-label={
+                                        showPassword
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
                                 >
-                                    {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                                    {showPassword ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
                                 </button>
+
                             </div>
+
                         </div>
 
+
+                        {/* Error */}
                         {loginError && (
-                            <p className="mt-3 text-center text-red-600 text-sm font-medium">
+                            <p className="login-error">
                                 {loginError}
                             </p>
                         )}
-                        <button type="submit" className="login-submit">
+
+
+                        {/* Login Button */}
+                        <button
+                            type="submit"
+                            className="login-submit"
+                        >
                             <LogIn size={18} />
-                            Login
+
+                            <span>
+                                LOGIN
+                            </span>
                         </button>
 
-                        <div className="login-footer">
-                            {/* <>
-<button
-  type="button"
-  className="login-footer__link"
-  onClick={() => navigate("/forgot-password")}
->
-  Forgot your password?
-</button>           
- <p className="login-footer__link">Contact your mentor</p>  
-            <button type="button" className="login-signup" onClick={() => navigate("/register")} >
-              New Student? Sign Up
-            </button> 
-          </> */}
-                        </div>
                     </form>
+
+
+                    {/* Footer */}
+                    <div className="login-footer">
+
+                        <span className="login-footer-line"></span>
+
+                        <p>
+                            Alumni Portal
+                        </p>
+
+                        <span className="login-footer-line"></span>
+
+                    </div>
+
                 </div>
-            </div>
+
+            </main>
         </>
     );
 };
