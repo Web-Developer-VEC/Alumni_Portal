@@ -1,3 +1,4 @@
+import "dotenv/config.js";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
