@@ -92,17 +92,15 @@ body {
 
 .login-container {
     width: 100%;
-    max-width: 1500px;
+    max-width: 1600px;
 
     min-height: 790px;
 
     display: grid;
 
-    grid-template-columns:
-        minmax(0, 1.45fr)
-        minmax(390px, 0.55fr);
+    grid-template-columns: 1fr 1fr;
 
-    gap: 55px;
+    gap: 0;
 
     position: relative;
 
@@ -116,14 +114,102 @@ body {
 
 .alumni-section {
     min-width: 0;
+    width: 100%;
 
     display: flex;
     flex-direction: column;
 
     justify-content: flex-start;
+
+    position: relative;
+    overflow: hidden;
+}
+
+/* Keep actual alumni content above the background quote. */
+.college-brand,
+.alumni-heading,
+.alumni-carousel-wrapper,
+.carousel-indicators,
+.alumni-stats {
+    position: relative;
+    z-index: 2;
 }
 
 
+/* =========================================================
+   VEC QUOTE
+========================================================= */
+
+.vec-quote {
+    position: absolute;
+
+    top: 105px;
+    right: 7%;
+
+    width: 220px;
+
+    z-index: 1;
+
+    pointer-events: none;
+    user-select: none;
+
+    transform: rotate(-7deg);
+}
+
+.vec-quote p {
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    font-family:
+        "Segoe Script",
+        "Bradley Hand",
+        "Brush Script MT",
+        "Lucida Handwriting",
+        cursive;
+
+    font-size: 23px;
+
+    font-weight: 400;
+
+    line-height: 1.05;
+
+    color: rgba(90, 90, 90, 0.68);
+
+    text-align: center;
+
+    white-space: nowrap;
+}
+
+.vec-quote p span:first-child {
+    margin-left: -12px;
+}
+
+.vec-quote p span:last-child {
+    margin-left: 18px;
+
+    margin-top: 3px;
+}
+
+
+/* Yellow handwritten underline */
+
+.vec-quote-line {
+    width: 145px;
+
+    height: 18px;
+
+    margin-top: -2px;
+    margin-left: auto;
+    margin-right: 8px;
+
+    border-bottom: 3px solid #f5b000;
+
+    border-radius: 0 0 80% 40%;
+
+    transform: rotate(-7deg);
+}
 /* =========================================================
    COLLEGE BRAND
 ========================================================= */
@@ -260,6 +346,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    padding: 0 42px;
 }
 
 
@@ -753,11 +841,14 @@ body {
 ========================================================= */
 
 .login-section {
+    width: 100%;
+
     display: flex;
 
     align-items: center;
-
     justify-content: center;
+
+    padding: 20px 42px;
 }
 
 
@@ -886,6 +977,96 @@ body {
 /* =========================================================
    FORM
 ========================================================= */
+/* =========================================================
+   GOOGLE SIGNUP
+========================================================= */
+
+.google-button {
+    width: 100%;
+    height: 54px;
+
+    border: 1px solid #dcdcdc;
+    border-radius: 11px;
+
+    background: #ffffff;
+    color: #333333;
+
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 11px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+.google-button:hover {
+    background: #fafafa;
+
+    border-color: #c8c8c8;
+
+    box-shadow:
+        0 7px 20px rgba(0, 0, 0, 0.08);
+
+    transform: translateY(-1px);
+}
+
+.google-button:active {
+    transform: translateY(0);
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   OR DIVIDER
+========================================================= */
+
+.or-divider {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 22px 0;
+}
+
+.or-divider span {
+    flex: 1;
+
+    height: 1px;
+
+    background: #e7e2da;
+}
+
+.or-divider p {
+    color: #a0a0a0;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.8px;
+}
 
 .input-group {
     margin-bottom: 21px;
@@ -1077,7 +1258,7 @@ body {
     }
 
     .login-container {
-        gap: 35px;
+        gap: 0;
     }
 
     .alumni-card {
@@ -1139,6 +1320,7 @@ body {
 
     .login-section {
         order: 2;
+        padding: 0;
     }
 
     .alumni-section {
@@ -1254,6 +1436,10 @@ body {
     }
 
     .alumni-section {
+        display: none;
+    }
+
+    .vec-quote {
         display: none;
     }
 

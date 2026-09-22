@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
+    loginUser,
+    googleSignup,
+} from "../../api/auth";
+import {
     User,
     Lock,
     Eye,
@@ -216,7 +220,7 @@ function Login() {
     /*
      * Login handler.
      */
-    const handleLogin = (event) => {
+    const handleLogin = async (event) => {
         event.preventDefault();
 
         if (!username.trim()) {
@@ -229,17 +233,39 @@ function Login() {
             return;
         }
 
-        /*
-         * Replace this with your actual backend API call.
-         */
-        console.log({
-            username,
-            password,
-        });
+        try {
+            const data = await loginUser({
+                username,
+                password,
+            });
 
-        toast.success("Login successful");
+            console.log("Login response:", data);
 
-        // navigate("/dashboard");
+            toast.success("Login successful");
+
+            // navigate("/dashboard");
+        } catch (error) {
+            console.error("Login failed:", error);
+
+            toast.error(
+                error.response?.data?.detail ||
+                "Login failed"
+            );
+        }
+    };
+    const handleGoogleSignup = async () => {
+        try {
+            const data = await googleSignup();
+
+            console.log("Google signup:", data);
+        } catch (error) {
+            console.error("Google signup failed:", error);
+
+            toast.error(
+                error.response?.data?.detail ||
+                "Google signup failed"
+            );
+        }
     };
 
 
@@ -261,6 +287,16 @@ function Login() {
                 ========================================== */}
 
                 <section className="alumni-section">
+
+                    {/* VEC QUOTE */}
+                    <div className="vec-quote" aria-hidden="true">
+                        <p>
+                            <span>Once a VECian</span>
+                            <span>Always a VECian</span>
+                        </p>
+
+                        <div className="vec-quote-line"></div>
+                    </div>
 
                     {/* BRAND */}
                     <div className="college-brand">
@@ -526,16 +562,60 @@ function Login() {
 
                         <form onSubmit={handleLogin}>
 
+                            {/* GOOGLE SIGNUP */}
+                            <button
+                                type="button"
+                                className="google-button"
+                                onClick={handleGoogleSignup}
+                            >
+                                <span className="google-icon">
+                                    <svg
+                                        width="19"
+                                        height="19"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fill="#4285F4"
+                                            d="M21.35 12.27c0-.68-.06-1.34-.18-1.97H12v3.73h5.23a4.47 4.47 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.92-4.18 2.92-7.15z"
+                                        />
+
+                                        <path
+                                            fill="#34A853"
+                                            d="M12 21.75c2.63 0 4.84-.87 6.45-2.33l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.74 9.74 0 0 0 12 21.75z"
+                                        />
+
+                                        <path
+                                            fill="#FBBC05"
+                                            d="M6.54 13.87A5.86 5.86 0 0 1 6.23 12c0-.65.11-1.28.31-1.87V7.6H3.3A9.74 9.74 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.4l3.24-2.53z"
+                                        />
+
+                                        <path
+                                            fill="#EA4335"
+                                            d="M12 6.1c1.43 0 2.72.49 3.73 1.45l2.8-2.8C16.83 3.1 14.62 2.25 12 2.25A9.74 9.74 0 0 0 3.3 7.6l3.24 2.53C7.31 7.82 9.46 6.1 12 6.1z"
+                                        />
+                                    </svg>
+                                </span>
+
+                                <span>Continue with Google</span>
+                            </button>
+
+
+                            {/* OR DIVIDER */}
+                            <div className="or-divider">
+                                <span></span>
+                                <p>OR</p>
+                                <span></span>
+                            </div>
+
+
                             {/* USERNAME */}
-
                             <div className="input-group">
-
                                 <label htmlFor="username">
                                     USERNAME
                                 </label>
 
                                 <div className="input-wrapper">
-
                                     <User
                                         className="input-icon"
                                         size={19}
@@ -550,22 +630,17 @@ function Login() {
                                             setUsername(event.target.value)
                                         }
                                     />
-
                                 </div>
-
                             </div>
 
 
                             {/* PASSWORD */}
-
                             <div className="input-group">
-
                                 <label htmlFor="password">
                                     PASSWORD
                                 </label>
 
                                 <div className="input-wrapper">
-
                                     <Lock
                                         className="input-icon"
                                         size={19}
@@ -573,11 +648,7 @@ function Login() {
 
                                     <input
                                         id="password"
-                                        type={
-                                            showPassword
-                                                ? "text"
-                                                : "password"
-                                        }
+                                        type={showPassword ? "text" : "password"}
                                         placeholder="Enter your password"
                                         value={password}
                                         onChange={(event) =>
@@ -589,34 +660,35 @@ function Login() {
                                         type="button"
                                         className="password-toggle"
                                         onClick={() =>
-                                            setShowPassword(!showPassword)
+                                            setShowPassword((current) => !current)
+                                        }
+                                        aria-label={
+                                            showPassword
+                                                ? "Hide password"
+                                                : "Show password"
                                         }
                                     >
                                         {showPassword ? (
-                                            <EyeOff size={19} />
+                                            <EyeOff size={18} />
                                         ) : (
-                                            <Eye size={19} />
+                                            <Eye size={18} />
                                         )}
                                     </button>
-
                                 </div>
-
                             </div>
 
 
                             {/* LOGIN BUTTON */}
-
                             <button
                                 type="submit"
                                 className="login-button"
                             >
-                                <LogIn size={19} />
+                                <LogIn size={18} />
+
                                 <span>LOGIN</span>
                             </button>
 
                         </form>
-
-
                         {/* FOOTER */}
 
                         <div className="login-footer">
@@ -628,7 +700,6 @@ function Login() {
                             <span></span>
 
                         </div>
-
                     </div>
 
                 </section>
