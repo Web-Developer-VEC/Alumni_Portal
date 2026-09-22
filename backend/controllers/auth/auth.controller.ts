@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import User from "../../service/User.js";
 import Otp from "../../service/Otp.js";
 import { sendEmail } from "../../service/sendEmail.js";
+import { getOtpEmailTemplate } from "../../utils/emailTemplates.js";
 
 // Generate a random 6-digit OTP
 const generateOTP = () => {
@@ -36,10 +37,11 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
     await newOtp.save();
 
     // Send Email
+    const emailHtml = getOtpEmailTemplate(otpCode);
     const emailSent = await sendEmail(
       email,
-      "Your Registration OTP",
-      `Your OTP for registration is ${otpCode}. It is valid for 5 minutes.`
+      "Alumni Portal Registration OTP",
+      emailHtml
     );
 
     if (emailSent) {
@@ -55,10 +57,10 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, otp, password } = req.body;
+    const { email, otp } = req.body;
 
-    if (!email || !otp || !password) {
-      res.status(400).json({ message: "Email, OTP, and password are required" });
+    if (!email || !otp) {
+      res.status(400).json({ message: "Email and OTP are required" });
       return;
     }
 
@@ -71,6 +73,37 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Check again if user exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.status(400).json({ message: "User already exists with this email" });
+      return;
+    }
+
+    res.status(200).json({ message: "OTP verified successfully" });
+  } catch (error) {
+    console.error("register (verifyOTP) Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const setPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, otp, password } = req.body;
+
+    if (!email || !otp || !password) {
+      res.status(400).json({ message: "Email, OTP, and password are required" });
+      return;
+    }
+
+    // Verify OTP again for security before setting password
+    const otpRecord = await Otp.findOne({ email, otp });
+
+    if (!otpRecord) {
+      res.status(400).json({ message: "Invalid or expired OTP" });
+      return;
+    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       res.status(400).json({ message: "User already exists with this email" });
@@ -91,9 +124,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Delete OTP after successful registration
     await Otp.deleteMany({ email });
 
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({ message: "Password set and user registered successfully" });
   } catch (error) {
-    console.error("register Error:", error);
+    console.error("setPassword Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
