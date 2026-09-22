@@ -14,22 +14,24 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
-
-app.use("/api",indexRoutes)
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || "alumni_portal_secret_key",
     resave: false,
     saveUninitialized: false,
-
     cookie: {
       httpOnly: true,
       secure: false,
-      maxAge: 1000 * 60 * 60,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
     },
   })
 );

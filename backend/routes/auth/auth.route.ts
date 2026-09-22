@@ -1,16 +1,11 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import passport from "../../config/passport.js";
 import { sendOTP, register } from "../../controllers/auth/auth.controller.js";
-
-import {
-  googleLogin,
-  getCurrentUser,
-  logout,
-} from "../../controllers/auth/passport.controller.js";
+import { googleLogin } from "../../controllers/auth/passport.controller.js";
 
 const router = Router();
 
-// Start Google login
+// Google OAuth
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -18,18 +13,15 @@ router.get(
   })
 );
 
-// Google callback
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:5173/login",
+    failureRedirect: "http://localhost:5173?login=failed",
   }),
   googleLogin
 );
 
-
-// Logout
-router.get("/logout", logout);
+// OTP and registration
 router.post("/send-otp", sendOTP);
 router.post("/register", register);
 
