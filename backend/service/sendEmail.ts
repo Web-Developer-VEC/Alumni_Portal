@@ -15,7 +15,7 @@ export const sendEmail = async (to: string, subject: string, text: string) => {
       },
       Message: {
         Body: {
-          Text: {
+          Html: {
             Charset: "UTF-8",
             Data: text,
           },

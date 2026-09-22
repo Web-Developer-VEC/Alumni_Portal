@@ -1,34 +1,35 @@
+﻿import "dotenv/config";
 import express, { type Request, type Response } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth/auth.route.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
 import passport from "./config/passport.js";
 import session from "express-session";
-
-dotenv.config();
+import router from "./routes/index.routes.js";
 
 // Connect to MongoDB
 connectDB();
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
-
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || "alumni_portal_secret_key",
     resave: false,
     saveUninitialized: false,
-
     cookie: {
       httpOnly: true,
       secure: false,
-      maxAge: 1000 * 60 * 60,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
     },
   })
 );
@@ -37,11 +38,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.use("/api", authRoutes);
+app.use("/api", router);
 
 app.get("/", (req: Request, res: Response) => {
   res.json({
-    message: " Alumni Portal Backend is running",
+    message: "Alumni Portal Backend is running",
   });
 });
 
