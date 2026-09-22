@@ -2,8 +2,8 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import authRoutes from "./routes/authRoutes.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
+import  indexRoutes from "./routes/index.routes.js";
+
 
 dotenv.config();
 
@@ -15,9 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/upload", uploadRoutes);
+app.use("/api",indexRoutes)
 
 app.get("/", (req: Request, res: Response) => {
   res.json({
