@@ -1,0 +1,1499 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+}
+
+
+/* =========================================================
+   MAIN PAGE
+========================================================= */
+
+.login-page {
+    min-height: 100vh;
+    width: 100%;
+
+    position: relative;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 70% 35%,
+            rgba(255, 196, 30, 0.12),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 5% 90%,
+            rgba(128, 31, 48, 0.05),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #fffdf7 50%,
+            #fff9e8 100%
+        );
+
+    color: #161616;
+
+    padding: 45px 55px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   BACKGROUND DECORATIONS
+========================================================= */
+
+.background-circle {
+    position: absolute;
+
+    border: 1px solid rgba(244, 174, 0, 0.16);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.circle-one {
+    width: 520px;
+    height: 520px;
+
+    left: -300px;
+    top: -260px;
+}
+
+.circle-two {
+    width: 650px;
+    height: 650px;
+
+    right: -380px;
+    bottom: -450px;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.login-container {
+    width: 100%;
+    max-width: 1600px;
+
+    min-height: 790px;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 0;
+
+    position: relative;
+
+    z-index: 2;
+}
+
+
+/* =========================================================
+   ALUMNI SECTION
+========================================================= */
+
+.alumni-section {
+    min-width: 0;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: flex-start;
+
+    position: relative;
+    overflow: hidden;
+}
+
+/* Keep actual alumni content above the background quote. */
+.college-brand,
+.alumni-heading,
+.alumni-carousel-wrapper,
+.carousel-indicators,
+.alumni-stats {
+    position: relative;
+    z-index: 2;
+}
+
+
+/* =========================================================
+   VEC QUOTE
+========================================================= */
+
+.vec-quote {
+    position: absolute;
+
+    top: 105px;
+    right: 7%;
+
+    width: 220px;
+
+    z-index: 1;
+
+    pointer-events: none;
+    user-select: none;
+
+    transform: rotate(-7deg);
+}
+
+.vec-quote p {
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    font-family:
+        "Segoe Script",
+        "Bradley Hand",
+        "Brush Script MT",
+        "Lucida Handwriting",
+        cursive;
+
+    font-size: 23px;
+
+    font-weight: 400;
+
+    line-height: 1.05;
+
+    color: rgba(90, 90, 90, 0.68);
+
+    text-align: center;
+
+    white-space: nowrap;
+}
+
+.vec-quote p span:first-child {
+    margin-left: -12px;
+}
+
+.vec-quote p span:last-child {
+    margin-left: 18px;
+
+    margin-top: 3px;
+}
+
+
+/* Yellow handwritten underline */
+
+.vec-quote-line {
+    width: 145px;
+
+    height: 18px;
+
+    margin-top: -2px;
+    margin-left: auto;
+    margin-right: 8px;
+
+    border-bottom: 3px solid #f5b000;
+
+    border-radius: 0 0 80% 40%;
+
+    transform: rotate(-7deg);
+}
+/* =========================================================
+   COLLEGE BRAND
+========================================================= */
+
+.college-brand {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    margin-bottom: 34px;
+}
+
+.brand-symbol {
+    width: 58px;
+    height: 58px;
+
+    border-radius: 50%;
+
+    background: #fbb400;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow:
+        0 10px 25px rgba(251, 180, 0, 0.25);
+}
+
+.brand-symbol span {
+    font-size: 29px;
+
+    color: #7f1d30;
+}
+
+.brand-text h2 {
+    font-family: Georgia, serif;
+
+    color: #7f1d30;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    letter-spacing: 0.3px;
+}
+
+.brand-text p {
+    margin-top: 2px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    color: #333;
+}
+
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.alumni-heading h1 {
+    font-size: clamp(50px, 5vw, 74px);
+
+    line-height: 1;
+
+    font-weight: 700;
+
+    letter-spacing: -3px;
+}
+
+.alumni-heading h1 span {
+    color: #7f1d30;
+}
+
+.heading-subtitle {
+    margin-top: 17px;
+
+    font-size: 20px;
+
+    font-weight: 400;
+
+    color: #252525;
+}
+
+.heading-line {
+    display: flex;
+
+    margin-top: 22px;
+
+    width: 84px;
+
+    height: 4px;
+}
+
+.heading-line span:first-child {
+    width: 65px;
+
+    background: #f7b000;
+}
+
+.heading-line span:last-child {
+    width: 19px;
+
+    background: #7f1d30;
+}
+
+.heading-description {
+    margin-top: 22px;
+
+    font-size: 14px;
+
+    line-height: 1.9;
+
+    color: #6a6a6a;
+}
+
+
+/* =========================================================
+   CAROUSEL AREA
+========================================================= */
+
+.alumni-carousel-wrapper {
+    position: relative;
+
+    width: 100%;
+
+    height: 375px;
+
+    margin-top: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 42px;
+}
+
+
+/*
+   The actual stage.
+
+   Cards are positioned relative to the center.
+*/
+
+.alumni-carousel {
+    width: 100%;
+
+    height: 100%;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    perspective: 1300px;
+
+    transform-style: preserve-3d;
+
+    overflow: visible;
+}
+
+
+/* =========================================================
+   ALUMNI CARD
+========================================================= */
+
+.alumni-card {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 205px;
+    height: 305px;
+
+    border-radius: 15px;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid rgba(120, 30, 48, 0.08);
+
+    box-shadow:
+        0 18px 45px rgba(35, 20, 10, 0.12);
+
+    cursor: pointer;
+
+    transform-style: preserve-3d;
+
+    transform-origin: center center;
+
+    transition:
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.65s ease,
+        filter 0.65s ease,
+        box-shadow 0.65s ease;
+
+    user-select: none;
+}
+
+
+/* =========================================================
+   CARD POSITIONS
+========================================================= */
+
+
+/* CENTER */
+
+.alumni-card.card-active {
+    transform:
+        translate(-50%, -50%)
+        translateX(0)
+        translateZ(80px)
+        rotateY(0deg)
+        scale(1.08);
+
+    opacity: 1;
+
+    z-index: 10;
+
+    filter: none;
+
+    box-shadow:
+        0 28px 65px rgba(60, 30, 10, 0.20);
+}
+
+
+/* LEFT */
+
+.alumni-card.card-left {
+    transform:
+        translate(-50%, -50%)
+        translateX(-210px)
+        translateZ(-50px)
+        rotateY(22deg)
+        scale(0.91);
+
+    opacity: 0.95;
+
+    z-index: 7;
+
+    filter: saturate(0.85);
+}
+
+
+/* FAR LEFT */
+
+.alumni-card.card-left-far {
+    transform:
+        translate(-50%, -50%)
+        translateX(-375px)
+        translateZ(-130px)
+        rotateY(34deg)
+        scale(0.77);
+
+    opacity: 0.68;
+
+    z-index: 4;
+
+    filter: saturate(0.7);
+}
+
+
+/* RIGHT */
+
+.alumni-card.card-right {
+    transform:
+        translate(-50%, -50%)
+        translateX(210px)
+        translateZ(-50px)
+        rotateY(-22deg)
+        scale(0.91);
+
+    opacity: 0.95;
+
+    z-index: 7;
+
+    filter: saturate(0.85);
+}
+/* FAR RIGHT */
+
+.alumni-card.card-right-far {
+    transform:
+        translate(-50%, -50%)
+        translateX(375px)
+        translateZ(-130px)
+        rotateY(-34deg)
+        scale(0.77);
+
+    opacity: 0.68;
+
+    z-index: 4;
+
+    filter: saturate(0.7);
+}
+
+
+/* =========================================================
+   CARD HOVER
+========================================================= */
+
+.alumni-card.card-left:hover,
+.alumni-card.card-right:hover {
+    opacity: 1;
+
+    filter: none;
+}
+
+
+/* =========================================================
+   CARD IMAGE
+========================================================= */
+
+.alumni-card-image {
+    position: relative;
+
+    width: 100%;
+
+    height: 215px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            #7f1d30,
+            #b63b4f
+        );
+}
+
+.alumni-card-image img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    transition:
+        transform 0.7s ease,
+        filter 0.7s ease;
+}
+
+.alumni-card:hover .alumni-card-image img {
+    transform: scale(1.04);
+}
+
+
+/* IMAGE DARK GRADIENT */
+
+.image-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to bottom,
+            transparent 50%,
+            rgba(0, 0, 0, 0.45)
+        );
+}
+
+
+/* =========================================================
+   BATCH BADGE
+========================================================= */
+
+.batch-badge {
+    position: absolute;
+
+    top: 12px;
+    right: 12px;
+
+    min-width: 42px;
+    height: 28px;
+
+    padding: 0 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+
+    background: rgba(255, 255, 255, 0.93);
+
+    color: #7f1d30;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================================================
+   CARD CONTENT
+========================================================= */
+
+.alumni-card-content {
+    height: 90px;
+
+    padding: 13px 16px 10px;
+
+    background: #ffffff;
+}
+
+.alumni-card-content h3 {
+    font-size: 16px;
+
+    color: #7f1d30;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+}
+
+.alumni-role {
+    margin-top: 4px;
+
+    color: #6f6f6f;
+
+    font-size: 11px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.alumni-company {
+    margin-top: 2px;
+
+    color: #252525;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+/* GOLD ACCENT */
+
+.card-accent {
+    width: 25px;
+
+    height: 3px;
+
+    border-radius: 4px;
+
+    background: #f5b000;
+
+    margin-top: 7px;
+}
+
+
+/* =========================================================
+   CAROUSEL BUTTONS
+========================================================= */
+
+.carousel-arrow {
+    position: absolute;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 48px;
+    height: 78px;
+
+    border-radius: 15px;
+
+    border: 1.5px solid #7f1d30;
+
+    background: rgba(255, 255, 255, 0.92);
+
+    color: #7f1d30;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    z-index: 20;
+
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.carousel-arrow:hover {
+    background: #7f1d30;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 12px 25px rgba(127, 29, 48, 0.22);
+}
+
+.carousel-arrow:active {
+    transform:
+        translateY(-50%)
+        scale(0.95);
+}
+
+.carousel-arrow-left {
+    left: 0;
+}
+
+.carousel-arrow-right {
+    right: 0;
+}
+
+
+/* =========================================================
+   INDICATORS
+========================================================= */
+
+.carousel-indicators {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    margin-top: 5px;
+}
+
+.indicator {
+    width: 6px;
+    height: 6px;
+
+    padding: 0;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background: #d9d0c0;
+
+    cursor: pointer;
+
+    transition:
+        width 0.3s ease,
+        background 0.3s ease;
+}
+
+.indicator.active {
+    width: 24px;
+
+    background: #f4b000;
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.alumni-stats {
+    display: flex;
+
+    align-items: center;
+
+    margin-top: 25px;
+
+    gap: 20px;
+}
+
+.stat-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.stat-item svg {
+    color: #7f1d30;
+}
+
+.stat-item div {
+    display: flex;
+
+    flex-direction: column;
+}
+
+.stat-item strong {
+    color: #7f1d30;
+
+    font-size: 17px;
+
+    line-height: 1.1;
+}
+
+.stat-item span {
+    margin-top: 3px;
+
+    color: #777;
+
+    font-size: 9px;
+
+    white-space: nowrap;
+}
+
+.stat-divider {
+    width: 1px;
+
+    height: 38px;
+
+    background: #ded8cd;
+}
+
+
+/* =========================================================
+   LOGIN SECTION
+========================================================= */
+
+.login-section {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px 42px;
+}
+
+
+/* =========================================================
+   LOGIN CARD
+========================================================= */
+
+.login-card {
+    width: 100%;
+
+    max-width: 460px;
+
+    padding: 42px 43px 30px;
+
+    background:
+        rgba(255, 255, 255, 0.94);
+
+    border-radius: 20px;
+
+    border: 1px solid rgba(120, 30, 48, 0.07);
+
+    box-shadow:
+        0 25px 70px rgba(60, 40, 15, 0.13);
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+
+/* TOP GOLD LINE */
+
+.login-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 5px;
+
+    background: #f5b000;
+}
+
+
+/* =========================================================
+   LOGIN ICON
+========================================================= */
+
+.login-icon {
+    width: 60px;
+    height: 60px;
+
+    margin: 0 auto 17px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #7f1d30;
+
+    border: 1px solid #f4d78a;
+
+    background: #fffaf0;
+}
+
+
+/* =========================================================
+   LOGIN TITLE
+========================================================= */
+
+.login-card h2 {
+    text-align: center;
+
+    color: #7f1d30;
+
+    font-size: 27px;
+
+    font-weight: 700;
+}
+
+.login-college {
+    text-align: center;
+
+    margin-top: 5px;
+
+    color: #888;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   LOGIN DIVIDER
+========================================================= */
+
+.login-divider {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 22px 0 30px;
+}
+
+.login-divider span {
+    flex: 1;
+
+    height: 1px;
+
+    background: #e7e2da;
+}
+
+.login-divider b {
+    color: #f2ae00;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+/* =========================================================
+   GOOGLE SIGNUP
+========================================================= */
+
+.google-button {
+    width: 100%;
+    height: 54px;
+
+    border: 1px solid #dcdcdc;
+    border-radius: 11px;
+
+    background: #ffffff;
+    color: #333333;
+
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 11px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+.google-button:hover {
+    background: #fafafa;
+
+    border-color: #c8c8c8;
+
+    box-shadow:
+        0 7px 20px rgba(0, 0, 0, 0.08);
+
+    transform: translateY(-1px);
+}
+
+.google-button:active {
+    transform: translateY(0);
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   OR DIVIDER
+========================================================= */
+
+.or-divider {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 22px 0;
+}
+
+.or-divider span {
+    flex: 1;
+
+    height: 1px;
+
+    background: #e7e2da;
+}
+
+.or-divider p {
+    color: #a0a0a0;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.8px;
+}
+
+.input-group {
+    margin-bottom: 21px;
+}
+
+.input-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #2d2d2d;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+}
+
+.input-wrapper {
+    height: 58px;
+
+    border: 1px solid #dcdcdc;
+
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 0 15px;
+
+    transition:
+        border 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.input-wrapper:focus-within {
+    border-color: #f1b000;
+
+    box-shadow:
+        0 0 0 3px rgba(241, 176, 0, 0.10);
+}
+
+.input-icon {
+    color: #a2a2a2;
+
+    flex-shrink: 0;
+}
+
+.input-wrapper input {
+    width: 100%;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+
+    padding: 0 12px;
+
+    color: #333;
+
+    font-family: "Poppins", sans-serif;
+
+    font-size: 13px;
+}
+
+.input-wrapper input::placeholder {
+    color: #aaa;
+}
+
+
+/* PASSWORD BUTTON */
+
+.password-toggle {
+    border: 0;
+
+    background: transparent;
+
+    color: #929292;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 2px;
+}
+
+.password-toggle:hover {
+    color: #7f1d30;
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+========================================================= */
+
+.login-button {
+    width: 100%;
+
+    height: 58px;
+
+    margin-top: 7px;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    background: #f5b000;
+
+    color: #171717;
+
+    font-family: "Poppins", sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+}
+
+.login-button:hover {
+    background: #ffbc12;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 25px rgba(245, 176, 0, 0.28);
+}
+
+.login-button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   LOGIN FOOTER
+========================================================= */
+
+.login-footer {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 30px;
+}
+
+.login-footer span {
+    flex: 1;
+
+    height: 1px;
+
+    background: #ebe7df;
+}
+
+.login-footer p {
+    color: #aaa;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   LARGE SCREEN
+========================================================= */
+
+@media (max-width: 1300px) {
+
+    .login-page {
+        padding: 35px 35px;
+    }
+
+    .login-container {
+        gap: 0;
+    }
+
+    .alumni-card {
+        width: 185px;
+        height: 290px;
+    }
+
+    .alumni-card-image {
+        height: 200px;
+    }
+
+    .alumni-card.card-left {
+        transform:
+            translate(-50%, -50%)
+            translateX(-185px)
+            translateZ(-50px)
+            rotateY(21deg)
+            scale(0.88);
+    }
+
+    .alumni-card.card-right {
+        transform:
+            translate(-50%, -50%)
+            translateX(185px)
+            translateZ(-50px)
+            rotateY(-21deg)
+            scale(0.88);
+    }
+
+    .alumni-card.card-left-far {
+        transform:
+            translate(-50%, -50%)
+            translateX(-320px)
+            translateZ(-130px)
+            rotateY(32deg)
+            scale(0.72);
+    }
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+
+    .login-page {
+        padding: 30px;
+    }
+
+    .login-container {
+        grid-template-columns: 1fr;
+
+        max-width: 850px;
+
+        gap: 50px;
+    }
+
+    .login-section {
+        order: 2;
+        padding: 0;
+    }
+
+    .alumni-section {
+        order: 1;
+    }
+
+    .login-card {
+        max-width: 500px;
+    }
+
+    .alumni-heading {
+        text-align: center;
+    }
+
+    .heading-line {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .alumni-carousel-wrapper {
+        margin-top: 25px;
+    }
+
+    .alumni-stats {
+        justify-content: center;
+    }
+
+    .college-brand {
+        justify-content: center;
+    }
+}
+
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 750px) {
+
+    .login-page {
+        padding: 25px 20px;
+    }
+
+    .alumni-card {
+        width: 175px;
+        height: 285px;
+    }
+
+    .alumni-card.card-left {
+        transform:
+            translate(-50%, -50%)
+            translateX(-145px)
+            translateZ(-50px)
+            rotateY(20deg)
+            scale(0.84);
+    }
+
+    .alumni-card.card-right {
+        transform:
+            translate(-50%, -50%)
+            translateX(145px)
+            translateZ(-50px)
+            rotateY(-20deg)
+            scale(0.84);
+    }
+
+    .alumni-card.card-left-far {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .carousel-arrow {
+        width: 42px;
+        height: 62px;
+    }
+
+    .carousel-arrow-left {
+        left: -5px;
+    }
+
+    .carousel-arrow-right {
+        right: -5px;
+    }
+
+    .alumni-stats {
+        flex-wrap: wrap;
+
+        gap: 18px;
+    }
+
+    .stat-divider {
+        display: none;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .login-page {
+        min-height: 100vh;
+
+        padding: 20px 15px;
+    }
+
+    .login-container {
+        min-height: auto;
+
+        display: block;
+    }
+
+    .alumni-section {
+        display: none;
+    }
+
+    .vec-quote {
+        display: none;
+    }
+
+    .login-section {
+        min-height: calc(100vh - 40px);
+    }
+
+    .login-card {
+        padding: 38px 25px 28px;
+
+        border-radius: 17px;
+    }
+
+    .login-card h2 {
+        font-size: 24px;
+    }
+
+    .input-wrapper {
+        height: 55px;
+    }
+
+    .login-button {
+        height: 55px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .login-card {
+        padding: 35px 20px 25px;
+    }
+
+    .login-card h2 {
+        font-size: 22px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .alumni-card,
+    .alumni-card-image img,
+    .carousel-arrow,
+    .indicator,
+    .login-button {
+        transition: none;
+    }
+}
