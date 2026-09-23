@@ -1,6 +1,6 @@
 ﻿import { Router } from "express";
 import passport from "../../config/passport.js";
-import { sendOTP, register } from "../../controllers/auth/auth.controller.js";
+import { sendOTP, register ,setPassword} from "../../controllers/auth/auth.controller.js";
 import { googleLogin } from "../../controllers/auth/passport.controller.js";
 
 const router = Router();
@@ -24,5 +24,6 @@ router.get(
 // OTP and registration
 router.post("/send-otp", sendOTP);
 router.post("/register", register);
+router.post("/set-password", setPassword);
 
 export default router;
