@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 
 /* -------------------------------------------------------------------------- */
 /*  Self-contained: no index.html edits needed.                              */
@@ -141,21 +142,11 @@ const SAMPLE_JOBS = [
 ];
 
 const REPORT_REASONS = [
-  {
-    value: "expired",
-    title: "Position Expired / Link Broken",
-    desc: "The portal link no longer accepts university candidates",
-  },
-  {
-    value: "fraud",
-    title: "Inaccurate Compensation or Fraud",
-    desc: "Unrealistic stipend claims or unverified recruiter details",
-  },
-  {
-    value: "harassment",
-    title: "Honor Code Violation",
-    desc: "Breaches university alumni professional decorum standards",
-  },
+  "Spam or misleading",
+  "Fake or fraudulent job",
+  "Asks for money / fees",
+  "Inappropriate content",
+  "Other",
 ];
 
 const FILTERS = [
@@ -424,7 +415,8 @@ function useToast() {
 /*  Report modal                                                              */
 /* -------------------------------------------------------------------------- */
 function ReportModal({ onClose, onSubmit }) {
-  const [reason, setReason] = useState(REPORT_REASONS[0].value);
+  const [reason, setReason] = useState(REPORT_REASONS[0]);
+  const [otherNote, setOtherNote] = useState("");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -474,28 +466,34 @@ function ReportModal({ onClose, onSubmit }) {
           </button>
         </div>
 
-        <div className="space-y-3 py-4">
+          <div className="space-y-3 py-4">
           {REPORT_REASONS.map((r) => (
             <label
-              key={r.value}
+              key={r}
               className="flex cursor-pointer items-center gap-3 rounded-xl bg-[#faf8ff] p-3.5 transition-colors hover:bg-[#f2f3ff]"
             >
               <input
                 type="radio"
                 name="report-reason"
-                value={r.value}
-                checked={reason === r.value}
-                onChange={() => setReason(r.value)}
+                value={r}
+                checked={reason === r}
+                onChange={() => setReason(r)}
                 className="h-4 w-4 accent-[#005d42]"
               />
-              <div className="flex flex-col">
-                <span className="font-head text-[13px] font-semibold text-[#131b2e]">
-                  {r.title}
-                </span>
-                <span className="font-body text-[13px] text-[#3e4943]">{r.desc}</span>
-              </div>
+              <span className="font-head text-[13px] font-semibold text-[#131b2e]">{r}</span>
             </label>
           ))}
+
+          {reason === "Other" && (
+            <textarea
+              value={otherNote}
+              onChange={(e) => setOtherNote(e.target.value)}
+              rows={2}
+              placeholder="Tell us more about the issue..."
+              autoFocus
+              className="w-full resize-none rounded-xl bg-[#faf8ff] px-3.5 py-2.5 font-body text-[13px] text-[#131b2e] outline-none placeholder:text-[#6e7a73] focus:ring-1 focus:ring-[#047857]"
+            />
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4">
@@ -505,15 +503,253 @@ function ReportModal({ onClose, onSubmit }) {
           >
             Cancel
           </button>
-          <button
-            onClick={() => onSubmit(reason)}
-            className="rounded-xl bg-[#ba1a1a] px-6 py-2.5 font-head text-[13px] font-semibold text-white shadow-sm transition-opacity hover:opacity-95"
+            <button
+            disabled={reason === "Other" && !otherNote.trim()}
+            onClick={() => onSubmit(reason === "Other" ? { reason, note: otherNote } : { reason })}
+            className="rounded-xl bg-[#ba1a1a] px-6 py-2.5 font-head text-[13px] font-semibold text-white shadow-sm transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Submit Report
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Share modal — Instagram-style: recently-messaged people first, then a    */
+/*  "More" tile that falls back to the OS share sheet (navigator.share).     */
+/*                                                                            */
+/*  MOCK_CONVERSATIONS stands in for your real chat/DM data. Wire it up by   */
+/*  replacing it with your actual conversation list, each with a             */
+/*  `lastMessageAt` (timestamp, ms) — the list below is already sorted       */
+/*  newest-first by that field, which is what makes "recent" people surface  */
+/*  at the top, exactly like Instagram's share sheet.                        */
+/* -------------------------------------------------------------------------- */
+const now = Date.now();
+const MOCK_CONVERSATIONS = [
+  { id: 1, name: "Varun Kumar", tag: "Batch '25", avatar: null, lastMessageAt: now - 2 * 60 * 1000 },
+  { id: 2, name: "Priya Raghavan", tag: "Batch '26", avatar: null, lastMessageAt: now - 18 * 60 * 1000 },
+  { id: 3, name: "Sanjay Kumar", tag: "Batch '24", avatar: null, lastMessageAt: now - 60 * 60 * 1000 },
+  {
+    id: 4,
+    name: "AI & DS Placement Group",
+    tag: "Group · 42 members",
+    avatar: null,
+    isGroup: true,
+    lastMessageAt: now - 3 * 60 * 60 * 1000,
+  },
+  { id: 5, name: "Meera Iyer", tag: "Batch '25", avatar: null, lastMessageAt: now - 22 * 60 * 60 * 1000 },
+  { id: 6, name: "Karthik R", tag: "Batch '23", avatar: null, lastMessageAt: now - 2 * 24 * 60 * 60 * 1000 },
+];
+
+function timeAgo(ts) {
+  const mins = Math.round((Date.now() - ts) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
+
+function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, showToast }) {
+  const [visible, setVisible] = useState(false);
+  const [query, setQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 10);
+    // Lock the page behind the sheet from scrolling while it's open — matters
+    // most on mobile, where a scrollable body under a bottom sheet fights the
+    // sheet's own scroll for touch events.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    // Don't autofocus the search field on touch devices — it pops the
+    // keyboard immediately and eats most of the sheet's height on mobile.
+    if (window.matchMedia?.("(pointer: fine)").matches) {
+      inputRef.current?.focus();
+    }
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  const close = () => {
+    setVisible(false);
+    setTimeout(onClose, 180);
+  };
+
+  // Recently-messaged people first — this is just a sort by lastMessageAt,
+  // so hooking this up to a real inbox is a matter of swapping the data source.
+  const sorted = useMemo(
+    () => [...conversations].sort((a, b) => b.lastMessageAt - a.lastMessageAt),
+    [conversations]
+  );
+  const filtered = sorted.filter((c) => c.name.toLowerCase().includes(query.toLowerCase().trim()));
+
+  const shareUrl = `${window.location.origin}${window.location.pathname}#job-${job.id}`;
+  const shareText = `${job.alumni.name} shared a job opening: ${job.role} at ${job.company}`;
+
+  // Tapping a person only selects/deselects them — nothing sends until Share is pressed.
+  const toggleSelect = (contact) => {
+    setSelectedIds((ids) =>
+      ids.includes(contact.id) ? ids.filter((id) => id !== contact.id) : [...ids, contact.id]
+    );
+  };
+
+  const handleShareSelected = () => {
+    if (selectedIds.length === 0) return;
+    const chosen = conversations.filter((c) => selectedIds.includes(c.id));
+    chosen.forEach((c) => onSend?.(c, job));
+    showToast(
+      chosen.length === 1 ? `Sent to ${chosen[0].name}` : `Sent to ${chosen.length} people`
+    );
+    close();
+  };
+
+  // "More" — hands off to whatever the OS/browser offers (native share sheet),
+  // falling back to a clipboard copy when navigator.share isn't available.
+  const openMore = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${job.role} at ${job.company}`, text: shareText, url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        showToast("Link copied to clipboard");
+      }
+    } catch {
+      /* user cancelled the native share sheet */
+    }
+    close();
+  };
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[#131b2e]/40 backdrop-blur-sm sm:items-center"
+      onClick={close}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Share opportunity"
+    >
+      <div
+        className={`flex w-full max-w-md flex-col rounded-t-3xl bg-white shadow-2xl transition-all duration-200 sm:mx-4 sm:rounded-3xl ${
+          visible ? "translate-y-0 opacity-100 sm:scale-100" : "translate-y-6 opacity-0 sm:scale-95"
+        }`}
+        style={{
+          maxHeight: "min(85dvh, 640px)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Drag handle — mobile-only affordance that this is a sheet, not a dialog */}
+        <div className="flex justify-center pb-1 pt-2.5 sm:hidden">
+          <span className="h-1 w-10 rounded-full bg-[#e2e7ff]" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#e2e7ff] px-4 py-3 sm:px-5 sm:py-4">
+          <div className="min-w-0">
+            <h3 className="font-head text-[16px] font-semibold text-[#131b2e]">Share</h3>
+            <p className="font-body text-[12px] text-[#6e7a73] truncate max-w-[60vw] sm:max-w-[260px]">
+              {job.role} · {job.company}
+            </p>
+          </div>
+          <button
+            onClick={close}
+            aria-label="Close"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#3e4943] transition-colors hover:bg-[#eaedff] active:bg-[#eaedff]"
+          >
+            <Icon name="close" className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="px-4 pt-3 sm:px-5 sm:pt-4">
+          <div className="flex items-center gap-2 rounded-xl bg-[#f2f3ff] px-3.5 py-3 sm:py-2.5">
+            <Icon name="search" className="h-[18px] w-[18px] shrink-0 text-[#6e7a73]" />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search people..."
+              className="w-full min-w-0 bg-transparent font-body text-[13px] text-[#131b2e] outline-none placeholder:text-[#6e7a73]"
+            />
+          </div>
+        </div>
+
+        {/* Contacts — fluid auto-fill grid, so it self-adjusts to any screen
+            width instead of jumping between fixed 3/4-column breakpoints. */}
+        <div
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3.5 sm:px-5 sm:py-4"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {!query && (
+            <p className="mb-3 font-head text-[11px] font-bold uppercase tracking-wider text-[#6e7a73]">
+              Recent
+            </p>
+          )}
+          {filtered.length === 0 ? (
+            <p className="py-6 text-center font-body text-[13px] text-[#6e7a73]">No one found.</p>
+          ) : (
+            <div
+              className="grid justify-items-center gap-y-5 gap-x-1"
+              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(68px, 1fr))" }}
+            >
+              {filtered.map((c) => {
+                const selected = selectedIds.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => toggleSelect(c)}
+                    className="flex w-full flex-col items-center gap-1.5 rounded-xl py-1 text-center"
+                  >
+                    <div
+                      className={`relative flex h-14 w-14 items-center justify-center rounded-full font-head text-[14px] font-semibold text-white ring-offset-2 transition-all ${
+                        c.isGroup ? "bg-[#4e45d5]" : "bg-[#005d42]"
+                      } ${selected ? "ring-2 ring-[#800000]" : ""}`}
+                    >
+                      {c.isGroup ? <Icon name="forum" className="h-6 w-6" /> : initials(c.name)}
+                      {selected && (
+                        <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#800000] text-white ring-2 ring-white">
+                          <Icon name="verified" className="h-3 w-3" />
+                        </span>
+                      )}
+                    </div>
+                    <span className="line-clamp-1 w-full font-body text-[11px] font-medium text-[#131b2e]">
+                      {c.name.split(" ")[0]}
+                    </span>
+                    <span className="font-body text-[10px] text-[#6e7a73]">
+                      {selected ? "Selected" : timeAgo(c.lastMessageAt)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer actions */}
+        <div className="flex items-center gap-2.5 border-t border-[#e2e7ff] px-4 py-3 sm:gap-3 sm:px-5 sm:py-4">
+          <button
+            onClick={handleShareSelected}
+            disabled={selectedIds.length === 0}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#f2f3ff] px-3 py-3 font-head text-[12px] font-semibold text-[#131b2e] transition-colors hover:bg-[#eaedff] disabled:opacity-40 disabled:hover:bg-[#f2f3ff] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[13px]"
+          >
+            <Icon name="share" className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" />
+            {selectedIds.length > 0 ? `Share (${selectedIds.length})` : "Share"}
+          </button>
+          <button
+            onClick={openMore}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#FDCC03] px-3 py-3 font-head text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-[#800000] hover:text-white sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[13px]"
+          >
+            <Icon name="more_vert" className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" /> More
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -547,9 +783,27 @@ function JobCard({ job, onReport, showToast }) {
   const [draft, setDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const menuRef = useRef(null);
   useOutsideClick(menuRef, () => setMenuOpen(false));
+
+  // Clicking anywhere outside this card closes the comments drawer, if open.
+  const cardRef = useRef(null);
+  useEffect(() => {
+    if (!showComments) return;
+    const handler = (e) => {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
+        setShowComments(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
+  }, [showComments]);
 
   const toggleLike = () => {
     setLiked((v) => !v);
@@ -563,23 +817,9 @@ function JobCard({ job, onReport, showToast }) {
     setMenuOpen(false);
   };
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}${window.location.pathname}#job-${job.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${job.role} at ${job.company}`,
-          text: `${job.alumni.name} shared a job opening: ${job.role} at ${job.company}`,
-          url,
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-        showToast("Application link copied to clipboard");
-      }
-    } catch {
-      /* user cancelled share sheet */
-    }
-  };
+  // Opens our own Instagram-style share sheet instead of the OS default.
+  // The native picker is still reachable from inside it, via the "More" tile.
+  const handleShare = () => setShareOpen(true);
 
   const toggleBookmark = () => {
     setSaved((v) => {
@@ -599,8 +839,9 @@ function JobCard({ job, onReport, showToast }) {
 
   return (
     <article
+      ref={cardRef}
       id={`job-${job.id}`}
-      className="job-card flex flex-col rounded-3xl bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-8"
+      className="job-card flex flex-col rounded-3xl bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6 lg:p-8"
     >
       {/* ---------- Alumni header ---------- */}
       <div className="flex items-start justify-between gap-4 pb-5">
@@ -663,7 +904,12 @@ function JobCard({ job, onReport, showToast }) {
                 onClick={toggleBookmark}
                 className="flex w-full items-center gap-2.5 px-4 py-2 text-left font-head text-[13px] font-semibold text-[#131b2e] hover:bg-[#f2f3ff]"
               >
-                <Icon name="bookmark" className="h-[18px] w-[18px]" filled={saved} /> Bookmark
+                <Icon
+                  name="bookmark"
+                  className={`h-[18px] w-[18px] ${saved ? "text-[#800000]" : ""}`}
+                  filled={saved}
+                />{" "}
+                Bookmark
               </button>
               <button
                 onClick={() => {
@@ -705,7 +951,7 @@ function JobCard({ job, onReport, showToast }) {
 
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
           {job.type && (
-            <span className="rounded-full bg-white/90 px-3 py-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#005d42] backdrop-blur-md">
+            <span className="rounded-full bg-white/90 px-3 py-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#800000] backdrop-blur-md">
               {job.type}
             </span>
           )}
@@ -846,15 +1092,15 @@ function JobCard({ job, onReport, showToast }) {
             <Icon name="visibility" className="h-[18px] w-[18px]" />
             <span>{formatCount(job.views)} views</span>
           </div>
-          <button onClick={toggleBookmark} title="Save Role" className="text-[#3e4943] transition-colors hover:text-[#005d42]">
-            <Icon name="bookmark" className={`h-[22px] w-[22px] ${saved ? "text-[#005d42]" : ""}`} filled={saved} />
+          <button onClick={toggleBookmark} title="Save Role" className="text-[#3e4943] transition-colors hover:text-[#800000]">
+            <Icon name="bookmark" className={`h-[22px] w-[22px] ${saved ? "text-[#800000]" : ""}`} filled={saved} />
           </button>
         </div>
       </div>
 
       {/* ---------- Comments drawer ---------- */}
       {showComments && (
-        <div className="-mx-6 mt-5 flex flex-col gap-4 rounded-b-3xl bg-[#f2f3ff]/50 px-6 pb-4 pt-5 sm:-mx-8 sm:px-8">
+        <div className="-mx-4 mt-5 flex flex-col gap-4 rounded-b-3xl bg-[#f2f3ff]/50 px-4 pb-4 pt-5 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
           {comments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <Icon name="forum" className="mb-2 h-8 w-8 text-[#6e7a73]" />
@@ -896,7 +1142,7 @@ function JobCard({ job, onReport, showToast }) {
             <button
               type="submit"
               disabled={!draft.trim()}
-              className="rounded-xl bg-[#047857] px-5 py-2.5 font-head text-[13px] font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-40"
+              className="rounded-xl bg-[#FDCC03] px-5 py-2.5 font-head text-[13px] font-semibold text-black transition-colors duration-200 hover:bg-[#800000] hover:text-white disabled:opacity-40"
             >
               Send
             </button>
@@ -907,11 +1153,23 @@ function JobCard({ job, onReport, showToast }) {
       {reportOpen && (
         <ReportModal
           onClose={() => setReportOpen(false)}
-          onSubmit={(reason) => {
-            onReport?.(job.id, { reason });
+          onSubmit={(payload) => {
+            onReport?.(job.id, payload);
             setReportOpen(false);
             showToast("Report submitted for moderator review.");
           }}
+        />
+      )}
+
+      {shareOpen && (
+        <ShareModal
+          job={job}
+          onClose={() => setShareOpen(false)}
+          onSend={(contact, sharedJob) => {
+            // Wire this into your real messaging/DM send call, e.g.
+            // sendMessage({ toUserId: contact.id, jobId: sharedJob.id })
+          }}
+          showToast={showToast}
         />
       )}
     </article>
@@ -1023,18 +1281,18 @@ function StatsBanner({ jobCount }) {
             High-impact engineering, data, and leadership opportunities curated directly by graduates.
           </p>
         </div>
-        <div className="grid shrink-0 grid-cols-3 gap-3 md:gap-4">
-          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-4 py-3">
-            <span className="font-head text-[28px] font-semibold leading-none text-[#005d42]">{jobCount}</span>
-            <span className="mt-1 font-body text-[11px] text-[#3e4943]">Active Openings</span>
+        <div className="grid shrink-0 grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-2.5 py-2.5 sm:px-4 sm:py-3">
+            <span className="font-head text-[20px] font-semibold leading-none text-[#005d42] sm:text-[28px]">{jobCount}</span>
+            <span className="mt-1 font-body text-[10px] text-[#3e4943] sm:text-[11px]">Active Openings</span>
           </div>
-          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-4 py-3">
-            <span className="font-head text-[28px] font-semibold leading-none text-[#4e45d5]">{referrerCount}</span>
-            <span className="mt-1 font-body text-[11px] text-[#3e4943]">Active Referrers</span>
+          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-2.5 py-2.5 sm:px-4 sm:py-3">
+            <span className="font-head text-[20px] font-semibold leading-none text-[#4e45d5] sm:text-[28px]">{referrerCount}</span>
+            <span className="mt-1 font-body text-[10px] text-[#3e4943] sm:text-[11px]">Active Referrers</span>
           </div>
-          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-4 py-3">
-            <span className="font-head text-[28px] font-semibold leading-none text-[#005b53]">&lt;24h</span>
-            <span className="mt-1 font-body text-[11px] text-[#3e4943]">Latest Referral</span>
+          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-2.5 py-2.5 sm:px-4 sm:py-3">
+            <span className="font-head text-[20px] font-semibold leading-none text-[#005b53] sm:text-[28px]">&lt;24h</span>
+            <span className="mt-1 font-body text-[10px] text-[#3e4943] sm:text-[11px]">Latest Referral</span>
           </div>
         </div>
       </div>
@@ -1077,14 +1335,16 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={`shrink-0 whitespace-nowrap rounded-lg px-4 py-2 font-head text-[13px] font-semibold shadow-sm transition-all ${
-              filter === f.value ? "bg-[#047857] text-white" : "bg-white text-[#3e4943] hover:bg-[#eaedff] hover:text-[#131b2e]"
+              className={`shrink-0 whitespace-nowrap rounded-lg px-4 py-2 font-head text-[13px] font-semibold shadow-sm transition-all ${
+              filter === f.value ? "bg-[#FDCC03] text-black" : "bg-white text-[#3e4943] hover:bg-[#eaedff] hover:text-[#131b2e]"
             }`}
           >
             {f.label}
           </button>
         ))}
       </div>
+       {/* Fade hint — signals there's more to scroll to on the right */}
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-[#faf8ff] to-transparent sm:hidden" />
     </div>
   );
 }
@@ -1148,7 +1408,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
       <TopHeader />
 
       <main className="w-full pt-20">
-        <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8 lg:px-12">
+        <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8 lg:px-12">
           <StatsBanner jobCount={jobs.length} />
 
           <Controls search={search} setSearch={setSearch} sort={sort} setSort={setSort} filter={filter} setFilter={setFilter} />
@@ -1156,7 +1416,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
           {visibleJobs.length === 0 ? (
             <EmptyState onReset={resetFilters} />
           ) : (
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6 sm:gap-8">
               {visibleJobs.map((job) => (
                 <JobCard key={job.id} job={job} onReport={onReport} showToast={showToast} />
               ))}
