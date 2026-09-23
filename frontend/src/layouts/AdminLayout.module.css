@@ -1,0 +1,10 @@
+.admin-layout {
+    width: 100%;
+    min-height: 100vh;
+    background: #faf8f2;
+}
+
+.admin-content {
+    width: 100%;
+    min-height: 100vh;
+}
