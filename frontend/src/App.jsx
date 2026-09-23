@@ -1,9 +1,12 @@
-import AppRoutes from "../src/routes/AppRoutes";
+import { Routes, Route } from "react-router-dom";
+import AlumniJobFeed from "./pages/posts/PostDetails";
+
 function App() {
     return (
-        <div>
-            <AppRoutes />
-        </div>
+        <Routes>
+            <Route path="/" element={<h1>Alumni Portal</h1>} />
+            <Route path="/jobs" element={<AlumniJobFeed />} />
+        </Routes>
     );
 }
 
