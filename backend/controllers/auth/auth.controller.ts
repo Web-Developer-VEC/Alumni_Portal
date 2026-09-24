@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import User from "../../service/User.js";
+import User from "../../models/User.js";
 import Otp from "../../service/Otp.js";
 import { sendEmail } from "../../service/sendEmail.js";
 import { getOtpEmailTemplate } from "../../utils/emailTemplates.js";
@@ -130,3 +130,5 @@ export const setPassword = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
