@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import mongoose from "mongoose";
 import alumniprofile from "../../models/alumniprofile.js";
 
 /**
@@ -13,7 +14,6 @@ export const getAllAlumniDetails = async (req: Request, res: Response): Promise<
       message: "Alumni details fetched successfully",
       count: alumniList.length,
       data: alumniList,
-      alumni: alumniList,
     });
   } catch (error) {
     console.error("getAllAlumniDetails Error:", error);
@@ -30,7 +30,23 @@ export const getAllAlumniDetails = async (req: Request, res: Response): Promise<
  */
 export const getAlumniById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = (req.params.id || req.query.id || req.body?.id) as string | undefined;
+
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Alumni ID is required (pass via path parameter or ?id= query parameter)",
+      });
+      return;
+    }
+
+    if (!mongoose.isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid Alumni ID format",
+      });
+      return;
+    }
 
     const alumni = await alumniprofile.findById(id);
     if (!alumni) {
@@ -45,7 +61,6 @@ export const getAlumniById = async (req: Request, res: Response): Promise<void> 
       success: true,
       message: "Alumni details fetched successfully",
       data: alumni,
-      alumni,
     });
   } catch (error) {
     console.error("getAlumniById Error:", error);

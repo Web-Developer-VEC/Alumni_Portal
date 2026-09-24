@@ -10,6 +10,6 @@ const router = express.Router();
 router.post("/complete-profile", completeProfile);
 
 router.get("/details", getAllAlumniDetails);
-router.get("/:id", getAlumniById);
+router.get("/id", getAlumniById);
 
 export default router;
