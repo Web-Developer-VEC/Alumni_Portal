@@ -4,6 +4,7 @@ import User from "../../models/User.js";
 import Otp from "../../service/Otp.js";
 import { sendEmail } from "../../service/sendEmail.js";
 import { getOtpEmailTemplate } from "../../utils/emailTemplates.js";
+import jwt from "jsonwebtoken";
 
 // Generate a random 6-digit OTP
 const generateOTP = () => {
@@ -88,7 +89,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const setPassword = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, otp, password } = req.body;
+    const { email,password } = req.body;
 
     if (!email ||!password) {
       res.status(400).json({ message: "Email and password are required" });
@@ -124,4 +125,136 @@ export const setPassword = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+export const login = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { usernameOrEmail, password } = req.body;
 
+    // Validate input
+    if (!usernameOrEmail || !password) {
+      res.status(400).json({
+        success: false,
+        message: "Username/email and password are required.",
+      });
+      return;
+    }
+
+    // Find user by username OR email
+    const user = await User.findOne({
+      $or: [
+        {
+          username: usernameOrEmail.toLowerCase(),
+        },
+        {
+          email: usernameOrEmail.toLowerCase(),
+        },
+      ],
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid username/email or password.",
+      });
+      return;
+    }
+
+    // Check account
+    if (user.isActive === false) {
+      res.status(403).json({
+        success: false,
+        message:
+          "Your account has been disabled. Please contact the administrator.",
+      });
+      return;
+    }
+
+    // Check alumni approval
+    if (
+      user.role === "ALUMNI" &&
+      user.status === "PENDING"
+    ) {
+      res.status(403).json({
+        success: false,
+        message:
+          "Your alumni registration is still pending approval.",
+      });
+      return;
+    }
+
+    if (
+      user.role === "ALUMNI" &&
+      user.status === "REJECTED"
+    ) {
+      res.status(403).json({
+        success: false,
+        message:
+          "Your alumni registration has been rejected.",
+      });
+      return;
+    }
+
+    // Check password
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.password,
+    );
+
+    if (!passwordMatch) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid username/email or password.",
+      });
+      return;
+    }
+
+    // Create JWT
+    const payload = {
+      id: user._id.toString(),
+      displayName: user.displayName,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    };
+
+    const token = jwt.sign(
+      payload,
+      process.env.JWT_SECRET || "alumni_portal_jwt_secret",
+      {
+        expiresIn: "7d",
+      },
+    );
+
+    // Existing session
+    req.session.token = token;
+
+    req.session.user = {
+      id: payload.id,
+      displayName: payload.displayName,
+      email: payload.email,
+      role: payload.role,
+    };
+
+    // Success
+    res.status(200).json({
+      success: true,
+      message: "Login successful.",
+      user: {
+        id: payload.id,
+        displayName: payload.displayName,
+        username: payload.username,
+        email: payload.email,
+        role: payload.role,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "An unexpected error occurred during login.",
+    });
+  }
+};
