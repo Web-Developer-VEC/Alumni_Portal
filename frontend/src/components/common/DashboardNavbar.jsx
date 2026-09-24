@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   Search,
-  Sparkles,
   ChevronDown,
   User,
   Users,
@@ -10,18 +9,26 @@ import {
   Settings,
   LogOut,
   X,
+  Home,
+  MessageCircle,
+  Plus,
+  Image as ImageIcon,
+  FileText,
+  UploadCloud,
 } from "lucide-react";
+
 import VECLOGO from "../../assets/VEC_Logo.png";
-import Profile from "../../assets/profile.jpg"
+import Profile from "../../assets/profile.jpg";
 import styles from "./DashboardNavbar.module.css";
 
 const Navbar = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const profileRef = useRef(null);
+  const uploadRef = useRef(null);
 
-  // Close profile when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -29,6 +36,13 @@ const Navbar = () => {
         !profileRef.current.contains(event.target)
       ) {
         setProfileOpen(false);
+      }
+
+      if (
+        uploadRef.current &&
+        !uploadRef.current.contains(event.target)
+      ) {
+        setUploadOpen(false);
       }
     };
 
@@ -39,60 +53,101 @@ const Navbar = () => {
     };
   }, []);
 
+  const handleAddPost = () => {
+    setProfileOpen(false);
+    setUploadOpen(true);
+  };
+
   return (
-    <header className={styles.navbar}>
-      {/* ================= LEFT ================= */}
-      <div className={styles.leftSection}>
-        <div className={styles.logoContainer}>
-          <img
-            src={VECLOGO}
-            alt="Velammal Engineering College"
-            className={styles.logo}
+    <>
+      <header className={styles.navbar}>
+
+        {/* ================= BRAND ================= */}
+        <div className={styles.brandSection}>
+          <div className={styles.logoBox}>
+            <img
+              src={VECLOGO}
+              alt="Velammal Engineering College"
+              className={styles.logo}
+            />
+          </div>
+
+          <div className={styles.brandText}>
+            <h2>VEC CONNECT</h2>
+            <span>Campus Community</span>
+          </div>
+        </div>
+
+        {/* ================= SEARCH ================= */}
+        <div
+          className={`${styles.searchWrapper} ${
+            searchFocused ? styles.searchFocused : ""
+          }`}
+        >
+          <Search
+            size={19}
+            strokeWidth={2}
+            className={styles.searchIcon}
+          />
+
+          <input
+            type="text"
+            placeholder="Search people, teams, posts..."
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
           />
         </div>
 
-        <div className={styles.collegeInfo}>
-          <h2>VEC CONNECT</h2>
-        </div>
+        {/* ================= DESKTOP NAV ================= */}
+        <nav className={styles.desktopNavigation}>
 
-        <div className={styles.divider}></div>
+          <button className={styles.navItem}>
+            <Home size={20} strokeWidth={1.9} />
+            <span>Home</span>
+          </button>
 
+          <button className={styles.navItem}>
+            <Users size={20} strokeWidth={1.9} />
+            <span>Team</span>
+          </button>
 
-      </div>
+          <button
+            className={`${styles.navItem} ${styles.addPostItem}`}
+            onClick={handleAddPost}
+          >
+            <div className={styles.addIcon}>
+              <Plus size={21} strokeWidth={2.3} />
+            </div>
 
-      {/* ================= CENTER ================= */}
-      <div
-        className={`${styles.searchWrapper} ${
-          searchFocused ? styles.searchFocused : ""
-        }`}
-      >
-        <Search size={20} className={styles.searchIcon} />
+            <span>Add Post</span>
+          </button>
 
-        <input
-          type="text"
-          placeholder="Search people, teams, posts..."
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setSearchFocused(false)}
-        />
-      </div>
+          <button className={styles.navItem}>
+            <MessageCircle size={20} strokeWidth={1.9} />
+            <span>Message</span>
+          </button>
 
-      {/* ================= RIGHT ================= */}
-      <div className={styles.rightSection}>
+        </nav>
 
-        {/* Profile */}
-        <div className={styles.profileWrapper} ref={profileRef}>
+        {/* ================= PROFILE ================= */}
+        <div
+          className={styles.profileWrapper}
+          ref={profileRef}
+        >
           <button
             className={`${styles.profileButton} ${
               profileOpen ? styles.profileActive : ""
             }`}
-            onClick={() => setProfileOpen(!profileOpen)}
+            onClick={() => {
+              setProfileOpen(!profileOpen);
+              setUploadOpen(false);
+            }}
           >
             <div className={styles.avatar}>
               <img
                 src={Profile}
                 alt="Profile"
               />
-
               <span className={styles.onlineDot}></span>
             </div>
 
@@ -102,7 +157,7 @@ const Navbar = () => {
             </div>
 
             <ChevronDown
-              size={17}
+              size={16}
               className={`${styles.chevron} ${
                 profileOpen ? styles.chevronRotate : ""
               }`}
@@ -113,18 +168,16 @@ const Navbar = () => {
           {profileOpen && (
             <div className={styles.profileDropdown}>
 
-              {/* Dropdown Header */}
               <div className={styles.dropdownHeader}>
                 <div className={styles.largeAvatar}>
                   <img
                     src={Profile}
                     alt="Profile"
                   />
-
                   <span className={styles.largeOnlineDot}></span>
                 </div>
 
-                <div>
+                <div className={styles.dropdownUserInfo}>
                   <h3>Barathram</h3>
                   <p>Student • AI & Data Science</p>
                 </div>
@@ -137,7 +190,6 @@ const Navbar = () => {
                 </button>
               </div>
 
-              {/* Profile Details */}
               <div className={styles.profileDetails}>
 
                 <div className={styles.detailItem}>
@@ -172,9 +224,9 @@ const Navbar = () => {
                     <strong>Student Member</strong>
                   </div>
                 </div>
+
               </div>
 
-              {/* Team Badge */}
               <div className={styles.teamCard}>
                 <div className={styles.teamIcon}>
                   <Users size={18} />
@@ -185,12 +237,10 @@ const Navbar = () => {
                   <span>12 team members</span>
                 </div>
 
-                <div className={styles.teamArrow}>→</div>
+                <span className={styles.teamArrow}>→</span>
               </div>
 
-              {/* Actions */}
               <div className={styles.dropdownActions}>
-
                 <button>
                   <User size={17} />
                   <span>View Profile</span>
@@ -205,7 +255,6 @@ const Navbar = () => {
                   <LogOut size={17} />
                   <span>Logout</span>
                 </button>
-
               </div>
 
               <div className={styles.dropdownFooter}>
@@ -216,8 +265,103 @@ const Navbar = () => {
             </div>
           )}
         </div>
-      </div>
-    </header>
+
+      </header>
+
+      {/* ================= UPLOAD MODAL ================= */}
+      {uploadOpen && (
+        <div className={styles.uploadOverlay}>
+
+          <div
+            className={styles.uploadCard}
+            ref={uploadRef}
+          >
+
+            <div className={styles.uploadHeader}>
+              <div>
+                <span className={styles.uploadSmallTitle}>
+                  VEC CONNECT
+                </span>
+
+                <h2>Create New Post</h2>
+
+                <p>
+                  Share an image or document with your campus community.
+                </p>
+              </div>
+
+              <button
+                className={styles.uploadClose}
+                onClick={() => setUploadOpen(false)}
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <div className={styles.uploadOptions}>
+
+              <label className={styles.uploadOption}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                />
+
+                <div className={styles.uploadOptionIcon}>
+                  <ImageIcon size={25} />
+                </div>
+
+                <div>
+                  <strong>Upload Image</strong>
+                  <span>JPG, PNG, WEBP</span>
+                </div>
+
+                <UploadCloud
+                  size={18}
+                  className={styles.uploadArrow}
+                />
+              </label>
+
+              <label className={styles.uploadOption}>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  hidden
+                />
+
+                <div className={styles.uploadOptionIcon}>
+                  <FileText size={25} />
+                </div>
+
+                <div>
+                  <strong>Upload PDF</strong>
+                  <span>PDF documents</span>
+                </div>
+
+                <UploadCloud
+                  size={18}
+                  className={styles.uploadArrow}
+                />
+              </label>
+
+            </div>
+
+            <div className={styles.uploadFooter}>
+              <span>Maximum file size: 10 MB</span>
+
+              <button
+                className={styles.cancelButton}
+                onClick={() => setUploadOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      )}
+    </>
   );
 };
 
