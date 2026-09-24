@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import alumniprofile from "../../models/alumniprofile.js";
-
-
+import User from "../../models/User.js";
 
 export const completeProfile = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -10,7 +9,7 @@ export const completeProfile = async (req: Request, res: Response): Promise<void
       fullName, dateOfBirth, gender, mobileNumber,
       registerNumber, programme, department, batch,
       address, city, state, country, pincode,
-     company, designation, industry, workLocation, officialEmail, linkedInUrl 
+      company, designation, industry, workLocation, officialEmail, linkedInUrl 
     } = req.body;
 
     if (!email) {
@@ -18,47 +17,54 @@ export const completeProfile = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    // Validation for required fields
     if (!fullName || !mobileNumber) {
       res.status(400).json({ message: "Full Name and Mobile Number are required." });
       return;
     }
 
-    const user = await alumniprofile.findOne({ email });
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
+    // STEP 1: Check if the email exists in the users collection
+    const baseUser = await User.findOne({ email });
+    if (!baseUser) {
+      res.status(404).json({ message: "User account not found. Please register first." });
+      return; // Stops execution if they aren't a registered user
     }
 
-    // Update user profile fields
-    user.fullName = fullName;
-    user.dateOfBirth = dateOfBirth;
-    user.gender = gender;
+    // STEP 2: Go to alumniprofile to find existing or create a new one
+    let profile = await alumniprofile.findOne({ email });
     
-    user.mobileNumber = mobileNumber;
-    
-    user.registerNumber = registerNumber;
-    user.programme = programme;
-    user.department = department;
-    user.batch = batch;
-    
-    user.address = address;
-    user.city = city;
-    user.state = state;
-    user.country = country;
-    user.pincode = pincode;
-    
-    
-    user.company = company;
-    user.designation = designation;
-    user.industry = industry;
-    user.workLocation = workLocation;
-    user.officialEmail = officialEmail;
-    user.linkedInUrl = linkedInUrl;
-    
-    await user.save();
+    if (!profile) {
+      // If it returns null, initialize a fresh profile object tied to this email
+      profile = new alumniprofile({ email }); 
+    }
 
-    res.status(200).json({ message: "Profile completed successfully", user });
+    // STEP 3: Add all the data to the profile object
+    profile.fullName = fullName;
+    profile.dateOfBirth = dateOfBirth;
+    profile.gender = gender;
+    profile.mobileNumber = mobileNumber;
+    
+    profile.registerNumber = registerNumber;
+    profile.programme = programme;
+    profile.department = department;
+    profile.batch = batch;
+    
+    profile.address = address;
+    profile.city = city;
+    profile.state = state;
+    profile.country = country;
+    profile.pincode = pincode;
+    
+    profile.company = company;
+    profile.designation = designation;
+    profile.industry = industry;
+    profile.workLocation = workLocation;
+    profile.officialEmail = officialEmail;
+    profile.linkedInUrl = linkedInUrl;
+    
+    // STEP 4: Save the profile to the database
+    await profile.save();
+
+    res.status(200).json({ message: "Profile completed successfully", profile });
   } catch (error) {
     console.error("completeProfile Error:", error);
     res.status(500).json({ message: "Internal server error" });
