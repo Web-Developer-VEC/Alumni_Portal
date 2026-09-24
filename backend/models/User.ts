@@ -1,8 +1,13 @@
 import mongoose, { type Document } from "mongoose";
 
 export interface IUser extends Document {
+  displayName?: string;
   email: string;
   password: string;
+  role: "ADMIN" | "STUDENT" | "ALUMNI";
+  isActive: boolean;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  username?: string;
   profilePic?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -12,13 +17,14 @@ const userSchema = new mongoose.Schema(
   {
     displayName: {
       type: String,
-      required: true,
       trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     password: {
       type: String,
@@ -27,11 +33,11 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["ADMIN", "STUDENT", "ALUMNI"],
-      required: true,
+      default: "STUDENT",
     },
     isActive: {
       type: Boolean,
-      required: true,
+      default: true,
     },
     status: {
       type: String,
@@ -40,8 +46,10 @@ const userSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      required: true,
       trim: true,
+    },
+    profilePic: {
+      type: String,
     },
   },
   { timestamps: true },
@@ -50,4 +58,3 @@ const userSchema = new mongoose.Schema(
 const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;
-

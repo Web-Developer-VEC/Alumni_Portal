@@ -5,11 +5,11 @@ declare module "express-session" {
     token?: string;
 
     user?: {
-      id?: string;
-      displayName?: string;
-      email?: string;
-      photo?: string;
-      role?: string;
+      id?: string | undefined;
+      displayName?: string | undefined;
+      email?: string | undefined;
+      photo?: string | undefined;
+      role?: string | undefined;
     };
   }
 }

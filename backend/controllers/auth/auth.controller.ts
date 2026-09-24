@@ -80,6 +80,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+
+
     res.status(200).json({ message: "OTP verified successfully" });
   } catch (error) {
     console.error("register (verifyOTP) Error:", error);
@@ -112,6 +114,8 @@ export const setPassword = async (req: Request, res: Response): Promise<void> =>
     const newUser = new User({
       email,
       password: hashedPassword,
+      role: "ALUMNI"
+
     });
     await newUser.save();
 
