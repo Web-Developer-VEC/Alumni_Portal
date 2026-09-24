@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ThemeDropDown from "../../components/common/ThemeDropDown";
 import {
     Search,
     MapPin,
@@ -30,7 +32,7 @@ const alumniData = [
         designation: "Software Engineer",
         industry: "Information Technology",
         workExperience: "1-3 Years",
-        profilePhoto: "/images/alumni/priyadharsan.jpg",
+        profilePhoto: "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://unsplash.com/photos/man-crossing-both-arms-KIPqvvTOC1s",
         phone: "+91 9876543210",
         linkedIn: "https://linkedin.com",
         skills: ["React", "Node.js", "Python"],
@@ -137,8 +139,80 @@ const alumniData = [
         verified: true,
     },
 ];
+const locationOptions = [
+    "All",
+    "Chennai",
+    "Bangalore",
+    "Coimbatore",
+    "Hyderabad",
+];
+const BatchOptions = [
+    "All",
+    "2000 - 2004",
+    "2001 - 2005",
+    "2002 - 2006",
+    "2003 - 2007",
+    "2004 - 2008",
+    "2005 - 2009",
+    "2006 - 2010",
+    "2007 - 2011",
+    "2008 - 2012",
+    "2009 - 2013",
+    "2010 - 2014",
+    "2011 - 2015",
+    "2012 - 2016",
+    "2013 - 2017",
+    "2014 - 2018",
+    "2015 - 2019",
+    "2016 - 2020",
+    "2017 - 2021",
+    "2018 - 2022",
+    "2019 - 2023",
+    "2020 - 2024",
+    "2021 - 2025",
+    "2022 - 2026",
+    "2023 - 2027",
+    "2024 - 2028",
+];
+const departmentOptions = [
+    "All",
+    "Computer Science and Engineering",
+    "AI & Data Science",
+    "Electrical and Electronics Engineering",
+    "Mechanical Engineering",
+];
+
+const companyOptions = [
+    "All",
+    "ABC Technologies",
+    "Zoho",
+    "TCS",
+    "Tata Motors",
+    "Infinium Developer",
+    "VIT Chennai",
+];
+
+const roleOptions = [
+    "All",
+    "Software Engineer",
+    "Product Engineer",
+    "System Engineer",
+    "Design Engineer",
+    "Professor",
+    "GET",
+    "Manager",
+    "Senior Engineer",
+    "Junior Engineer",
+    "Developer",
+    "Analyst",
+    "Consultant",
+    "Architect",
+    "Team Lead",
+    "Project Manager",
+];
 
 function Members() {
+    const navigate = useNavigate();
     const [search, setSearch] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
     const [selectedBrowse, setSelectedBrowse] =
@@ -280,6 +354,11 @@ function Members() {
         setSelectedBrowse(filter);
         setShowMoreFilters(true);
     };
+    const handleProfileRedirect = (event, alumni) => {
+        event.stopPropagation();
+
+        navigate("/");
+    };
 
     return (
         <div className={styles["members-page"]}>
@@ -296,17 +375,9 @@ function Members() {
                         alumni, batchmates and friends.
                     </p>
                 </div>
-
-                <div className={styles["member-count"]}>
-                    <strong>
-                        {filteredAlumni.length}
-                    </strong>
-
-                    <span>Members Found</span>
-                </div>
             </div>
 
-            
+
 
             {/* =========================
                 SEARCH / FILTER CARD
@@ -324,7 +395,7 @@ function Members() {
 
                         <input
                             type="text"
-                            placeholder="Search by name, email or register number"
+                            placeholder="Search by name"
                             value={search}
                             onChange={(event) =>
                                 setSearch(
@@ -369,133 +440,77 @@ function Members() {
                 </div>
 
                 {showMoreFilters && (
-                    <div
-                        className={
-                            styles["advanced-filters"]
-                        }
-                    >
-                        <div
-                            className={
-                                styles["select-group"]
-                            }
-                        >
+                    <div className={styles["advanced-filters"]}>
+
+                        <div className={styles["select-group"]}>
                             <label>Location</label>
 
-                            <select
+                            <ThemeDropDown
+                                icon={MapPin}
                                 value={selectedLocation}
-                                onChange={(event) =>
-                                    setSelectedLocation(
-                                        event.target.value
-                                    )
-                                }
-                            >
-                                <option value="All">
-                                    All Locations
-                                </option>
-
-                                <option value="Chennai">
-                                    Chennai
-                                </option>
-
-                                <option value="Bangalore">
-                                    Bangalore
-                                </option>
-
-                                <option value="Coimbatore">
-                                    Coimbatore
-                                </option>
-
-                                <option value="Kochi">
-                                    Kochi
-                                </option>
-                            </select>
+                                options={locationOptions}
+                                onChange={setSelectedLocation}
+                                placeholder="Select Location"
+                            />
                         </div>
 
-                        <div
-                            className={
-                                styles["select-group"]
-                            }
-                        >
+                        <div className={styles["select-group"]}>
                             <label>Department</label>
 
-                            <select
+                            <ThemeDropDown
+                                icon={GraduationCap}
                                 value={selectedDepartment}
-                                onChange={(event) =>
-                                    setSelectedDepartment(
-                                        event.target.value
-                                    )
-                                }
-                            >
-                                <option value="All">
-                                    All Departments
-                                </option>
-
-                                <option value="Computer Science and Engineering">
-                                    Computer Science and
-                                    Engineering
-                                </option>
-
-                                <option value="AI & Data Science">
-                                    AI & Data Science
-                                </option>
-
-                                <option value="Electrical and Electronics Engineering">
-                                    EEE
-                                </option>
-
-                                <option value="Mechanical Engineering">
-                                    Mechanical
-                                </option>
-                            </select>
+                                options={departmentOptions}
+                                onChange={setSelectedDepartment}
+                                placeholder="Select Department"
+                            />
                         </div>
 
-                        <div
-                            className={
-                                styles["select-group"]
-                            }
-                        >
+                        <div className={styles["select-group"]}>
                             <label>Company</label>
 
-                            <select
+                            <ThemeDropDown
+                                icon={Building2}
                                 value={selectedCompany}
-                                onChange={(event) =>
-                                    setSelectedCompany(
-                                        event.target.value
-                                    )
-                                }
-                            >
-                                <option value="All">
-                                    All Companies
-                                </option>
+                                options={companyOptions}
+                                onChange={setSelectedCompany}
+                                placeholder="Select Company"
+                            />
+                        </div>
 
-                                <option value="ABC Technologies">
-                                    ABC Technologies
-                                </option>
+                        <div className={styles["select-group"]}>
+                            <label>Batch</label>
 
-                                <option value="Zoho">
-                                    Zoho
-                                </option>
+                            <ThemeDropDown
+                                icon={CalendarDays}
+                                value={selectedBatch}
+                                options={BatchOptions}
+                                onChange={setSelectedBatch}
+                                placeholder="Select Batch"
+                            />
+                        </div>
 
-                                <option value="TCS">
-                                    TCS
-                                </option>
+                        <div className={styles["select-group"]}>
+                            <label>Role</label>
 
-                                <option value="Tata Motors">
-                                    Tata Motors
-                                </option>
-                            </select>
+                            <ThemeDropDown
+                                icon={BriefcaseBusiness}
+                                value={selectedRole}
+                                options={roleOptions}
+                                onChange={setSelectedRole}
+                                placeholder="Select Role"
+                            />
                         </div>
 
                         <button
                             type="button"
-                            className={
-                                styles["clear-button"]
-                            }
+                            className={styles["clear-button"]}
                             onClick={clearFilters}
                         >
                             <X size={16} />
                             Clear Filters
                         </button>
+
                     </div>
                 )}
             </div>
@@ -532,91 +547,115 @@ function Members() {
                         <article
                             key={alumni.id}
                             className={styles["member-card"]}
-                            onClick={() =>
-                                setSelectedAlumni(alumni)
-                            }
+                            onClick={() => setSelectedAlumni(alumni)}
                         >
-                            <div
-                                className={
-                                    styles["member-image-wrapper"]
-                                }
-                            >
-                                {alumni.profilePhoto ? (
-                                    <img
-                                        src={
-                                            alumni.profilePhoto
-                                        }
-                                        alt={alumni.name}
-                                        className={
-                                            styles[
-                                            "member-image"
-                                            ]
-                                        }
-                                    />
-                                ) : (
-                                    <div
-                                        className={
-                                            styles[
-                                            "member-placeholder"
-                                            ]
-                                        }
-                                    >
-                                        <span>
-                                            {alumni.name
-                                                .charAt(0)
-                                                .toUpperCase()}
-                                        </span>
-                                    </div>
-                                )}
+                            {/* =========================
+            TOP SECTION
+        ========================= */}
 
-                                {alumni.verified && (
-                                    <div
-                                        className={
-                                            styles[
-                                            "verified-badge"
-                                            ]
-                                        }
-                                        title="Verified Alumni"
-                                    >
-                                        <CheckCircle2
-                                            size={19}
+                            <div className={styles["member-top"]}>
+
+                                {/* PROFILE PHOTO */}
+
+                                <div className={styles["member-image-wrapper"]}>
+                                    {alumni.profilePhoto ? (
+                                        <img
+                                            src={alumni.profilePhoto}
+                                            alt={alumni.name}
+                                            className={styles["member-image"]}
                                         />
+                                    ) : (
+                                        <div
+                                            className={
+                                                styles["member-placeholder"]
+                                            }
+                                        >
+                                            <span>
+                                                {alumni.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {alumni.verified && (
+                                        <div
+                                            className={
+                                                styles["verified-badge"]
+                                            }
+                                            title="Verified Alumni"
+                                        >
+                                            <CheckCircle2 size={17} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* PERSONAL DETAILS */}
+
+                                <div className={styles["member-personal"]}>
+
+                                    <h2>{alumni.name}</h2>
+
+                                    <p className={styles["member-academic"]}>
+                                        {alumni.programme} • {alumni.batch}
+                                    </p>
+
+                                    <p className={styles["member-department"]}>
+                                        {alumni.department}
+                                    </p>
+
+                                    <div className={styles["member-location"]}>
+                                        <MapPin size={13} />
+                                        <span>{alumni.location}</span>
                                     </div>
-                                )}
+
+                                </div>
+
+                                {/* PLUS BUTTON */}
+
+                                <button
+                                    type="button"
+                                    className={styles["profile-plus-button"]}
+                                    onClick={(event) =>
+                                        handleProfileRedirect(event, alumni)
+                                    }
+                                    aria-label={`View ${alumni.name}'s profile`}
+                                    title="View Profile"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-more preview-icon"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+                                </button>
+
                             </div>
 
-                            <div
-                                className={
-                                    styles["member-content"]
-                                }
-                            >
-                                <h2>{alumni.name}</h2>
+                            {/* =========================
+            PROFESSIONAL DETAILS
+        ========================= */}
 
-                                <p
-                                    className={
-                                        styles[
-                                        "member-academic"
-                                        ]
-                                    }
-                                >
-                                    {alumni.programme},{" "}
-                                    {alumni.batch}
-                                    <br />
-                                    {alumni.department}
-                                </p>
+                            <div className={styles["member-profession"]}>
 
-                                <p
-                                    className={
-                                        styles[
-                                        "member-profession"
-                                        ]
-                                    }
-                                >
-                                    {alumni.designation}{" "}
-                                    {alumni.company
-                                        ? `at ${alumni.company}`
-                                        : ""}
-                                </p>
+                                <div className={styles["profession-icon"]}>
+                                    <BriefcaseBusiness
+                                        size={17}
+                                        strokeWidth={2}
+                                    />
+                                </div>
+
+                                <div className={styles["profession-content"]}>
+                                    <span>Currently working as</span>
+
+                                    <strong>
+                                        {alumni.designation}
+                                        {alumni.company
+                                            ? ` at ${alumni.company}`
+                                            : ""}
+                                    </strong>
+                                </div>
+
+                                <ChevronDown
+                                    size={17}
+                                    className={styles["profession-arrow"]}
+                                />
+
                             </div>
                         </article>
                     ))
