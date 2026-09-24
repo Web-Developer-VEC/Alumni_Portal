@@ -35,7 +35,8 @@ const SAMPLE_JOBS = [
     postedAgo: "3m ago",
     company: "Zoho Corporation",
     role: "Frontend Developer",
-    eligibility: "B.E / B.Tech (CSE, IT, AI&DS) · 2025 & 2026 batch · CGPA 7.0+",
+    eligibility:
+      "B.E / B.Tech (CSE, IT, AI&DS) · 2025 & 2026 batch · CGPA 7.0+",
     location: "Chennai, Tamil Nadu",
     type: "Full-time",
     freshers: true,
@@ -198,7 +199,15 @@ function Icon({ name, className = "", filled = false }) {
       );
     case "verified":
       return (
-        <svg {...base} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          {...base}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={3}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="m5 13 4 4 10-10" />
         </svg>
       );
@@ -227,7 +236,14 @@ function Icon({ name, className = "", filled = false }) {
       );
     case "bookmark":
       return (
-        <svg {...base} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          {...base}
+          fill={filled ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1Z" />
         </svg>
       );
@@ -254,7 +270,14 @@ function Icon({ name, className = "", filled = false }) {
       );
     case "favorite":
       return (
-        <svg {...base} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          {...base}
+          fill={filled ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 1 0-7.4 7.4L12 21.8l8.8-8.8a5.2 5.2 0 0 0 0-7.4Z" />
         </svg>
       );
@@ -350,7 +373,9 @@ function Icon({ name, className = "", filled = false }) {
 const cx = (...parts) => parts.filter(Boolean).join(" ");
 
 const formatCount = (n) =>
-  n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "")}k` : `${n}`;
+  n >= 1000
+    ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "")}k`
+    : `${n}`;
 
 const initials = (name = "") =>
   name
@@ -379,7 +404,12 @@ function jobTypeTags(job) {
   const tags = [];
   if (job.type === "Internship") tags.push("internships");
   if (job.type === "Full-time") tags.push("full-time");
-  if (job.referralAvailable || job.directReferral || job.highVolumeReferrals || job.pledge)
+  if (
+    job.referralAvailable ||
+    job.directReferral ||
+    job.highVolumeReferrals ||
+    job.pledge
+  )
     tags.push("referrals");
   if (job.freshers) tags.push("freshers");
   return tags;
@@ -395,7 +425,10 @@ function useToast() {
   const showToast = (message) => {
     clearTimeout(timerRef.current);
     setToast({ show: true, message });
-    timerRef.current = setTimeout(() => setToast({ show: false, message }), 2600);
+    timerRef.current = setTimeout(
+      () => setToast({ show: false, message }),
+      2600,
+    );
   };
 
   const Toast = () => (
@@ -429,7 +462,20 @@ function ReportModal({ onClose, onSubmit }) {
   return (
     <div
       className={styles.reportOverlay}
-      onClick={close}
+      onPointerDown={(e) => {
+        // Only arm the close if the press itself started on the backdrop,
+        // not inside the modal (prevents a mobile "ghost click" landing on
+        // the backdrop from closing the sheet after a scroll/tap inside it).
+        e.currentTarget.dataset.pressedBackdrop = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (
+          e.target === e.currentTarget &&
+          e.currentTarget.dataset.pressedBackdrop === "true"
+        ) {
+          close();
+        }
+      }}
       role="dialog"
       aria-modal="true"
       aria-label="Report opportunity"
@@ -450,7 +496,11 @@ function ReportModal({ onClose, onSubmit }) {
               </p>
             </div>
           </div>
-          <button onClick={close} aria-label="Close" className={styles.reportCloseBtn}>
+          <button
+            onClick={close}
+            aria-label="Close"
+            className={styles.reportCloseBtn}
+          >
             <Icon name="close" className={styles.icon20} />
           </button>
         </div>
@@ -488,7 +538,11 @@ function ReportModal({ onClose, onSubmit }) {
           </button>
           <button
             disabled={reason === "Other" && !otherNote.trim()}
-            onClick={() => onSubmit(reason === "Other" ? { reason, note: otherNote } : { reason })}
+            onClick={() =>
+              onSubmit(
+                reason === "Other" ? { reason, note: otherNote } : { reason },
+              )
+            }
             className={styles.reportSubmitBtn}
           >
             Submit Report
@@ -511,9 +565,27 @@ function ReportModal({ onClose, onSubmit }) {
 /* -------------------------------------------------------------------------- */
 const now = Date.now();
 const MOCK_CONVERSATIONS = [
-  { id: 1, name: "Varun Kumar", tag: "Batch '25", avatar: null, lastMessageAt: now - 2 * 60 * 1000 },
-  { id: 2, name: "Priya Raghavan", tag: "Batch '26", avatar: null, lastMessageAt: now - 18 * 60 * 1000 },
-  { id: 3, name: "Sanjay Kumar", tag: "Batch '24", avatar: null, lastMessageAt: now - 60 * 60 * 1000 },
+  {
+    id: 1,
+    name: "Varun Kumar",
+    tag: "Batch '25",
+    avatar: null,
+    lastMessageAt: now - 2 * 60 * 1000,
+  },
+  {
+    id: 2,
+    name: "Priya Raghavan",
+    tag: "Batch '26",
+    avatar: null,
+    lastMessageAt: now - 18 * 60 * 1000,
+  },
+  {
+    id: 3,
+    name: "Sanjay Kumar",
+    tag: "Batch '24",
+    avatar: null,
+    lastMessageAt: now - 60 * 60 * 1000,
+  },
   {
     id: 4,
     name: "AI & DS Placement Group",
@@ -522,8 +594,20 @@ const MOCK_CONVERSATIONS = [
     isGroup: true,
     lastMessageAt: now - 3 * 60 * 60 * 1000,
   },
-  { id: 5, name: "Meera Iyer", tag: "Batch '25", avatar: null, lastMessageAt: now - 22 * 60 * 60 * 1000 },
-  { id: 6, name: "Karthik R", tag: "Batch '23", avatar: null, lastMessageAt: now - 2 * 24 * 60 * 60 * 1000 },
+  {
+    id: 5,
+    name: "Meera Iyer",
+    tag: "Batch '25",
+    avatar: null,
+    lastMessageAt: now - 22 * 60 * 60 * 1000,
+  },
+  {
+    id: 6,
+    name: "Karthik R",
+    tag: "Batch '23",
+    avatar: null,
+    lastMessageAt: now - 2 * 24 * 60 * 60 * 1000,
+  },
 ];
 
 function timeAgo(ts) {
@@ -535,7 +619,13 @@ function timeAgo(ts) {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
-function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, showToast }) {
+function ShareModal({
+  job,
+  conversations = MOCK_CONVERSATIONS,
+  onClose,
+  onSend,
+  showToast,
+}) {
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
@@ -568,9 +658,11 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
   // so hooking this up to a real inbox is a matter of swapping the data source.
   const sorted = useMemo(
     () => [...conversations].sort((a, b) => b.lastMessageAt - a.lastMessageAt),
-    [conversations]
+    [conversations],
   );
-  const filtered = sorted.filter((c) => c.name.toLowerCase().includes(query.toLowerCase().trim()));
+  const filtered = sorted.filter((c) =>
+    c.name.toLowerCase().includes(query.toLowerCase().trim()),
+  );
 
   const shareUrl = `${window.location.origin}${window.location.pathname}#job-${job.id}`;
   const shareText = `${job.alumni.name} shared a job opening: ${job.role} at ${job.company}`;
@@ -578,7 +670,9 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
   // Tapping a person only selects/deselects them — nothing sends until Share is pressed.
   const toggleSelect = (contact) => {
     setSelectedIds((ids) =>
-      ids.includes(contact.id) ? ids.filter((id) => id !== contact.id) : [...ids, contact.id]
+      ids.includes(contact.id)
+        ? ids.filter((id) => id !== contact.id)
+        : [...ids, contact.id],
     );
   };
 
@@ -587,7 +681,9 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
     const chosen = conversations.filter((c) => selectedIds.includes(c.id));
     chosen.forEach((c) => onSend?.(c, job));
     showToast(
-      chosen.length === 1 ? `Sent to ${chosen[0].name}` : `Sent to ${chosen.length} people`
+      chosen.length === 1
+        ? `Sent to ${chosen[0].name}`
+        : `Sent to ${chosen.length} people`,
     );
     close();
   };
@@ -597,7 +693,11 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
   const openMore = async () => {
     try {
       if (navigator.share) {
-        await navigator.share({ title: `${job.role} at ${job.company}`, text: shareText, url: shareUrl });
+        await navigator.share({
+          title: `${job.role} at ${job.company}`,
+          text: shareText,
+          url: shareUrl,
+        });
       } else {
         await navigator.clipboard.writeText(shareUrl);
         showToast("Link copied to clipboard");
@@ -637,7 +737,11 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
               {job.role} · {job.company}
             </p>
           </div>
-          <button onClick={close} aria-label="Close" className={styles.shareCloseBtn}>
+          <button
+            onClick={close}
+            aria-label="Close"
+            className={styles.shareCloseBtn}
+          >
             <Icon name="close" className={styles.icon20} />
           </button>
         </div>
@@ -667,22 +771,32 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
               {filtered.map((c) => {
                 const selected = selectedIds.includes(c.id);
                 return (
-                  <button key={c.id} onClick={() => toggleSelect(c)} className={styles.shareContactBtn}>
+                  <button
+                    key={c.id}
+                    onClick={() => toggleSelect(c)}
+                    className={styles.shareContactBtn}
+                  >
                     <div
                       className={cx(
                         styles.shareAvatar,
                         c.isGroup && styles.shareAvatarGroup,
-                        selected && styles.shareAvatarSelected
+                        selected && styles.shareAvatarSelected,
                       )}
                     >
-                      {c.isGroup ? <Icon name="forum" className={styles.icon24} /> : initials(c.name)}
+                      {c.isGroup ? (
+                        <Icon name="forum" className={styles.icon24} />
+                      ) : (
+                        initials(c.name)
+                      )}
                       {selected && (
                         <span className={styles.shareSelectedBadge}>
                           <Icon name="verified" className={styles.icon12} />
                         </span>
                       )}
                     </div>
-                    <span className={styles.shareContactName}>{c.name.split(" ")[0]}</span>
+                    <span className={styles.shareContactName}>
+                      {c.name.split(" ")[0]}
+                    </span>
                     <span className={styles.shareContactMeta}>
                       {selected ? "Selected" : timeAgo(c.lastMessageAt)}
                     </span>
@@ -709,7 +823,7 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -781,7 +895,11 @@ function JobCard({ job, onReport, showToast }) {
 
   const toggleBookmark = () => {
     setSaved((v) => {
-      showToast(v ? "Removed from saved opportunities" : "Opportunity bookmarked successfully");
+      showToast(
+        v
+          ? "Removed from saved opportunities"
+          : "Opportunity bookmarked successfully",
+      );
       return !v;
     });
     setMenuOpen(false);
@@ -790,7 +908,10 @@ function JobCard({ job, onReport, showToast }) {
   const addComment = (e) => {
     e.preventDefault();
     if (!draft.trim()) return;
-    setComments((c) => [...c, { id: Date.now(), user: "You", tag: "You", text: draft.trim() }]);
+    setComments((c) => [
+      ...c,
+      { id: Date.now(), user: "You", tag: "You", text: draft.trim() },
+    ]);
     setDraft("");
     showToast("Comment published to alumni thread");
   };
@@ -802,9 +923,15 @@ function JobCard({ job, onReport, showToast }) {
         <div className={styles.cardHeaderLeft}>
           <div className={styles.avatarWrap}>
             {job.alumni.avatar ? (
-              <img src={job.alumni.avatar} alt={job.alumni.name} className={styles.avatarImg} />
+              <img
+                src={job.alumni.avatar}
+                alt={job.alumni.name}
+                className={styles.avatarImg}
+              />
             ) : (
-              <div className={styles.avatarFallback}>{initials(job.alumni.name)}</div>
+              <div className={styles.avatarFallback}>
+                {initials(job.alumni.name)}
+              </div>
             )}
             {job.alumni.verified && (
               <span className={styles.verifiedBadge} title="Verified Alumni">
@@ -826,7 +953,11 @@ function JobCard({ job, onReport, showToast }) {
 
         {/* Context menu */}
         <div className={styles.menuWrap} ref={menuRef}>
-          <button aria-label="Card options" onClick={() => setMenuOpen((v) => !v)} className={styles.menuBtn}>
+          <button
+            aria-label="Card options"
+            onClick={() => setMenuOpen((v) => !v)}
+            className={styles.menuBtn}
+          >
             <Icon name="more_vert" className={styles.icon20} />
           </button>
           {menuOpen && (
@@ -837,7 +968,10 @@ function JobCard({ job, onReport, showToast }) {
               <button onClick={toggleBookmark} className={styles.menuItem}>
                 <Icon
                   name="bookmark"
-                  className={cx("h-[18px] w-[18px]", saved && styles.bookmarkActive)}
+                  className={cx(
+                    "h-[18px] w-[18px]",
+                    saved && styles.bookmarkActive,
+                  )}
                   filled={saved}
                 />{" "}
                 Bookmark
@@ -859,7 +993,12 @@ function JobCard({ job, onReport, showToast }) {
       {/* ---------- Hero banner ---------- */}
       <div className={styles.heroBanner}>
         {job.image ? (
-          <img src={job.image} alt={`${job.company} workplace`} loading="lazy" className={styles.heroImg} />
+          <img
+            src={job.image}
+            alt={`${job.company} workplace`}
+            loading="lazy"
+            className={styles.heroImg}
+          />
         ) : (
           <div className={styles.heroGradientBg}>
             <div className={styles.heroGradientTextWrap}>
@@ -875,13 +1014,25 @@ function JobCard({ job, onReport, showToast }) {
 
         <div className={styles.heroBadges}>
           {job.type && <span className={styles.badge}>{job.type}</span>}
-          {job.freshers && <span className={cx(styles.badge, styles.badgeFreshers)}>Freshers Welcome</span>}
-          {job.remote && <span className={cx(styles.badge, styles.badgeRemote)}>Remote Eligible</span>}
+          {job.freshers && (
+            <span className={cx(styles.badge, styles.badgeFreshers)}>
+              Freshers Welcome
+            </span>
+          )}
+          {job.remote && (
+            <span className={cx(styles.badge, styles.badgeRemote)}>
+              Remote Eligible
+            </span>
+          )}
           {job.referralAvailable && (
-            <span className={cx(styles.badge, styles.badgeReferral)}>Referral Available</span>
+            <span className={cx(styles.badge, styles.badgeReferral)}>
+              Referral Available
+            </span>
           )}
           {job.highVolumeReferrals && (
-            <span className={cx(styles.badge, styles.badgeHighVolume)}>High Volume Referrals</span>
+            <span className={cx(styles.badge, styles.badgeHighVolume)}>
+              High Volume Referrals
+            </span>
           )}
         </div>
 
@@ -893,7 +1044,10 @@ function JobCard({ job, onReport, showToast }) {
             </div>
             {(job.directReferral || job.highVolumeReferrals) && (
               <div className={styles.heroReferralPill}>
-                <Icon name="verified_user" className={styles.heroReferralIcon} />
+                <Icon
+                  name="verified_user"
+                  className={styles.heroReferralIcon}
+                />
                 {job.directReferral || "Velammal Exclusive Priority"}
               </div>
             )}
@@ -907,13 +1061,17 @@ function JobCard({ job, onReport, showToast }) {
           <div className={styles.pledgeBox}>
             <Icon name="school" className={styles.pledgeIcon} />
             <p className={styles.pledgeText}>
-              <strong className={styles.pledgeStrong}>Alumni Referral Pledge: </strong>
+              <strong className={styles.pledgeStrong}>
+                Alumni Referral Pledge:{" "}
+              </strong>
               {job.pledge}
             </p>
           </div>
         )}
 
-        {job.description && <p className={styles.descriptionText}>{job.description}</p>}
+        {job.description && (
+          <p className={styles.descriptionText}>{job.description}</p>
+        )}
 
         {job.tags?.length > 0 && (
           <div className={styles.tagsRow}>
@@ -925,12 +1083,28 @@ function JobCard({ job, onReport, showToast }) {
 
         {/* Metadata pills */}
         <div className={styles.metaGrid}>
-          <MetaPill icon="payments" label="Package" value={job.type !== "Internship" ? job.package : null} />
-          <MetaPill icon="account_balance_wallet" label="Stipend" value={job.type === "Internship" ? job.package : null} />
+          <MetaPill
+            icon="payments"
+            label="Package"
+            value={job.type !== "Internship" ? job.package : null}
+          />
+          <MetaPill
+            icon="account_balance_wallet"
+            label="Stipend"
+            value={job.type === "Internship" ? job.package : null}
+          />
           <MetaPill icon="location_on" label="Location" value={job.location} />
-          <MetaPill icon="event_available" label="Deadline" value={job.deadline} />
+          <MetaPill
+            icon="event_available"
+            label="Deadline"
+            value={job.deadline}
+          />
           <MetaPill icon="school" label="Eligibility" value={job.eligibility} />
-          <MetaPill icon="workspace_premium" label="PPO Conversion" value={job.ppo} />
+          <MetaPill
+            icon="workspace_premium"
+            label="PPO Conversion"
+            value={job.ppo}
+          />
           <MetaPill icon="code" label="Hiring Loop" value={job.hiringLoop} />
         </div>
 
@@ -948,7 +1122,12 @@ function JobCard({ job, onReport, showToast }) {
 
         {/* CTA */}
         <div className={styles.ctaWrap}>
-          <a href={job.applyLink} target="_blank" rel="noopener noreferrer" className={styles.ctaBtn}>
+          <a
+            href={job.applyLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.ctaBtn}
+          >
             <span>{job.applyLabel || "Apply on company portal"}</span>
             <Icon name="arrow_forward" className={styles.ctaIcon} />
           </a>
@@ -966,7 +1145,10 @@ function JobCard({ job, onReport, showToast }) {
             />
             <span className={styles.socialCount}>{likes}</span>
           </button>
-          <button onClick={() => setShowComments((v) => !v)} className={styles.commentBtn}>
+          <button
+            onClick={() => setShowComments((v) => !v)}
+            className={styles.commentBtn}
+          >
             <Icon name="chat_bubble" className={styles.icon20} />
             <span className={styles.socialCount}>{comments.length}</span>
           </button>
@@ -980,10 +1162,17 @@ function JobCard({ job, onReport, showToast }) {
             <Icon name="visibility" className={styles.icon18} />
             <span>{formatCount(job.views)} views</span>
           </div>
-          <button onClick={toggleBookmark} title="Save Role" className={styles.bookmarkBtn}>
+          <button
+            onClick={toggleBookmark}
+            title="Save Role"
+            className={styles.bookmarkBtn}
+          >
             <Icon
               name="bookmark"
-              className={cx(styles.bookmarkIconLarge, saved && styles.bookmarkActive)}
+              className={cx(
+                styles.bookmarkIconLarge,
+                saved && styles.bookmarkActive,
+              )}
               filled={saved}
             />
           </button>
@@ -998,16 +1187,21 @@ function JobCard({ job, onReport, showToast }) {
               <Icon name="forum" className={styles.commentsEmptyIcon} />
               <p className={styles.commentsEmptyTitle}>No queries posted yet</p>
               <p className={styles.commentsEmptyText}>
-                Be the first to ask {job.alumni.name.split(" ")[0]} about this opportunity.
+                Be the first to ask {job.alumni.name.split(" ")[0]} about this
+                opportunity.
               </p>
             </div>
           ) : (
             <>
-              <h4 className={styles.commentsHeading}>Discussion ({comments.length})</h4>
+              <h4 className={styles.commentsHeading}>
+                Discussion ({comments.length})
+              </h4>
               <div className={styles.commentsList}>
                 {comments.map((c) => (
                   <div key={c.id} className={styles.commentItem}>
-                    <div className={styles.commentAvatar}>{initials(c.user)}</div>
+                    <div className={styles.commentAvatar}>
+                      {initials(c.user)}
+                    </div>
                     <div className={styles.commentContent}>
                       <div className={styles.commentTop}>
                         <span className={styles.commentUser}>{c.user}</span>
@@ -1027,7 +1221,11 @@ function JobCard({ job, onReport, showToast }) {
               placeholder="Write a comment or query..."
               className={styles.commentInput}
             />
-            <button type="submit" disabled={!draft.trim()} className={styles.commentSendBtn}>
+            <button
+              type="submit"
+              disabled={!draft.trim()}
+              className={styles.commentSendBtn}
+            >
               Send
             </button>
           </form>
@@ -1082,7 +1280,10 @@ function TopHeader() {
           </a>
           <div className={styles.searchBox}>
             <Icon name="search" className={styles.searchIcon} />
-            <input placeholder="Search roles, alumni, companies..." className={styles.searchInput} />
+            <input
+              placeholder="Search roles, alumni, companies..."
+              className={styles.searchInput}
+            />
             <span className={styles.kbdHint}>⌘K</span>
           </div>
         </div>
@@ -1134,13 +1335,16 @@ function StatsBanner({ jobCount }) {
       <div className={styles.statsBgBlob2} />
       <div className={styles.statsContent}>
         <div>
-          <div className={styles.statsLiveRow}>
+          {/* <div className={styles.statsLiveRow}>
             <span className={styles.statsLiveDot} />
-            <span className={styles.statsLiveLabel}>Verified Collegiate Pipeline</span>
-          </div>
-          <h1 className={styles.statsTitle}>Alumni Referral Feed</h1>
+            <span className={styles.statsLiveLabel}>
+              Verified Collegiate Pipeline
+            </span>
+          </div> */}
+          <h1 className={styles.statsTitle}>JOB POSTS</h1>
           <p className={styles.statsDesc}>
-            High-impact engineering, data, and leadership opportunities curated directly by graduates.
+            High-impact engineering, data, and leadership opportunities curated
+            directly by graduates.
           </p>
         </div>
         <div className={styles.statsGrid}>
@@ -1149,11 +1353,15 @@ function StatsBanner({ jobCount }) {
             <span className={styles.statLabel}>Active Openings</span>
           </div>
           <div className={styles.statCard}>
-            <span className={cx(styles.statValue, styles.statValuePurple)}>{referrerCount}</span>
+            <span className={cx(styles.statValue, styles.statValuePurple)}>
+              {referrerCount}
+            </span>
             <span className={styles.statLabel}>Active Referrers</span>
           </div>
           <div className={styles.statCard}>
-            <span className={cx(styles.statValue, styles.statValueTeal)}>&lt;24h</span>
+            <span className={cx(styles.statValue, styles.statValueTeal)}>
+              &lt;24h
+            </span>
             <span className={styles.statLabel}>Latest Referral</span>
           </div>
         </div>
@@ -1174,15 +1382,19 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by role, company, or target tech stack..."
+            placeholder="Search by role, company, or tech stack..."
             className={styles.controlsSearchInput}
           />
         </div>
         <div className={styles.sortWrap}>
-          <select value={sort} onChange={(e) => setSort(e.target.value)} className={styles.sortSelect}>
-            <option value="recent">Sort: Most Recent</option>
-            <option value="likes">Sort: Most Popular</option>
-            <option value="deadline">Sort: Application Deadline</option>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className={styles.sortSelect}
+          >
+            <option value="recent">Most Recent</option>
+            <option value="likes">Most Popular</option>
+            <option value="deadline">Application Deadline</option>
           </select>
           <Icon name="unfold_more" className={styles.sortIcon} />
         </div>
@@ -1193,7 +1405,10 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={cx(styles.filterBtn, filter === f.value && styles.filterBtnActive)}
+            className={cx(
+              styles.filterBtn,
+              filter === f.value && styles.filterBtnActive,
+            )}
           >
             {f.label}
           </button>
@@ -1216,8 +1431,8 @@ function EmptyState({ onReset }) {
       </div>
       <h3 className={styles.emptyTitle}>No alumni postings found</h3>
       <p className={styles.emptyText}>
-        Try adjusting your filters, clearing your search query, or checking back soon as new cohorts share
-        vacancies.
+        Try adjusting your filters, clearing your search query, or checking back
+        soon as new cohorts share vacancies.
       </p>
       <button onClick={onReset} className={styles.emptyResetBtn}>
         Reset All Filters
@@ -1237,15 +1452,21 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
 
   const visibleJobs = useMemo(() => {
     let list = jobs.filter((job) => {
-      const matchesFilter = filter === "all" || jobTypeTags(job).includes(filter);
+      const matchesFilter =
+        filter === "all" || jobTypeTags(job).includes(filter);
       const q = search.toLowerCase().trim();
       const matchesSearch =
-        !q || job.company.toLowerCase().includes(q) || job.role.toLowerCase().includes(q);
+        !q ||
+        job.company.toLowerCase().includes(q) ||
+        job.role.toLowerCase().includes(q);
       return matchesFilter && matchesSearch;
     });
 
     if (sort === "likes") list = [...list].sort((a, b) => b.likes - a.likes);
-    if (sort === "deadline") list = [...list].sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
+    if (sort === "deadline")
+      list = [...list].sort((a, b) =>
+        (a.deadline || "").localeCompare(b.deadline || ""),
+      );
 
     return list;
   }, [jobs, search, sort, filter]);
@@ -1258,20 +1479,32 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
   return (
     <div className={styles.page}>
       <FontStyles />
-      <TopHeader />
+      {/* <TopHeader /> */}
 
       <main className={styles.main}>
         <div className={styles.container}>
           <StatsBanner jobCount={jobs.length} />
 
-          <Controls search={search} setSearch={setSearch} sort={sort} setSort={setSort} filter={filter} setFilter={setFilter} />
+          <Controls
+            search={search}
+            setSearch={setSearch}
+            sort={sort}
+            setSort={setSort}
+            filter={filter}
+            setFilter={setFilter}
+          />
 
           {visibleJobs.length === 0 ? (
             <EmptyState onReset={resetFilters} />
           ) : (
             <div className={styles.jobList}>
               {visibleJobs.map((job) => (
-                <JobCard key={job.id} job={job} onReport={onReport} showToast={showToast} />
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onReport={onReport}
+                  showToast={showToast}
+                />
               ))}
             </div>
           )}
@@ -1285,16 +1518,25 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
               <Icon name="school" className={styles.footerLogoIcon} />
             </div>
             <span className={styles.footerLogoTitle}>Alumni Connect</span>
-            <span className={styles.footerLogoSub}>· Distinguished Career Network</span>
+            <span className={styles.footerLogoSub}>
+              · Distinguished Career Network
+            </span>
           </div>
           <div className={styles.footerLinks}>
-            {["Honor Code", "Network Directory", "Privacy Policy", "Support"].map((l) => (
+            {[
+              "Honor Code",
+              "Network Directory",
+              "Privacy Policy",
+              "Support",
+            ].map((l) => (
               <a key={l} href="#" className={styles.footerLink}>
                 {l}
               </a>
             ))}
           </div>
-          <div className={styles.footerCopyright}>© 2026 Alumni Association. All rights reserved.</div>
+          <div className={styles.footerCopyright}>
+            © 2026 Alumni Association. All rights reserved.
+          </div>
         </div>
       </footer>
 
