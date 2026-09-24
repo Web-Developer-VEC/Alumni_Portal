@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import alumniprofile from "../../models/alumniprofile.js";
+import User from "../../models/User.js";
 
 
 
@@ -23,9 +24,9 @@ export const completeProfile = async (req: Request, res: Response): Promise<void
       res.status(400).json({ message: "Full Name and Mobile Number are required." });
       return;
     }
-
+    const Users= await User.findOne({email})
     const user = await alumniprofile.findOne({ email });
-    if (!user) {
+    if (!Users) {
       res.status(404).json({ message: "User not found" });
       return;
     }

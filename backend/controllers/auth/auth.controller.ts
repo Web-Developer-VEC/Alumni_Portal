@@ -90,25 +90,18 @@ export const setPassword = async (req: Request, res: Response): Promise<void> =>
   try {
     const { email, otp, password } = req.body;
 
-    if (!email || !otp || !password) {
-      res.status(400).json({ message: "Email, OTP, and password are required" });
+    if (!email ||!password) {
+      res.status(400).json({ message: "Email and password are required" });
       return;
     }
 
     // Verify OTP again for security before setting password
-    const otpRecord = await Otp.findOne({ email, otp });
+    
 
-    if (!otpRecord) {
-      res.status(400).json({ message: "Invalid or expired OTP" });
-      return;
-    }
+  
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(400).json({ message: "User already exists with this email" });
-      return;
-    }
+    
+    
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
