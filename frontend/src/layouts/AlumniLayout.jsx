@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 
-const AdminLayout = () => {
+const AlumniLayout = () => {
     return (
         <div>
             <main>
@@ -10,4 +10,4 @@ const AdminLayout = () => {
     );
 };
 
-export default AdminLayout;
+export default AlumniLayout;
