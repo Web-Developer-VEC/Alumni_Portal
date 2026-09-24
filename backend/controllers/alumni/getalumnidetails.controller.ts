@@ -14,7 +14,6 @@ export const getAllAlumniDetails = async (req: Request, res: Response): Promise<
       message: "Alumni details fetched successfully",
       count: alumniList.length,
       data: alumniList,
-      alumni: alumniList,
     });
   } catch (error) {
     console.error("getAllAlumniDetails Error:", error);
@@ -62,7 +61,6 @@ export const getAlumniById = async (req: Request, res: Response): Promise<void> 
       success: true,
       message: "Alumni details fetched successfully",
       data: alumni,
-      alumni,
     });
   } catch (error) {
     console.error("getAlumniById Error:", error);
