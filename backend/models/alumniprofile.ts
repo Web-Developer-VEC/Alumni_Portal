@@ -4,6 +4,7 @@ const alumniSchema = new mongoose.Schema(
   {
 
     // Section 1: Basic Info
+    email: { type: String },
     fullName: { type: String },
     dateOfBirth: { type: String },
     gender: { type: String },
