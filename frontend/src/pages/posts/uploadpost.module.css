@@ -1,0 +1,280 @@
+/* =========================================================================
+   uploadpost.module.css — "Create a Post" redesign
+   Flat maroon header (name only, no wave graphic), numbered sections,
+   icon-prefixed fields, checkbox highlights, sticky footer actions.
+   ========================================================================= */
+
+.page {
+    min-height: 100vh;
+    background: #eef1f5;
+    padding: 28px 20px 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1f2430;
+}
+.page * { box-sizing: border-box; }
+
+.wrap { max-width: 860px; margin: 0 auto; }
+
+/* ---------------- Top bar ---------------- */
+.topBar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.backLink {
+    display: flex; align-items: center; gap: 6px; border: none; background: transparent;
+    color: #4b5563; font-size: 14.5px; font-weight: 600; cursor: pointer; padding: 6px 4px;
+    transition: color .15s ease;
+}
+.backLink:hover { color: #800000; }
+.draftBadge {
+    display: flex; align-items: center; gap: 6px; background: #e9f9ef; color: #16803c;
+    border: 1px solid #bdeccb; border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 700;
+}
+
+/* ---------------- Card ---------------- */
+.card { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 34px rgba(17,24,39,0.08); }
+
+/* ---------------- Header (flat maroon, name only) ---------------- */
+.cardHeader { background: #800000; padding: 26px 30px; display: flex; align-items: center; gap: 16px; }
+.headerIconBox {
+    height: 46px; width: 46px; border-radius: 12px; background: #ffffff;
+    display: flex; align-items: center; justify-content: center; color: #800000; flex-shrink: 0;
+}
+.headerTitle { font-size: 24px; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.01em; }
+.headerSubtitle { font-size: 13.5px; color: rgba(255,255,255,0.82); margin: 4px 0 0; }
+
+/* ---------------- Section ---------------- */
+.sectionHead {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: #fdf4f4; padding: 18px 30px; border-top: 1px solid #f3e3e3; border-bottom: 1px solid #f3e3e3;
+}
+.sectionNumber {
+    height: 30px; width: 30px; border-radius: 50%; background: rgba(128,0,0,0.10); color: #800000;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; margin-top: 2px;
+}
+.sectionTitle { font-size: 16.5px; font-weight: 800; color: #1f2430; margin: 0; }
+.sectionDesc { font-size: 12.5px; color: #8a8f98; margin: 2px 0 0; }
+.sectionBody { padding: 24px 30px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ---------------- Grids ---------------- */
+.grid2, .grid3 { display: flex; flex-direction: column; gap: 20px; }
+@media (min-width: 680px) {
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+}
+
+/* ---------------- Fields ---------------- */
+.field { display: flex; flex-direction: column; gap: 7px; }
+.label { font-size: 13px; font-weight: 700; color: #1f2430; }
+.required { color: #d13438; margin-left: 2px; }
+.errorText { font-size: 12px; color: #d13438; font-weight: 600; }
+
+.inputWrap { position: relative; display: flex; align-items: center; }
+.inputIcon { position: absolute; left: 12px; color: #9aa0aa; pointer-events: none; display: flex; }
+.input, .select {
+    width: 100%; padding: 10px 12px 10px 38px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    background: #fff; font-size: 14px; color: #1f2430; font-family: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.select { padding-right: 34px; cursor: pointer; appearance: none; -webkit-appearance: none; }
+.selectChevron { position: absolute; right: 12px; color: #9aa0aa; pointer-events: none; display: flex; }
+.input::placeholder { color: #a7acb5; }
+.input:focus, .select:focus { outline: none; border-color: #800000; box-shadow: 0 0 0 3px rgba(128,0,0,0.10); }
+.counterRow { display: flex; justify-content: flex-end; }
+.counter { font-size: 11.5px; color: #9aa0aa; }
+
+.rangeRow { display: flex; align-items: center; gap: 8px; }
+.rangeInputWrap { position: relative; display: flex; align-items: center; flex: 1; }
+.rangeDash { color: #9aa0aa; font-weight: 600; }
+
+/* ---------------- Editor (title/content toolbar) ---------------- */
+.editorBox { border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; }
+.editorBox:focus-within { border-color: #800000; box-shadow: 0 0 0 3px rgba(128,0,0,0.10); }
+.toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 10px; background: #f7f8fa; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; }
+.toolbarBtn {
+    height: 30px; width: 30px; border: none; background: transparent; border-radius: 6px; color: #4b5563;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.toolbarBtn:hover { background: #ebedf0; color: #800000; }
+.toolbarDivider { width: 1px; height: 20px; background: #e0e2e6; margin: 0 4px; }
+.editorTextarea {
+    width: 100%; border: none; outline: none; resize: vertical; min-height: 130px;
+    padding: 14px 16px; font-size: 14px; color: #1f2430; font-family: inherit; line-height: 1.55;
+}
+.editorTextarea::placeholder { color: #a7acb5; }
+.editorCounter { display: flex; justify-content: flex-end; padding: 0 14px 10px; }
+
+/* ---------------- Checkboxes ---------------- */
+.checkboxRow { display: flex; flex-wrap: wrap; gap: 26px; }
+.checkboxItem { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+.checkboxBox {
+    height: 19px; width: 19px; border-radius: 5px; border: 1.5px solid #cfd3d9; background: #fff;
+    display: flex; align-items: center; justify-content: center; color: #fff; transition: background .15s ease, border-color .15s ease; flex-shrink: 0;
+}
+.checkboxBoxChecked { background: #800000; border-color: #800000; }
+.checkboxLabel { font-size: 14px; font-weight: 600; color: #1f2430; }
+
+/* ---------------- Date/time trigger ---------------- */
+.datetimeDisplay {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 38px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px; background: #fff; cursor: pointer; position: relative;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.datetimeDisplay:hover { border-color: #d8b9b9; }
+.datetimeDisplay .inputIcon { left: 12px; }
+.datetimeValue { font-size: 13.5px; color: #1f2430; }
+.datetimePlaceholder { font-size: 13.5px; color: #a7acb5; }
+
+/* ---------------- Attachments ---------------- */
+.uploadBox {
+    border: 1.5px dashed #d5d9df; border-radius: 12px; padding: 26px 16px; text-align: center;
+    background: #fafbfc; cursor: pointer; transition: border-color .15s ease, background .15s ease;
+}
+.uploadBox:hover { border-color: #800000; background: #fdf6f6; }
+.uploadIcon { color: #9aa0aa; margin-bottom: 8px; }
+.uploadText { font-size: 13.5px; font-weight: 700; color: #1f2430; margin: 0; }
+.uploadHint { font-size: 11.5px; color: #9aa0aa; margin: 4px 0 0; }
+.fileInput { display: none; }
+
+.attachmentGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 14px; }
+.attachmentItem { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; background: #fafbfc; }
+.attachmentThumb { width: 100%; height: 80px; object-fit: cover; display: block; }
+.attachmentFileIcon { width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; color: #800000; background: #f3e6e6; }
+.attachmentName { font-size: 10px; padding: 5px 6px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attachmentRemove {
+    position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: none;
+    background: #800000; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+
+/* ---------------- Footer ---------------- */
+.footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 22px 30px 26px; border-top: 1px solid #eef0f2; }
+.cancelBtn {
+    border: 1.5px solid #dfe2e6; background: #fff; color: #4b5563; border-radius: 10px;
+    padding: 11px 22px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background .15s ease;
+}
+.cancelBtn:hover { background: #f3f4f6; }
+.submitBtn {
+    display: flex; align-items: center; gap: 8px; border: none; background: #800000; color: #fff;
+    border-radius: 10px; padding: 11px 24px; font-size: 13.5px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 6px 16px rgba(128,0,0,0.28); transition: background .15s ease, transform .15s ease;
+}
+.submitBtn:hover:not(:disabled) { background: #5a0000; transform: translateY(-1px); }
+.submitBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---------------- Toast ---------------- */
+@keyframes upToastIn { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 60; display: flex; align-items: center; gap: 12px;
+    border-radius: 10px; background: #1f2430; padding: 13px 18px; color: #fff;
+    border-left: 4px solid #16803c; box-shadow: 0 10px 26px rgba(0,0,0,0.25); animation: upToastIn .22s ease-out; font-size: 14px;
+}
+
+/* =========================================================================
+   DATE + TIME PICKER (ported from Outpass.css — maroon #800000 / gold #fdcd03)
+   ========================================================================= */
+.pickerBackdrop {
+    position: fixed; inset: 0; background: rgba(40,24,16,0.32); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem;
+    animation: upBackdropFade .2s ease-out both;
+}
+@keyframes upBackdropFade { from { opacity: 0; } to { opacity: 1; } }
+
+.datetimePicker {
+    width: 560px; max-width: 100%; min-height: 380px; display: flex;
+    background: #fff; border-radius: 1rem; overflow: hidden; position: relative;
+    box-shadow: 0 20px 48px rgba(80,30,15,0.20);
+    animation: upPickerPop .22s cubic-bezier(.2,.8,.2,1) both;
+}
+.datetimePicker::before {
+    content: ""; position: absolute; top: 0; left: 0; height: 5px; width: 100%;
+    background: linear-gradient(90deg, #800000, #fdcd03, #800000);
+    background-size: 200% 100%; animation: upGradientMove 4s linear infinite; z-index: 2;
+}
+@keyframes upGradientMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+@keyframes upPickerPop { from { opacity: 0; transform: scale(0.94) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.pickerLeft {
+    width: 34%; color: #fff; padding: 1.8rem 1.4rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(circle at 25% 15%, rgba(255,255,255,0.10), transparent 55%), linear-gradient(160deg, #9c2020 0%, #7a0808 100%);
+}
+.pickerWeekday { font-size: 0.95rem; font-weight: 600; opacity: 0.9; margin-bottom: 1.1rem; }
+.pickerMonth { font-size: 1.05rem; font-weight: 600; color: #fdcd03; margin-bottom: 0.1rem; }
+.pickerDay { font-size: 3.6rem; line-height: 1; font-weight: 300; }
+.pickerYear { font-size: 0.95rem; margin-top: 0.4rem; opacity: 0.85; }
+.pickerLeftTime {
+    margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.25);
+    display: flex; flex-direction: column; align-items: center; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85;
+}
+.pickerLeftTime strong { font-size: 1.15rem; margin-top: 0.3rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: #fff; }
+
+.pickerRight { width: 66%; padding: 1.6rem; background: #fff; display: flex; flex-direction: column; }
+
+.calendarHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; }
+.calendarHeader span { font-size: 1rem; font-weight: 700; color: #800000; letter-spacing: 0.02em; }
+.calendarHeader button {
+    width: 32px; height: 32px; border: none; background: transparent; color: #800000; cursor: pointer;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .2s ease;
+}
+.calendarHeader button:hover { background: rgba(253,205,3,0.18); }
+
+.calendarWeekdays {
+    display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 0.5rem;
+    color: #9ca3af; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+}
+.calendarDays { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+.calendarDay {
+    width: 34px; height: 34px; margin: auto; border: none; border-radius: 50%; background: transparent;
+    color: #1f2937; cursor: pointer; font-size: 0.82rem; transition: background .2s ease, color .2s ease, transform .15s ease;
+}
+.calendarDay:hover { background: rgba(253,205,3,0.2); color: #800000; transform: scale(1.08); }
+.calendarDay:disabled { color: #d1d5db; cursor: not-allowed; }
+.calendarDay:disabled:hover { background: transparent; transform: none; }
+.calendarToday { border: 1.5px solid #800000; color: #800000; font-weight: 700; }
+.calendarSelected { background: #800000 !important; color: #fff !important; font-weight: 700; }
+
+.clockContainer { flex: 1; display: flex; flex-direction: column; }
+.timeTitle { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; font-weight: 700; margin-bottom: 1rem; }
+.timeDisplay { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 0.6rem; }
+.timeDisplay > button {
+    border: none; background: #f4f5f7; color: #1f2937; font-size: 1.9rem; font-weight: 600;
+    padding: 4px 10px; border-radius: 8px; cursor: pointer; transition: background .2s ease, color .2s ease;
+}
+.timeActive { background: #800000 !important; color: #fff !important; }
+.timeColon { font-size: 1.7rem; color: #1f2937; font-weight: 600; }
+
+.period { display: flex; flex-direction: column; margin-left: 8px; gap: 3px; }
+.period button {
+    border: 1px solid rgba(17,24,39,0.15); background: #fff; padding: 4px 10px; font-size: 0.7rem;
+    font-weight: 700; cursor: pointer; border-radius: 5px; color: #6b7280;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.periodActive { background: #800000 !important; color: #fff !important; border-color: #800000 !important; }
+
+.clock { width: 195px; height: 195px; background: #faf7f2; border-radius: 50%; margin: 6px auto 12px; position: relative; border: 1px solid rgba(253,205,3,0.3); }
+.clockNumber {
+    position: absolute; transform: translate(-50%,-50%); width: 30px; height: 30px; border-radius: 50%;
+    border: none; background: transparent; color: #1f2937; cursor: pointer; font-size: 0.82rem; font-weight: 600;
+    z-index: 2; transition: background .2s ease, color .2s ease;
+}
+.clockNumber:hover { background: rgba(253,205,3,0.28); color: #800000; }
+.clockSelected { background: #800000 !important; color: #fff !important; }
+.clockCenter { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #800000; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 3; }
+
+.timeActionsRow { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 0.8rem; }
+.timeActionsRight { display: flex; gap: 1.4rem; }
+.timeActionsRow button {
+    border: none; background: transparent; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; cursor: pointer; color: #6b7280; transition: color .2s ease;
+}
+.timeBack:hover { color: #800000 !important; }
+.timeActionsRight button:hover { color: #800000; }
+.timeOk { color: #800000 !important; }
+.timeOk:hover { color: #5a0000 !important; }
+
+@media (max-width: 640px) {
+    .datetimePicker { flex-direction: column; width: 100%; min-height: 0; }
+    .pickerLeft { width: 100%; flex-direction: row; align-items: center; gap: 1rem; padding: 1.2rem 1.4rem; }
+    .pickerDay { font-size: 2.4rem; }
+    .pickerLeftTime { margin-top: 0; padding-top: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.25); padding-left: 1rem; margin-left: auto; }
+    .pickerRight { width: 100%; padding: 1.2rem; }
+    .clock { width: 175px; height: 175px; }
+}
