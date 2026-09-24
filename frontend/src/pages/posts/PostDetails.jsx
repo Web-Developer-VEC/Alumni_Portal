@@ -1,19 +1,18 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
+import styles from "./post.module.css";
 
 /* -------------------------------------------------------------------------- */
 /*  Self-contained: no index.html edits needed.                              */
 /*  - Icons are inline SVG (no icon font to fail to load).                   */
-/*  - Fonts (Plus Jakarta Sans / Inter) are pulled in via the <FontStyles/>  */
-/*    block below and fall back to your system sans-serif if the network    */
-/*    request is ever blocked, so it never reverts to a serif font.         */
+/*  - Fonts (Plus Jakarta Sans / Inter) are pulled in via post.module.css,   */
+/*    which falls back to your system sans-serif if the network request is  */
+/*    ever blocked, so it never reverts to a serif font.                    */
 /* -------------------------------------------------------------------------- */
 function FontStyles() {
   return (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap');
-      .font-head { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif; }
-      .font-body { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif; }
     `}</style>
   );
 }
@@ -160,7 +159,7 @@ const FILTERS = [
 /* -------------------------------------------------------------------------- */
 /*  Icons — plain inline SVG, no external font/network dependency             */
 /* -------------------------------------------------------------------------- */
-function Icon({ name, className = "h-5 w-5", filled = false }) {
+function Icon({ name, className = "", filled = false }) {
   const base = {
     viewBox: "0 0 24 24",
     className,
@@ -348,6 +347,8 @@ function Icon({ name, className = "h-5 w-5", filled = false }) {
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                   */
 /* -------------------------------------------------------------------------- */
+const cx = (...parts) => parts.filter(Boolean).join(" ");
+
 const formatCount = (n) =>
   n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "")}k` : `${n}`;
 
@@ -398,13 +399,9 @@ function useToast() {
   };
 
   const Toast = () => (
-    <div
-      className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 rounded-xl bg-[#283044] px-5 py-3.5 text-[#eef0ff] shadow-2xl transition-all duration-300 pointer-events-none ${
-        toast.show ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0"
-      }`}
-    >
-      <Icon name="check_circle" className="h-5 w-5 text-[#7bd8b1]" />
-      <span className="font-body text-[15px]">{toast.message}</span>
+    <div className={cx(styles.toast, toast.show && styles.toastVisible)}>
+      <Icon name="check_circle" className={styles.toastIcon} />
+      <span className={styles.toastText}>{toast.message}</span>
     </div>
   );
 
@@ -431,56 +428,45 @@ function ReportModal({ onClose, onSubmit }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#131b2e]/40 backdrop-blur-sm p-4"
+      className={styles.reportOverlay}
       onClick={close}
       role="dialog"
       aria-modal="true"
       aria-label="Report opportunity"
     >
       <div
-        className={`w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl transition-all duration-200 ${
-          visible ? "scale-100 opacity-100" : "scale-95 opacity-0"
-        }`}
+        className={cx(styles.reportModal, visible && styles.reportModalVisible)}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ffdad6] text-[#93000a]">
-              <Icon name="flag" className="h-5 w-5" />
+        <div className={styles.reportHeader}>
+          <div className={styles.reportHeaderLeft}>
+            <div className={styles.reportIconWrap}>
+              <Icon name="flag" className={styles.icon20} />
             </div>
             <div>
-              <h3 className="font-head text-[18px] font-semibold leading-tight text-[#131b2e]">
-                Report Opportunity
-              </h3>
-              <p className="font-body text-[13px] text-[#3e4943]">
+              <h3 className={styles.reportTitle}>Report Opportunity</h3>
+              <p className={styles.reportSubtitle}>
                 Flag inappropriate, expired, or fraudulent postings
               </p>
             </div>
           </div>
-          <button
-            onClick={close}
-            aria-label="Close"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-[#3e4943] transition-colors hover:bg-[#eaedff]"
-          >
-            <Icon name="close" className="h-5 w-5" />
+          <button onClick={close} aria-label="Close" className={styles.reportCloseBtn}>
+            <Icon name="close" className={styles.icon20} />
           </button>
         </div>
 
-          <div className="space-y-3 py-4">
+        <div className={styles.reportReasons}>
           {REPORT_REASONS.map((r) => (
-            <label
-              key={r}
-              className="flex cursor-pointer items-center gap-3 rounded-xl bg-[#faf8ff] p-3.5 transition-colors hover:bg-[#f2f3ff]"
-            >
+            <label key={r} className={styles.reportReasonLabel}>
               <input
                 type="radio"
                 name="report-reason"
                 value={r}
                 checked={reason === r}
                 onChange={() => setReason(r)}
-                className="h-4 w-4 accent-[#005d42]"
+                className={styles.reportRadio}
               />
-              <span className="font-head text-[13px] font-semibold text-[#131b2e]">{r}</span>
+              <span className={styles.reportReasonText}>{r}</span>
             </label>
           ))}
 
@@ -491,22 +477,19 @@ function ReportModal({ onClose, onSubmit }) {
               rows={2}
               placeholder="Tell us more about the issue..."
               autoFocus
-              className="w-full resize-none rounded-xl bg-[#faf8ff] px-3.5 py-2.5 font-body text-[13px] text-[#131b2e] outline-none placeholder:text-[#6e7a73] focus:ring-1 focus:ring-[#047857]"
+              className={styles.reportTextarea}
             />
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4">
-          <button
-            onClick={close}
-            className="rounded-xl px-5 py-2.5 font-head text-[13px] font-semibold text-[#3e4943] transition-colors hover:bg-[#eaedff]"
-          >
+        <div className={styles.reportFooter}>
+          <button onClick={close} className={styles.reportCancelBtn}>
             Cancel
           </button>
-            <button
+          <button
             disabled={reason === "Other" && !otherNote.trim()}
             onClick={() => onSubmit(reason === "Other" ? { reason, note: otherNote } : { reason })}
-            className="rounded-xl bg-[#ba1a1a] px-6 py-2.5 font-head text-[13px] font-semibold text-white shadow-sm transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
+            className={styles.reportSubmitBtn}
           >
             Submit Report
           </button>
@@ -627,16 +610,14 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-[#131b2e]/40 backdrop-blur-sm sm:items-center"
+      className={styles.shareOverlay}
       onClick={close}
       role="dialog"
       aria-modal="true"
       aria-label="Share opportunity"
     >
       <div
-        className={`flex w-full max-w-md flex-col rounded-t-3xl bg-white shadow-2xl transition-all duration-200 sm:mx-4 sm:rounded-3xl ${
-          visible ? "translate-y-0 opacity-100 sm:scale-100" : "translate-y-6 opacity-0 sm:scale-95"
-        }`}
+        className={cx(styles.shareSheet, visible && styles.shareSheetVisible)}
         style={{
           maxHeight: "min(85dvh, 640px)",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
@@ -644,83 +625,65 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle — mobile-only affordance that this is a sheet, not a dialog */}
-        <div className="flex justify-center pb-1 pt-2.5 sm:hidden">
-          <span className="h-1 w-10 rounded-full bg-[#e2e7ff]" />
+        <div className={styles.shareDragHandle}>
+          <span className={styles.shareDragHandleBar} />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#e2e7ff] px-4 py-3 sm:px-5 sm:py-4">
-          <div className="min-w-0">
-            <h3 className="font-head text-[16px] font-semibold text-[#131b2e]">Share</h3>
-            <p className="font-body text-[12px] text-[#6e7a73] truncate max-w-[60vw] sm:max-w-[260px]">
+        <div className={styles.shareHeader}>
+          <div className={styles.shareHeaderInfo}>
+            <h3 className={styles.shareTitle}>Share</h3>
+            <p className={styles.shareSubtitle}>
               {job.role} · {job.company}
             </p>
           </div>
-          <button
-            onClick={close}
-            aria-label="Close"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#3e4943] transition-colors hover:bg-[#eaedff] active:bg-[#eaedff]"
-          >
-            <Icon name="close" className="h-5 w-5" />
+          <button onClick={close} aria-label="Close" className={styles.shareCloseBtn}>
+            <Icon name="close" className={styles.icon20} />
           </button>
         </div>
 
         {/* Search */}
-        <div className="px-4 pt-3 sm:px-5 sm:pt-4">
-          <div className="flex items-center gap-2 rounded-xl bg-[#f2f3ff] px-3.5 py-3 sm:py-2.5">
-            <Icon name="search" className="h-[18px] w-[18px] shrink-0 text-[#6e7a73]" />
+        <div className={styles.shareSearchWrap}>
+          <div className={styles.shareSearchBox}>
+            <Icon name="search" className={styles.shareSearchIcon} />
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people..."
-              className="w-full min-w-0 bg-transparent font-body text-[13px] text-[#131b2e] outline-none placeholder:text-[#6e7a73]"
+              className={styles.shareSearchInput}
             />
           </div>
         </div>
 
         {/* Contacts — fluid auto-fill grid, so it self-adjusts to any screen
             width instead of jumping between fixed 3/4-column breakpoints. */}
-        <div
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3.5 sm:px-5 sm:py-4"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          {!query && (
-            <p className="mb-3 font-head text-[11px] font-bold uppercase tracking-wider text-[#6e7a73]">
-              Recent
-            </p>
-          )}
+        <div className={styles.shareContactsWrap}>
+          {!query && <p className={styles.shareRecentLabel}>Recent</p>}
           {filtered.length === 0 ? (
-            <p className="py-6 text-center font-body text-[13px] text-[#6e7a73]">No one found.</p>
+            <p className={styles.shareEmptyText}>No one found.</p>
           ) : (
-            <div
-              className="grid justify-items-center gap-y-5 gap-x-1"
-              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(68px, 1fr))" }}
-            >
+            <div className={styles.shareGrid}>
               {filtered.map((c) => {
                 const selected = selectedIds.includes(c.id);
                 return (
-                  <button
-                    key={c.id}
-                    onClick={() => toggleSelect(c)}
-                    className="flex w-full flex-col items-center gap-1.5 rounded-xl py-1 text-center"
-                  >
+                  <button key={c.id} onClick={() => toggleSelect(c)} className={styles.shareContactBtn}>
                     <div
-                      className={`relative flex h-14 w-14 items-center justify-center rounded-full font-head text-[14px] font-semibold text-white ring-offset-2 transition-all ${
-                        c.isGroup ? "bg-[#4e45d5]" : "bg-[#005d42]"
-                      } ${selected ? "ring-2 ring-[#800000]" : ""}`}
+                      className={cx(
+                        styles.shareAvatar,
+                        c.isGroup && styles.shareAvatarGroup,
+                        selected && styles.shareAvatarSelected
+                      )}
                     >
-                      {c.isGroup ? <Icon name="forum" className="h-6 w-6" /> : initials(c.name)}
+                      {c.isGroup ? <Icon name="forum" className={styles.icon24} /> : initials(c.name)}
                       {selected && (
-                        <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#800000] text-white ring-2 ring-white">
-                          <Icon name="verified" className="h-3 w-3" />
+                        <span className={styles.shareSelectedBadge}>
+                          <Icon name="verified" className={styles.icon12} />
                         </span>
                       )}
                     </div>
-                    <span className="line-clamp-1 w-full font-body text-[11px] font-medium text-[#131b2e]">
-                      {c.name.split(" ")[0]}
-                    </span>
-                    <span className="font-body text-[10px] text-[#6e7a73]">
+                    <span className={styles.shareContactName}>{c.name.split(" ")[0]}</span>
+                    <span className={styles.shareContactMeta}>
                       {selected ? "Selected" : timeAgo(c.lastMessageAt)}
                     </span>
                   </button>
@@ -731,20 +694,17 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center gap-2.5 border-t border-[#e2e7ff] px-4 py-3 sm:gap-3 sm:px-5 sm:py-4">
+        <div className={styles.shareFooter}>
           <button
             onClick={handleShareSelected}
             disabled={selectedIds.length === 0}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#f2f3ff] px-3 py-3 font-head text-[12px] font-semibold text-[#131b2e] transition-colors hover:bg-[#eaedff] disabled:opacity-40 disabled:hover:bg-[#f2f3ff] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[13px]"
+            className={styles.shareBtn}
           >
-            <Icon name="share" className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" />
+            <Icon name="share" className={styles.icon16} />
             {selectedIds.length > 0 ? `Share (${selectedIds.length})` : "Share"}
           </button>
-          <button
-            onClick={openMore}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#FDCC03] px-3 py-3 font-head text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-[#800000] hover:text-white sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[13px]"
-          >
-            <Icon name="more_vert" className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" /> More
+          <button onClick={openMore} className={styles.moreBtn}>
+            <Icon name="more_vert" className={styles.icon16} /> More
           </button>
         </div>
       </div>
@@ -759,13 +719,11 @@ function ShareModal({ job, conversations = MOCK_CONVERSATIONS, onClose, onSend, 
 function MetaPill({ icon, label, value }) {
   if (!value) return null;
   return (
-    <div className="flex items-center gap-2.5 rounded-xl bg-[#f2f3ff] p-3">
-      <Icon name={icon} className="h-5 w-5 shrink-0 text-[#6e7a73]" />
-      <div className="flex min-w-0 flex-col">
-        <span className="font-body text-[11px] text-[#3e4943]">{label}</span>
-        <span className="truncate font-head text-[13px] font-semibold text-[#131b2e]">
-          {value}
-        </span>
+    <div className={styles.metaPill}>
+      <Icon name={icon} className={styles.metaPillIcon} />
+      <div className={styles.metaPillTextWrap}>
+        <span className={styles.metaPillLabel}>{label}</span>
+        <span className={styles.metaPillValue}>{value}</span>
       </div>
     </div>
   );
@@ -838,75 +796,48 @@ function JobCard({ job, onReport, showToast }) {
   };
 
   return (
-    <article
-      ref={cardRef}
-      id={`job-${job.id}`}
-      className="job-card flex flex-col rounded-3xl bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6 lg:p-8"
-    >
+    <article ref={cardRef} id={`job-${job.id}`} className={styles.jobCard}>
       {/* ---------- Alumni header ---------- */}
-      <div className="flex items-start justify-between gap-4 pb-5">
-        <div className="flex items-center gap-3.5">
-          <div className="relative">
+      <div className={styles.cardHeader}>
+        <div className={styles.cardHeaderLeft}>
+          <div className={styles.avatarWrap}>
             {job.alumni.avatar ? (
-              <img
-                src={job.alumni.avatar}
-                alt={job.alumni.name}
-                className="h-12 w-12 shrink-0 rounded-2xl object-cover"
-              />
+              <img src={job.alumni.avatar} alt={job.alumni.name} className={styles.avatarImg} />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#e2e7ff] font-head text-[18px] font-semibold text-[#005d42]">
-                {initials(job.alumni.name)}
-              </div>
+              <div className={styles.avatarFallback}>{initials(job.alumni.name)}</div>
             )}
             {job.alumni.verified && (
-              <span
-                className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#047857] text-white shadow-sm"
-                title="Verified Alumni"
-              >
-                <Icon name="verified" className="h-3 w-3" />
+              <span className={styles.verifiedBadge} title="Verified Alumni">
+                <Icon name="verified" className={styles.icon12} />
               </span>
             )}
           </div>
-          <div className="flex flex-col">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-head text-[16px] font-semibold leading-tight text-[#131b2e]">
-                {job.alumni.name}
-              </span>
-              <span className="rounded-full bg-[#e3dfff] px-2 py-0.5 font-head text-[10px] font-bold uppercase tracking-wider text-[#372abf]">
-                {job.alumni.batch}
-              </span>
-              <span className="font-body text-[13px] text-[#6e7a73]">· {job.postedAgo}</span>
+          <div className={styles.alumniInfo}>
+            <div className={styles.alumniNameRow}>
+              <span className={styles.alumniName}>{job.alumni.name}</span>
+              <span className={styles.batchTag}>{job.alumni.batch}</span>
+              <span className={styles.postedAgo}>· {job.postedAgo}</span>
             </div>
-            <span className="font-body text-[13px] text-[#3e4943]">
+            <span className={styles.designationText}>
               {job.alumni.designation} at {job.company}
             </span>
           </div>
         </div>
 
         {/* Context menu */}
-        <div className="relative" ref={menuRef}>
-          <button
-            aria-label="Card options"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#3e4943] transition-colors hover:bg-[#eaedff] hover:text-[#131b2e]"
-          >
-            <Icon name="more_vert" className="h-5 w-5" />
+        <div className={styles.menuWrap} ref={menuRef}>
+          <button aria-label="Card options" onClick={() => setMenuOpen((v) => !v)} className={styles.menuBtn}>
+            <Icon name="more_vert" className={styles.icon20} />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-10 z-30 w-48 rounded-xl bg-white py-1.5 shadow-xl">
-              <button
-                onClick={copyLink}
-                className="flex w-full items-center gap-2.5 px-4 py-2 text-left font-head text-[13px] font-semibold text-[#131b2e] hover:bg-[#f2f3ff]"
-              >
-                <Icon name="link" className="h-[18px] w-[18px]" /> Copy Link
+            <div className={styles.menuDropdown}>
+              <button onClick={copyLink} className={styles.menuItem}>
+                <Icon name="link" className={styles.icon18} /> Copy Link
               </button>
-              <button
-                onClick={toggleBookmark}
-                className="flex w-full items-center gap-2.5 px-4 py-2 text-left font-head text-[13px] font-semibold text-[#131b2e] hover:bg-[#f2f3ff]"
-              >
+              <button onClick={toggleBookmark} className={styles.menuItem}>
                 <Icon
                   name="bookmark"
-                  className={`h-[18px] w-[18px] ${saved ? "text-[#800000]" : ""}`}
+                  className={cx("h-[18px] w-[18px]", saved && styles.bookmarkActive)}
                   filled={saved}
                 />{" "}
                 Bookmark
@@ -916,9 +847,9 @@ function JobCard({ job, onReport, showToast }) {
                   setMenuOpen(false);
                   setReportOpen(true);
                 }}
-                className="flex w-full items-center gap-2.5 px-4 py-2 text-left font-head text-[13px] font-semibold text-[#ba1a1a] hover:bg-[#ffdad6]/20"
+                className={cx(styles.menuItem, styles.menuItemDanger)}
               >
-                <Icon name="flag" className="h-[18px] w-[18px]" /> Report Post
+                <Icon name="flag" className={styles.icon18} /> Report Post
               </button>
             </div>
           )}
@@ -926,70 +857,43 @@ function JobCard({ job, onReport, showToast }) {
       </div>
 
       {/* ---------- Hero banner ---------- */}
-      <div className="group relative mb-6 h-52 w-full overflow-hidden rounded-2xl sm:h-64">
+      <div className={styles.heroBanner}>
         {job.image ? (
-          <img
-            src={job.image}
-            alt={`${job.company} workplace`}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          <img src={job.image} alt={`${job.company} workplace`} loading="lazy" className={styles.heroImg} />
         ) : (
-          <div className="flex h-full w-full items-center justify-between bg-gradient-to-tr from-[#6860ef] via-[#047857] to-[#00766c] px-8">
-            <div className="flex flex-col text-white">
-              <span className="font-head text-[10px] font-bold uppercase tracking-widest text-[#6bd8cb]">
+          <div className={styles.heroGradientBg}>
+            <div className={styles.heroGradientTextWrap}>
+              <span className={styles.heroTypeLabel}>
                 {job.type ? `${job.type} Program` : "Opportunity"}
               </span>
-              <h2 className="font-head text-[22px] font-semibold leading-tight">{job.role}</h2>
+              <h2 className={styles.heroRoleTitle}>{job.role}</h2>
             </div>
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/15 font-head text-[36px] font-bold text-white backdrop-blur-xl">
-              {initials(job.company)}
-            </div>
+            <div className={styles.heroMonogram}>{initials(job.company)}</div>
           </div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#131b2e]/75 via-transparent to-transparent" />
+        <div className={styles.heroOverlay} />
 
-        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-          {job.type && (
-            <span className="rounded-full bg-white/90 px-3 py-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#800000] backdrop-blur-md">
-              {job.type}
-            </span>
-          )}
-          {job.freshers && (
-            <span className="rounded-full bg-white/90 px-3 py-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#4e45d5] backdrop-blur-md">
-              Freshers Welcome
-            </span>
-          )}
-          {job.remote && (
-            <span className="rounded-full bg-white/90 px-3 py-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#005d42] backdrop-blur-md">
-              Remote Eligible
-            </span>
-          )}
+        <div className={styles.heroBadges}>
+          {job.type && <span className={styles.badge}>{job.type}</span>}
+          {job.freshers && <span className={cx(styles.badge, styles.badgeFreshers)}>Freshers Welcome</span>}
+          {job.remote && <span className={cx(styles.badge, styles.badgeRemote)}>Remote Eligible</span>}
           {job.referralAvailable && (
-            <span className="rounded-full bg-white/90 px-3 py-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#4e45d5] backdrop-blur-md">
-              Referral Available
-            </span>
+            <span className={cx(styles.badge, styles.badgeReferral)}>Referral Available</span>
           )}
           {job.highVolumeReferrals && (
-            <span className="rounded-full bg-white/90 px-3 py-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#005b53] backdrop-blur-md">
-              High Volume Referrals
-            </span>
+            <span className={cx(styles.badge, styles.badgeHighVolume)}>High Volume Referrals</span>
           )}
         </div>
 
         {job.image && (
-          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-            <div className="text-white">
-              <div className="mb-0.5 font-head text-[10px] font-bold uppercase tracking-wider text-[#97f5cc]">
-                {job.company}
-              </div>
-              <h2 className="font-head text-[20px] font-semibold leading-tight sm:text-[22px]">
-                {job.role}
-              </h2>
+          <div className={styles.heroBottomBar}>
+            <div>
+              <div className={styles.heroCompanyLabel}>{job.company}</div>
+              <h2 className={styles.heroRoleHeading}>{job.role}</h2>
             </div>
             {(job.directReferral || job.highVolumeReferrals) && (
-              <div className="hidden shrink-0 items-center gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 font-head text-[11px] font-semibold text-[#131b2e] backdrop-blur-md sm:flex">
-                <Icon name="verified_user" className="h-4 w-4 text-[#005d42]" />
+              <div className={styles.heroReferralPill}>
+                <Icon name="verified_user" className={styles.heroReferralIcon} />
                 {job.directReferral || "Velammal Exclusive Priority"}
               </div>
             )}
@@ -998,23 +902,21 @@ function JobCard({ job, onReport, showToast }) {
       </div>
 
       {/* ---------- Body ---------- */}
-      <div className="space-y-4">
+      <div className={styles.cardBody}>
         {job.pledge && (
-          <div className="flex items-start gap-3 rounded-xl bg-[#f2f3ff] p-4">
-            <Icon name="school" className="mt-0.5 h-[22px] w-[22px] shrink-0 text-[#047857]" />
-            <p className="font-body text-[13px] text-[#131b2e]">
-              <strong className="font-head font-semibold">Alumni Referral Pledge: </strong>
+          <div className={styles.pledgeBox}>
+            <Icon name="school" className={styles.pledgeIcon} />
+            <p className={styles.pledgeText}>
+              <strong className={styles.pledgeStrong}>Alumni Referral Pledge: </strong>
               {job.pledge}
             </p>
           </div>
         )}
 
-        {job.description && (
-          <p className="font-body text-[15px] leading-relaxed text-[#3e4943]">{job.description}</p>
-        )}
+        {job.description && <p className={styles.descriptionText}>{job.description}</p>}
 
         {job.tags?.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 font-head text-[13px] font-semibold text-[#005d42]">
+          <div className={styles.tagsRow}>
             {job.tags.map((t) => (
               <span key={t}>#{t}</span>
             ))}
@@ -1022,7 +924,7 @@ function JobCard({ job, onReport, showToast }) {
         )}
 
         {/* Metadata pills */}
-        <div className="grid grid-cols-2 gap-3 pt-2 md:grid-cols-4">
+        <div className={styles.metaGrid}>
           <MetaPill icon="payments" label="Package" value={job.type !== "Internship" ? job.package : null} />
           <MetaPill icon="account_balance_wallet" label="Stipend" value={job.type === "Internship" ? job.package : null} />
           <MetaPill icon="location_on" label="Location" value={job.location} />
@@ -1034,10 +936,10 @@ function JobCard({ job, onReport, showToast }) {
 
         {/* Skills */}
         {job.skills?.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="mr-1 font-body text-[13px] text-[#3e4943]">Skills:</span>
+          <div className={styles.skillsRow}>
+            <span className={styles.skillsLabel}>Skills:</span>
             {job.skills.map((s) => (
-              <span key={s} className="rounded-lg bg-[#eaedff] px-3 py-1 font-body text-[13px] text-[#131b2e]">
+              <span key={s} className={styles.skillChip}>
                 {s}
               </span>
             ))}
@@ -1045,105 +947,87 @@ function JobCard({ job, onReport, showToast }) {
         )}
 
         {/* CTA */}
-        <div className="pt-2">
-          <a
-            href={job.applyLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#FDCC03] px-6 py-3.5 font-head text-[16px] font-semibold text-black shadow-sm transition-colors duration-200 hover:bg-[#800000] hover:text-white"
-          >
+        <div className={styles.ctaWrap}>
+          <a href={job.applyLink} target="_blank" rel="noopener noreferrer" className={styles.ctaBtn}>
             <span>{job.applyLabel || "Apply on company portal"}</span>
-            <Icon name="arrow_forward" className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            <Icon name="arrow_forward" className={styles.ctaIcon} />
           </a>
         </div>
       </div>
 
       {/* ---------- Social footer ---------- */}
-      <div className="mt-6 flex items-center justify-between border-t border-[#e2e7ff] pt-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={toggleLike}
-            className="group flex items-center gap-1.5 text-[#3e4943] transition-colors hover:text-[#ba1a1a]"
-          >
+      <div className={styles.socialFooter}>
+        <div className={styles.socialLeft}>
+          <button onClick={toggleLike} className={styles.likeBtn}>
             <Icon
               name="favorite"
-              className={`h-5 w-5 transition-transform group-hover:scale-110 ${liked ? "text-[#ba1a1a]" : ""}`}
+              className={cx(styles.likeIcon, liked && styles.likeIconActive)}
               filled={liked}
             />
-            <span className="font-head text-[13px] font-semibold">{likes}</span>
+            <span className={styles.socialCount}>{likes}</span>
           </button>
-          <button
-            onClick={() => setShowComments((v) => !v)}
-            className="flex items-center gap-1.5 text-[#3e4943] transition-colors hover:text-[#005d42]"
-          >
-            <Icon name="chat_bubble" className="h-5 w-5" />
-            <span className="font-head text-[13px] font-semibold">{comments.length}</span>
+          <button onClick={() => setShowComments((v) => !v)} className={styles.commentBtn}>
+            <Icon name="chat_bubble" className={styles.icon20} />
+            <span className={styles.socialCount}>{comments.length}</span>
           </button>
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 text-[#3e4943] transition-colors hover:text-[#131b2e]"
-          >
-            <Icon name="share" className="h-5 w-5" />
-            <span className="hidden font-head text-[13px] font-semibold sm:inline">Share</span>
+          <button onClick={handleShare} className={styles.shareCardBtn}>
+            <Icon name="share" className={styles.icon20} />
+            <span className={styles.shareLabel}>Share</span>
           </button>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 font-head text-[11px] font-semibold text-[#6e7a73]">
-            <Icon name="visibility" className="h-[18px] w-[18px]" />
+        <div className={styles.socialRight}>
+          <div className={styles.viewsInfo}>
+            <Icon name="visibility" className={styles.icon18} />
             <span>{formatCount(job.views)} views</span>
           </div>
-          <button onClick={toggleBookmark} title="Save Role" className="text-[#3e4943] transition-colors hover:text-[#800000]">
-            <Icon name="bookmark" className={`h-[22px] w-[22px] ${saved ? "text-[#800000]" : ""}`} filled={saved} />
+          <button onClick={toggleBookmark} title="Save Role" className={styles.bookmarkBtn}>
+            <Icon
+              name="bookmark"
+              className={cx(styles.bookmarkIconLarge, saved && styles.bookmarkActive)}
+              filled={saved}
+            />
           </button>
         </div>
       </div>
 
       {/* ---------- Comments drawer ---------- */}
       {showComments && (
-        <div className="-mx-4 mt-5 flex flex-col gap-4 rounded-b-3xl bg-[#f2f3ff]/50 px-4 pb-4 pt-5 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div className={styles.commentsDrawer}>
           {comments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <Icon name="forum" className="mb-2 h-8 w-8 text-[#6e7a73]" />
-              <p className="font-head text-[16px] font-semibold text-[#131b2e]">No queries posted yet</p>
-              <p className="font-body text-[13px] text-[#3e4943]">
+            <div className={styles.commentsEmpty}>
+              <Icon name="forum" className={styles.commentsEmptyIcon} />
+              <p className={styles.commentsEmptyTitle}>No queries posted yet</p>
+              <p className={styles.commentsEmptyText}>
                 Be the first to ask {job.alumni.name.split(" ")[0]} about this opportunity.
               </p>
             </div>
           ) : (
             <>
-              <h4 className="font-head text-[18px] font-semibold text-[#131b2e]">
-                Discussion ({comments.length})
-              </h4>
-              <div className="space-y-3">
+              <h4 className={styles.commentsHeading}>Discussion ({comments.length})</h4>
+              <div className={styles.commentsList}>
                 {comments.map((c) => (
-                  <div key={c.id} className="flex gap-3 rounded-xl bg-white p-3.5">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#4e45d5] font-head text-[11px] font-bold text-white">
-                      {initials(c.user)}
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="font-head text-[13px] font-semibold text-[#131b2e]">{c.user}</span>
-                        <span className="font-body text-[11px] text-[#6e7a73]">{c.tag}</span>
+                  <div key={c.id} className={styles.commentItem}>
+                    <div className={styles.commentAvatar}>{initials(c.user)}</div>
+                    <div className={styles.commentContent}>
+                      <div className={styles.commentTop}>
+                        <span className={styles.commentUser}>{c.user}</span>
+                        <span className={styles.commentTag}>{c.tag}</span>
                       </div>
-                      <p className="mt-0.5 font-body text-[13px] text-[#3e4943]">{c.text}</p>
+                      <p className={styles.commentText}>{c.text}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </>
           )}
-          <form onSubmit={addComment} className="flex gap-2 pt-2">
+          <form onSubmit={addComment} className={styles.commentForm}>
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Write a comment or query..."
-              className="flex-1 rounded-xl bg-white px-4 py-2.5 font-body text-[13px] text-[#131b2e] outline-none placeholder:text-[#6e7a73] focus:ring-1 focus:ring-[#047857]"
+              className={styles.commentInput}
             />
-            <button
-              type="submit"
-              disabled={!draft.trim()}
-              className="rounded-xl bg-[#FDCC03] px-5 py-2.5 font-head text-[13px] font-semibold text-black transition-colors duration-200 hover:bg-[#800000] hover:text-white disabled:opacity-40"
-            >
+            <button type="submit" disabled={!draft.trim()} className={styles.commentSendBtn}>
               Send
             </button>
           </form>
@@ -1184,71 +1068,53 @@ function TopHeader() {
   const [active, setActive] = useState("Feed");
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 bg-white/90 shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-6 lg:px-12">
-        <div className="flex items-center gap-8">
-          <a href="#" className="group flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#047857] shadow-sm transition-transform group-hover:scale-105">
-              <Icon name="school" className="h-[22px] w-[22px] text-white" />
+    <header className={styles.header}>
+      <div className={styles.headerInner}>
+        <div className={styles.headerLeft}>
+          <a href="#" className={styles.logoLink}>
+            <div className={styles.logoIconWrap}>
+              <Icon name="school" className={styles.logoIcon} />
             </div>
-            <div className="flex flex-col">
-              <span className="font-head text-[18px] font-semibold leading-none tracking-tight text-[#131b2e]">
-                Alumni Connect
-              </span>
-              <span className="mt-1 font-head text-[10px] font-bold uppercase tracking-wider text-[#047857]">
-                Career Hub
-              </span>
+            <div className={styles.logoTextWrap}>
+              <span className={styles.logoTitle}>Alumni Connect</span>
+              <span className={styles.logoSubtitle}>Career Hub</span>
             </div>
           </a>
-          <div className="hidden w-72 items-center gap-2 rounded-lg bg-[#f2f3ff] px-3 py-1.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] xl:flex">
-            <Icon name="search" className="h-[18px] w-[18px] text-[#6e7a73]" />
-            <input
-              placeholder="Search roles, alumni, companies..."
-              className="w-full bg-transparent font-body text-[13px] text-[#131b2e] outline-none placeholder:text-[#6e7a73]"
-            />
-            <span className="rounded bg-[#e2e7ff] px-1.5 py-0.5 font-head text-[10px] font-bold uppercase tracking-wider text-[#6e7a73]">
-              ⌘K
-            </span>
+          <div className={styles.searchBox}>
+            <Icon name="search" className={styles.searchIcon} />
+            <input placeholder="Search roles, alumni, companies..." className={styles.searchInput} />
+            <span className={styles.kbdHint}>⌘K</span>
           </div>
         </div>
 
-        <nav className="hidden items-center gap-1.5 rounded-xl bg-[#f2f3ff] p-1 md:flex">
+        <nav className={styles.nav}>
           {NAV.map((n) => (
             <button
               key={n}
               onClick={() => setActive(n)}
-              className={`rounded-lg px-4 py-2 font-head text-[13px] font-semibold transition-colors ${
-                active === n ? "bg-[#047857] text-white shadow-sm" : "text-[#3e4943] hover:text-[#131b2e]"
-              }`}
+              className={cx(styles.navBtn, active === n && styles.navBtnActive)}
             >
               {n}
             </button>
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
-          <button
-            aria-label="Notifications"
-            className="relative rounded-lg p-2 text-[#3e4943] transition-colors hover:bg-[#eaedff] hover:text-[#131b2e]"
-          >
-            <Icon name="notifications" className="h-[22px] w-[22px]" />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#047857] ring-2 ring-white" />
+        <div className={styles.headerRight}>
+          <button aria-label="Notifications" className={styles.notifBtn}>
+            <Icon name="notifications" className={styles.notifIcon} />
+            <span className={styles.notifDot} />
           </button>
-          <div className="hidden h-6 w-px bg-[#dae2fd] sm:block" />
-          <div className="flex items-center gap-3 pl-1">
-            <div className="relative">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#005d42]">
-                <Icon name="person" className="h-[18px] w-[18px] text-white" />
+          <div className={styles.divider} />
+          <div className={styles.profileWrap}>
+            <div className={styles.profileAvatarWrap}>
+              <div className={styles.profileAvatar}>
+                <Icon name="person" className={styles.profileAvatarIcon} />
               </div>
-              <span className="absolute -bottom-1 -right-1 rounded-full bg-[#6860ef] px-1 py-0.2 font-head text-[9px] font-bold leading-none text-white ring-2 ring-white">
-                '19
-              </span>
+              <span className={styles.profileBatchBadge}>'19</span>
             </div>
-            <div className="hidden flex-col lg:flex">
-              <span className="font-head text-[13px] font-semibold leading-tight text-[#131b2e]">
-                Elena Rostova
-              </span>
-              <span className="font-body text-[11px] text-[#3e4943]">Engineering Alumni</span>
+            <div className={styles.profileTextWrap}>
+              <span className={styles.profileName}>Elena Rostova</span>
+              <span className={styles.profileRole}>Engineering Alumni</span>
             </div>
           </div>
         </div>
@@ -1263,36 +1129,32 @@ function TopHeader() {
 function StatsBanner({ jobCount }) {
   const referrerCount = 89;
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm">
-      <div className="pointer-events-none absolute -top-16 -right-16 h-64 w-64 rounded-full bg-[#047857]/5 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-[#6860ef]/5 blur-3xl" />
-      <div className="relative z-10 flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+    <div className={styles.statsBanner}>
+      <div className={styles.statsBgBlob1} />
+      <div className={styles.statsBgBlob2} />
+      <div className={styles.statsContent}>
         <div>
-          <div className="mb-1.5 flex items-center gap-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#047857]" />
-            <span className="font-head text-[10px] font-bold uppercase tracking-wider text-[#047857]">
-              Verified Collegiate Pipeline
-            </span>
+          <div className={styles.statsLiveRow}>
+            <span className={styles.statsLiveDot} />
+            <span className={styles.statsLiveLabel}>Verified Collegiate Pipeline</span>
           </div>
-          <h1 className="font-head text-[28px] font-semibold leading-tight text-[#131b2e]">
-            Alumni Referral Feed
-          </h1>
-          <p className="mt-1 font-body text-[15px] text-[#3e4943]">
+          <h1 className={styles.statsTitle}>Alumni Referral Feed</h1>
+          <p className={styles.statsDesc}>
             High-impact engineering, data, and leadership opportunities curated directly by graduates.
           </p>
         </div>
-        <div className="grid shrink-0 grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-2.5 py-2.5 sm:px-4 sm:py-3">
-            <span className="font-head text-[20px] font-semibold leading-none text-[#005d42] sm:text-[28px]">{jobCount}</span>
-            <span className="mt-1 font-body text-[10px] text-[#3e4943] sm:text-[11px]">Active Openings</span>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{jobCount}</span>
+            <span className={styles.statLabel}>Active Openings</span>
           </div>
-          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-2.5 py-2.5 sm:px-4 sm:py-3">
-            <span className="font-head text-[20px] font-semibold leading-none text-[#4e45d5] sm:text-[28px]">{referrerCount}</span>
-            <span className="mt-1 font-body text-[10px] text-[#3e4943] sm:text-[11px]">Active Referrers</span>
+          <div className={styles.statCard}>
+            <span className={cx(styles.statValue, styles.statValuePurple)}>{referrerCount}</span>
+            <span className={styles.statLabel}>Active Referrers</span>
           </div>
-          <div className="flex flex-col rounded-xl bg-[#f2f3ff] px-2.5 py-2.5 sm:px-4 sm:py-3">
-            <span className="font-head text-[20px] font-semibold leading-none text-[#005b53] sm:text-[28px]">&lt;24h</span>
-            <span className="mt-1 font-body text-[10px] text-[#3e4943] sm:text-[11px]">Latest Referral</span>
+          <div className={styles.statCard}>
+            <span className={cx(styles.statValue, styles.statValueTeal)}>&lt;24h</span>
+            <span className={styles.statLabel}>Latest Referral</span>
           </div>
         </div>
       </div>
@@ -1305,46 +1167,40 @@ function StatsBanner({ jobCount }) {
 /* -------------------------------------------------------------------------- */
 function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
   return (
-    <div className="flex flex-col items-stretch justify-between gap-4 lg:flex-row lg:items-center">
-      <div className="flex flex-1 flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Icon name="search" className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6e7a73]" />
+    <div className={styles.controls}>
+      <div className={styles.controlsLeft}>
+        <div className={styles.searchWrap}>
+          <Icon name="search" className={styles.searchInputIcon} />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by role, company, or target tech stack..."
-            className="w-full rounded-xl bg-white py-3 pl-11 pr-4 font-body text-[13px] text-[#131b2e] shadow-sm outline-none placeholder:text-[#6e7a73] transition-shadow focus:shadow-md"
+            className={styles.controlsSearchInput}
           />
         </div>
-        <div className="relative shrink-0">
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="cursor-pointer appearance-none rounded-xl bg-white py-3 pl-4 pr-10 font-head text-[13px] font-semibold text-[#131b2e] shadow-sm outline-none"
-          >
+        <div className={styles.sortWrap}>
+          <select value={sort} onChange={(e) => setSort(e.target.value)} className={styles.sortSelect}>
             <option value="recent">Sort: Most Recent</option>
             <option value="likes">Sort: Most Popular</option>
             <option value="deadline">Sort: Application Deadline</option>
           </select>
-          <Icon name="unfold_more" className="pointer-events-none absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#6e7a73]" />
+          <Icon name="unfold_more" className={styles.sortIcon} />
         </div>
       </div>
 
-      <div className="scrollbar-none flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+      <div className={styles.filtersRow}>
         {FILTERS.map((f) => (
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-              className={`shrink-0 whitespace-nowrap rounded-lg px-4 py-2 font-head text-[13px] font-semibold shadow-sm transition-all ${
-              filter === f.value ? "bg-[#FDCC03] text-black" : "bg-white text-[#3e4943] hover:bg-[#eaedff] hover:text-[#131b2e]"
-            }`}
+            className={cx(styles.filterBtn, filter === f.value && styles.filterBtnActive)}
           >
             {f.label}
           </button>
         ))}
       </div>
-       {/* Fade hint — signals there's more to scroll to on the right */}
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-[#faf8ff] to-transparent sm:hidden" />
+      {/* Fade hint — signals there's more to scroll to on the right */}
+      <div className={styles.fadeHint} />
     </div>
   );
 }
@@ -1354,19 +1210,16 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
 /* -------------------------------------------------------------------------- */
 function EmptyState({ onReset }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-3xl bg-white p-12 text-center">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f2f3ff] text-[#6e7a73]">
-        <Icon name="manage_search" className="h-8 w-8" />
+    <div className={styles.emptyState}>
+      <div className={styles.emptyIconWrap}>
+        <Icon name="manage_search" className={styles.emptyIcon} />
       </div>
-      <h3 className="font-head text-[22px] font-semibold text-[#131b2e]">No alumni postings found</h3>
-      <p className="mt-1 max-w-md font-body text-[15px] text-[#3e4943]">
+      <h3 className={styles.emptyTitle}>No alumni postings found</h3>
+      <p className={styles.emptyText}>
         Try adjusting your filters, clearing your search query, or checking back soon as new cohorts share
         vacancies.
       </p>
-      <button
-        onClick={onReset}
-        className="mt-5 rounded-xl bg-[#047857] px-6 py-2.5 font-head text-[13px] font-semibold text-white transition-opacity hover:opacity-95"
-      >
+      <button onClick={onReset} className={styles.emptyResetBtn}>
         Reset All Filters
       </button>
     </div>
@@ -1403,12 +1256,12 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8ff] font-body">
+    <div className={styles.page}>
       <FontStyles />
       <TopHeader />
 
-      <main className="w-full pt-20">
-        <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8 lg:px-12">
+      <main className={styles.main}>
+        <div className={styles.container}>
           <StatsBanner jobCount={jobs.length} />
 
           <Controls search={search} setSearch={setSearch} sort={sort} setSort={setSort} filter={filter} setFilter={setFilter} />
@@ -1416,7 +1269,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
           {visibleJobs.length === 0 ? (
             <EmptyState onReset={resetFilters} />
           ) : (
-            <div className="flex flex-col gap-6 sm:gap-8">
+            <div className={styles.jobList}>
               {visibleJobs.map((job) => (
                 <JobCard key={job.id} job={job} onReport={onReport} showToast={showToast} />
               ))}
@@ -1425,23 +1278,23 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
         </div>
       </main>
 
-      <footer className="mt-8 w-full bg-white shadow-[0_-1px_8px_rgba(0,0,0,0.02)]">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-12 lg:flex-row lg:px-12">
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#047857]">
-              <Icon name="school" className="h-4 w-4 text-white" />
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <div className={styles.footerLogo}>
+            <div className={styles.footerLogoIconWrap}>
+              <Icon name="school" className={styles.footerLogoIcon} />
             </div>
-            <span className="font-head text-[16px] font-semibold text-[#131b2e]">Alumni Connect</span>
-            <span className="font-body text-[13px] text-[#6e7a73]">· Distinguished Career Network</span>
+            <span className={styles.footerLogoTitle}>Alumni Connect</span>
+            <span className={styles.footerLogoSub}>· Distinguished Career Network</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className={styles.footerLinks}>
             {["Honor Code", "Network Directory", "Privacy Policy", "Support"].map((l) => (
-              <a key={l} href="#" className="font-body text-[13px] text-[#3e4943] transition-colors hover:text-[#131b2e]">
+              <a key={l} href="#" className={styles.footerLink}>
                 {l}
               </a>
             ))}
           </div>
-          <div className="font-body text-[11px] text-[#3e4943]">© 2026 Alumni Association. All rights reserved.</div>
+          <div className={styles.footerCopyright}>© 2026 Alumni Association. All rights reserved.</div>
         </div>
       </footer>
 
