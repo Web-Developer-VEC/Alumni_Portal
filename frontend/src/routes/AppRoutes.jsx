@@ -10,6 +10,7 @@ import AlumniLayout from "../layouts/AlumniLayout";
 
 import Members from "../pages/alumni/Members"
 
+import FeedbackForm from "../pages/feedback/FeedbackForm"; 
 function AppRoute() {
     return (
         <Routes>
@@ -23,6 +24,7 @@ function AppRoute() {
             <Route path="/alumni" element={<AlumniLayout/>}>
                 <Route path="members" element={<Members />} />
             </Route>
+            <Route path="/feedback" element={<FeedbackForm />} />
         </Routes>
     );
 }
