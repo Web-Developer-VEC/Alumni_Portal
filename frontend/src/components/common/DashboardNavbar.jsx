@@ -5,6 +5,9 @@ import {
   User,
   Users,
   Mail,
+  Images,
+  Bell,
+  Calendar,
   ShieldCheck,
   Settings,
   LogOut,
@@ -31,17 +34,11 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(event.target)
-      ) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
       }
 
-      if (
-        uploadRef.current &&
-        !uploadRef.current.contains(event.target)
-      ) {
+      if (uploadRef.current && !uploadRef.current.contains(event.target)) {
         setUploadOpen(false);
       }
     };
@@ -61,7 +58,6 @@ const Navbar = () => {
   return (
     <>
       <header className={styles.navbar}>
-
         {/* ================= BRAND ================= */}
         <div className={styles.brandSection}>
           <div className={styles.logoBox}>
@@ -84,11 +80,7 @@ const Navbar = () => {
             searchFocused ? styles.searchFocused : ""
           }`}
         >
-          <Search
-            size={19}
-            strokeWidth={2}
-            className={styles.searchIcon}
-          />
+          <Search size={19} strokeWidth={2} className={styles.searchIcon} />
 
           <input
             type="text"
@@ -100,17 +92,18 @@ const Navbar = () => {
 
         {/* ================= DESKTOP NAV ================= */}
         <nav className={styles.desktopNavigation}>
-
           <button className={styles.navItem}>
             <Home size={20} strokeWidth={1.9} />
             <span>Home</span>
           </button>
-
           <button className={styles.navItem}>
             <Users size={20} strokeWidth={1.9} />
-            <span>Team</span>
+            <span>Alumni</span>
           </button>
-
+          <button className={styles.navItem}>
+            <Calendar size={20} strokeWidth={1.9} />
+            <span>Events</span>
+          </button>
           <button
             className={`${styles.navItem} ${styles.addPostItem}`}
             onClick={handleAddPost}
@@ -121,19 +114,23 @@ const Navbar = () => {
 
             <span>Add Post</span>
           </button>
-
+            <button className={styles.navItem}>
+            <Images size={20} strokeWidth={1.9} />
+            <span>Gallery</span>
+          </button>
           <button className={styles.navItem}>
             <MessageCircle size={20} strokeWidth={1.9} />
             <span>Message</span>
-          </button>
-
+          </button>{" "}
+          <button className={styles.navItem}>
+            <Bell size={20} strokeWidth={1.9} />
+            <span>Notification</span>
+          </button>{" "}
+        
         </nav>
 
         {/* ================= PROFILE ================= */}
-        <div
-          className={styles.profileWrapper}
-          ref={profileRef}
-        >
+        <div className={styles.profileWrapper} ref={profileRef}>
           <button
             className={`${styles.profileButton} ${
               profileOpen ? styles.profileActive : ""
@@ -144,10 +141,7 @@ const Navbar = () => {
             }}
           >
             <div className={styles.avatar}>
-              <img
-                src={Profile}
-                alt="Profile"
-              />
+              <img src={Profile} alt="Profile" />
               <span className={styles.onlineDot}></span>
             </div>
 
@@ -167,13 +161,9 @@ const Navbar = () => {
           {/* ================= PROFILE DROPDOWN ================= */}
           {profileOpen && (
             <div className={styles.profileDropdown}>
-
               <div className={styles.dropdownHeader}>
                 <div className={styles.largeAvatar}>
-                  <img
-                    src={Profile}
-                    alt="Profile"
-                  />
+                  <img src={Profile} alt="Profile" />
                   <span className={styles.largeOnlineDot}></span>
                 </div>
 
@@ -191,7 +181,6 @@ const Navbar = () => {
               </div>
 
               <div className={styles.profileDetails}>
-
                 <div className={styles.detailItem}>
                   <div className={styles.detailIcon}>
                     <Mail size={16} />
@@ -224,7 +213,6 @@ const Navbar = () => {
                     <strong>Student Member</strong>
                   </div>
                 </div>
-
               </div>
 
               <div className={styles.teamCard}>
@@ -261,33 +249,22 @@ const Navbar = () => {
                 <span>VEC CONNECT</span>
                 <span>v1.0</span>
               </div>
-
             </div>
           )}
         </div>
-
       </header>
 
       {/* ================= UPLOAD MODAL ================= */}
       {uploadOpen && (
         <div className={styles.uploadOverlay}>
-
-          <div
-            className={styles.uploadCard}
-            ref={uploadRef}
-          >
-
+          <div className={styles.uploadCard} ref={uploadRef}>
             <div className={styles.uploadHeader}>
               <div>
-                <span className={styles.uploadSmallTitle}>
-                  VEC CONNECT
-                </span>
+                <span className={styles.uploadSmallTitle}>VEC CONNECT</span>
 
                 <h2>Create New Post</h2>
 
-                <p>
-                  Share an image or document with your campus community.
-                </p>
+                <p>Share an image or document with your campus community.</p>
               </div>
 
               <button
@@ -299,13 +276,8 @@ const Navbar = () => {
             </div>
 
             <div className={styles.uploadOptions}>
-
               <label className={styles.uploadOption}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                />
+                <input type="file" accept="image/*" hidden />
 
                 <div className={styles.uploadOptionIcon}>
                   <ImageIcon size={25} />
@@ -316,18 +288,11 @@ const Navbar = () => {
                   <span>JPG, PNG, WEBP</span>
                 </div>
 
-                <UploadCloud
-                  size={18}
-                  className={styles.uploadArrow}
-                />
+                <UploadCloud size={18} className={styles.uploadArrow} />
               </label>
 
               <label className={styles.uploadOption}>
-                <input
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  hidden
-                />
+                <input type="file" accept=".pdf,application/pdf" hidden />
 
                 <div className={styles.uploadOptionIcon}>
                   <FileText size={25} />
@@ -338,12 +303,8 @@ const Navbar = () => {
                   <span>PDF documents</span>
                 </div>
 
-                <UploadCloud
-                  size={18}
-                  className={styles.uploadArrow}
-                />
+                <UploadCloud size={18} className={styles.uploadArrow} />
               </label>
-
             </div>
 
             <div className={styles.uploadFooter}>
@@ -356,9 +317,7 @@ const Navbar = () => {
                 Cancel
               </button>
             </div>
-
           </div>
-
         </div>
       )}
     </>
