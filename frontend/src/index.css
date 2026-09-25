@@ -1,8 +1,17 @@
+/* ==================================================
+   VEC ALUMNI PORTAL
+   GLOBAL CSS
+   ================================================== */
+
+/* --------------------------------------------------
+   GOOGLE FONT
+   -------------------------------------------------- */
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-@import "tailwindcss";
-:root {
-  font-family: 'Poppins', sans-serif;
-}
+
+/* --------------------------------------------------
+   CSS RESET
+   -------------------------------------------------- */
 
 * {
   box-sizing: border-box;
@@ -11,14 +20,341 @@
     sans-serif !important;
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  margin: 0;
   min-width: 320px;
   min-height: 100vh;
+
+  font-family: 'Poppins', sans-serif;
+
+  background: #ffffff;
+  color: #171717;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* --------------------------------------------------
+   ROOT
+   -------------------------------------------------- */
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* --------------------------------------------------
+   VEC DESIGN VARIABLES
+   -------------------------------------------------- */
+
+:root {
+  /* VEC Brand */
+  --vec-maroon: #800000;
+  --vec-maroon-dark: #5c0000;
+  --vec-maroon-light: #a00000;
+
+  --vec-gold: #fdcc03;
+  --vec-gold-dark: #d9ad00;
+  --vec-gold-light: #ffe47a;
+
+  /* Neutral */
+  --white: #ffffff;
+  --black: #111111;
+
+  --text-primary: #171717;
+  --text-secondary: #5f5f5f;
+  --text-muted: #858585;
+
+  --border-light: #e9e9e9;
+  --border-medium: #d8d8d8;
+
+  --background: #ffffff;
+  --background-soft: #f8f8f7;
+  --background-dark: #111111;
+
+  /* Effects */
+  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.06);
+
+  --shadow-md: 0 12px 35px rgba(0, 0, 0, 0.09);
+
+  --shadow-lg: 0 25px 70px rgba(0, 0, 0, 0.14);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 32px;
+
+  /* Layout */
+  --container-width: 1280px;
+}
+
+/* --------------------------------------------------
+   GLOBAL CONTAINER
+   -------------------------------------------------- */
+
+.container {
+  width: min(
+    calc(100% - 48px),
+    var(--container-width)
+  );
+
+  margin: 0 auto;
+}
+
+/* --------------------------------------------------
+   SELECTION
+   -------------------------------------------------- */
+
+::selection {
+  background: var(--vec-gold);
+  color: var(--black);
+}
+
+/* --------------------------------------------------
+   SCROLLBAR
+   -------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f2f2f2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vec-maroon);
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vec-maroon-dark);
+}
+
+/* --------------------------------------------------
+   GLOBAL BUTTONS
+   -------------------------------------------------- */
+
+button {
+  border: none;
+  outline: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  min-height: 46px;
+
+  padding: 0 22px;
+
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Primary VEC button */
+
+.btn-primary {
+  background: var(--vec-maroon);
+  color: var(--white);
+
+  box-shadow:
+    0 8px 20px rgba(128, 0, 0, 0.18);
+}
+
+.btn-primary:hover {
+  background: var(--vec-maroon-dark);
+
+  box-shadow:
+    0 12px 28px rgba(128, 0, 0, 0.25);
+}
+
+/* Gold button */
+
+.btn-gold {
+  background: var(--vec-gold);
+  color: var(--black);
+}
+
+.btn-gold:hover {
+  background: var(--vec-gold-dark);
+}
+
+/* Outline */
+
+.btn-outline {
+  background: transparent;
+  color: var(--vec-maroon);
+
+  border: 1px solid var(--vec-maroon);
+}
+
+.btn-outline:hover {
+  background: var(--vec-maroon);
+  color: var(--white);
+}
+
+/* --------------------------------------------------
+   GLOBAL TYPOGRAPHY
+   -------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.text-maroon {
+  color: var(--vec-maroon);
+}
+
+.text-gold {
+  color: var(--vec-gold-dark);
+}
+
+/* --------------------------------------------------
+   PAGE WRAPPER
+   -------------------------------------------------- */
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+
+  overflow-x: hidden;
+}
+
+/* --------------------------------------------------
+   COMMON SECTION
+   -------------------------------------------------- */
+
+.section {
+  width: 100%;
+  padding: 110px 0;
+}
+
+.section-soft {
+  background: var(--background-soft);
+}
+
+.section-dark {
+  background: var(--background-dark);
+  color: var(--white);
+}
+
+/* --------------------------------------------------
+   ACCESSIBILITY
+   -------------------------------------------------- */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(253, 204, 3, 0.7);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------
+   RESPONSIVE
+   -------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .container {
+    width: min(
+      calc(100% - 32px),
+      var(--container-width)
+    );
+  }
+
+  .section {
+    padding: 80px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    width: calc(100% - 28px);
+  }
+
+  .section {
+    padding: 65px 0;
+  }
+
+  .btn {
+    min-height: 44px;
+    padding: 0 18px;
+  }
+}
+
+/* --------------------------------------------------
+   REDUCED MOTION
+   -------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+  }
 }
