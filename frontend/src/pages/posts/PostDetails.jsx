@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import styles from "./post.module.css";
+import Navbar from "../../components/common/DashboardNavbar"
 
 /* -------------------------------------------------------------------------- */
 /*  Self-contained: no index.html edits needed.                              */
@@ -1480,6 +1481,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
     <div className={styles.page}>
       <FontStyles />
       {/* <TopHeader /> */}
+      <Navbar />
 
       <main className={styles.main}>
         <div className={styles.container}>
