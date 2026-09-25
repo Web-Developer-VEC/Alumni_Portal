@@ -1,8 +1,30 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-
+import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
-import { navigate } from "../../App";
-
+import vecLogo from "../../assets/VEC_Logo.png";
+import {
+  Users,
+  GraduationCap,
+  Calendar,
+  Landmark,
+  Trophy,
+  Rocket,
+  Star,
+  Target,
+  Heart,
+  Laptop,
+  Microscope,
+  Medal,
+  Mail,
+  Phone,
+  MapPin,
+  MessageCircle,
+  Lock,
+  PlayCircle,
+  Apple,
+  RefreshCw,
+  Briefcase,
+} from "lucide-react";
 /* =========================================================
    HOOK: useReveal
 ========================================================= */
@@ -273,6 +295,70 @@ function Stat({ target, suffix, label }) {
    CAPTCHA
 ========================================================= */
 
+/* =========================================================
+   COMPONENT: HeroCardStack
+========================================================= */
+
+function HeroCardStack({ items, interval = 2600 }) {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (prefersReduced) return;
+
+    const id = setInterval(() => {
+      setActive((prev) => (prev + 1) % items.length);
+    }, interval);
+
+    return () => clearInterval(id);
+  }, [items.length, interval]);
+
+  const count = items.length;
+  const front = items[active];
+
+  return (
+    <div className="hero-carousel">
+      <div className="hero-carousel-stage" aria-hidden="true">
+        {items.map((person, i) => {
+          // position relative to the active card, wrapped into shortest signed distance
+          let rel = i - active;
+          if (rel > count / 2) rel -= count;
+          if (rel < -count / 2) rel += count;
+
+          const isFront = rel === 0;
+          const dist = Math.abs(rel);
+
+          const cardStyle = {
+            "--rel": rel,
+            "--dist": dist,
+          };
+
+          return (
+            <div
+              className={`hero-carousel-card ${isFront ? "is-front" : ""}`}
+              style={cardStyle}
+              key={person.id}
+            >
+              <img src={person.image} alt={person.name} loading="lazy" />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hero-carousel-label">
+        <strong>{front.name}</strong>
+        <div className="hero-carousel-label-meta">
+          <span>{front.batch}</span>
+          <span className="hero-carousel-dot" />
+          <span>{front.role}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 function generateQuickCaptcha() {
   return Math.floor(1000 + Math.random() * 9000);
 }
@@ -500,7 +586,7 @@ function CommunityQuickForm() {
               setUserCaptcha("");
             }}
           >
-            ↻
+            <RefreshCw size={14} />
           </button>
         </div>
 
@@ -529,7 +615,7 @@ function CommunityQuickForm() {
       </button>
 
       <div className="form-footer-note">
-        🔒 Your information is securely submitted.
+        <Lock size={11} /> Your information is securely submitted.
       </div>
     </form>
   );
@@ -577,19 +663,74 @@ function DiscussionCard({ initials, name, time, message, replies, likes }) {
         <p>{message}</p>
 
         <div className="discussion-actions">
-          💬 {replies} Replies · ❤ {likes} Likes
-          <span>View Thread →</span>
+          <span className="discussion-stat">
+            <MessageCircle size={13} /> {replies} Replies
+          </span>
+          <span className="discussion-stat">
+            <Heart size={13} /> {likes} Likes
+          </span>
+          <span className="discussion-cta">View Thread →</span>
         </div>
       </div>
     </Reveal>
   );
 }
+/* =========================================================
+   HERO ALUMNI PREVIEW DATA
+   TODO: replace with a backend fetch, e.g.
+   const [heroAlumni, setHeroAlumni] = useState([]);
+   useEffect(() => {
+     fetch("/api/main-backend/alumni/featured")
+       .then((r) => r.json())
+       .then(setHeroAlumni);
+   }, []);
+   Shape expected: { id, name, role, image }
+========================================================= */
 
+const heroAlumniStack = [
+  {
+    id: "s1",
+    name: "Arun Kumar",
+    batch: "Batch of 2019",
+    role: "Software Engineer @ Zoho",
+    image: "https://i.pravatar.cc/400?img=12",
+  },
+  {
+    id: "s2",
+    name: "Priya S",
+    batch: "Batch of 2020",
+    role: "Data Analyst @ TCS",
+    image: "https://i.pravatar.cc/400?img=32",
+  },
+  {
+    id: "s3",
+    name: "Rahul V",
+    batch: "Batch of 2018",
+    role: "AI Engineer @ Presidio",
+    image: "https://i.pravatar.cc/400?img=11",
+  },
+  {
+    id: "s4",
+    name: "Keerthana R",
+    batch: "Batch of 2021",
+    role: "Product Designer @ Freshworks",
+    image: "https://i.pravatar.cc/400?img=47",
+  },
+  {
+    id: "s5",
+    name: "Vignesh M",
+    batch: "Batch of 2017",
+    role: "Cloud Engineer @ Infosys",
+    image: "https://i.pravatar.cc/400?img=53",
+  },
+];
 /* =========================================================
    MAIN LANDING PAGE
 ========================================================= */
 
 function LandingPage() {
+  const navigate = useNavigate();
+
   const scrollToSection = (id) => {
     const section = document.getElementById(id);
 
@@ -646,8 +787,138 @@ function LandingPage() {
   return (
     <main className="landing-page">
       {/* =================================================
-          SCROLL PROGRESS
-      ================================================= */}
+        NAVBAR
+    ================================================= */}
+
+      <header
+        className={`lp-navbar ${scrollY > 8 ? "lp-navbar--scrolled" : ""}`}
+      >
+        {/* ---------- BRAND ---------- */}
+
+        <div className="lp-navbar__brand">
+          <img
+            src={vecLogo}
+            alt="Velammal Engineering College emblem"
+            className="lp-navbar__logo"
+          />
+
+          <div className="lp-navbar__college-domain">
+            <span className="lp-navbar__college-name">VELAMMAL</span>
+            <span className="lp-navbar__college-sub">ENGINEERING COLLEGE</span>
+            <span className="lp-navbar__college-tagline">
+              The Wheel of Knowledge rolls on!
+            </span>
+            <span className="lp-navbar__college-autonomous">
+              (An Autonomous Institution)
+            </span>
+          </div>
+        </div>
+
+        {/* ---------- APP NAME (CENTERED) ---------- */}
+
+        <span className="lp-navbar__app-name">
+          VEC<span className="lp-navbar__app-name-accent">ALMA Connect</span>
+        </span>
+
+        {/* ---------- ACTION BUTTONS ---------- */}
+
+        <div className="lp-navbar__actions">
+          {/* LOGIN */}
+
+          <button
+            type="button"
+            className="lp-navbar__login-btn"
+            onClick={() => navigate("/login")}
+            aria-label="Log in"
+          >
+            <span className="lp-navbar__icon-solid" aria-hidden="true">
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 4H5.5C4.67 4 4 4.67 4 5.5V14.5C4 15.33 4.67 16 5.5 16H8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+
+                <path
+                  d="M12 13L16 10L12 7"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+
+                <path
+                  d="M16 10H8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+
+            <span className="lp-navbar__btn-label">Log in</span>
+          </button>
+
+          {/* REGISTER */}
+
+          <button
+            type="button"
+            className="lp-navbar__register-btn"
+            onClick={() => navigate("/signup")}
+            aria-label="Register"
+          >
+            <span className="lp-navbar__icon-glass" aria-hidden="true">
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="7"
+                  r="2.8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+
+                <path
+                  d="M3.5 16C3.5 13 5.6 11.3 8 11.3C10.4 11.3 12.5 13 12.5 16"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+
+                <path
+                  d="M15.5 6.5V11"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+
+                <path
+                  d="M13.3 8.75H17.7"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+
+            <span className="lp-navbar__btn-label">Register</span>
+          </button>
+        </div>
+      </header>
+
+      {/* =================================================
+        SCROLL PROGRESS
+    ================================================= */}
 
       <div
         className="scroll-progress"
@@ -657,9 +928,8 @@ function LandingPage() {
       />
 
       {/* =================================================
-          HERO
-      ================================================= */}
-
+        HERO
+    ================================================= */}
       <section className="hero-section" ref={heroRef}>
         <div
           className="hero-overlay"
@@ -682,6 +952,9 @@ function LandingPage() {
           ))}
         </div>
 
+        <div className="hero-visual" aria-hidden="true">
+          <HeroCardStack items={heroAlumniStack} />
+        </div>
         <div
           className="landing-container hero-content"
           style={{
@@ -722,10 +995,10 @@ function LandingPage() {
             <button
               className="hero-secondary"
               type="button"
-              onClick={() => scrollToSection("about")}
+              onClick={() => navigate("/signup")}
             >
               EXPLORE NETWORK
-            </button>
+            </button> 
           </div>
         </div>
 
@@ -785,6 +1058,252 @@ function LandingPage() {
               <span>→</span>
             </button>
           </Reveal>
+        </div>
+      </section>
+          {/* =================================================
+          AWARDS / NOMINATIONS
+      ================================================= */}
+
+      <section className="awards-section" id="awards">
+        <div className="landing-container">
+          <Reveal className="center-heading">
+            <span className="section-tag">NOMINATIONS OPEN — 2025</span>
+
+            <RevealHeading as="h2" direction="up">
+              {(visible) => (
+                <>
+                  <Words
+                    text="Nominations are invited"
+                    visible={visible}
+                    startIndex={0}
+                  />
+                  <span>
+                    {" "}
+                    <Words
+                      text="from alumni."
+                      visible={visible}
+                      startIndex={3}
+                    />
+                  </span>
+                </>
+              )}
+            </RevealHeading>
+
+            <p>
+              We recognize our great minds cultivated by Velammal who leap
+              above and beyond in their domain and inspire the young hearts
+              to grow agile, by awarding them in the following categories.
+            </p>
+          </Reveal>
+
+          <div className="awards-grid">
+            <Reveal as={TiltCard} className="award-card">
+              <div className="award-icon"><Trophy size={28} /></div>
+              <h3>Placement Icon Award</h3>
+              <p>Honoring outstanding placement achievements.</p>
+              <a
+                href="https://docs.google.com/forms/d/e/1FAIpQLSeE7HuWIO8IKZCds9yWoczTmnEDj-BOCcwECAK0V163DY1CAw/viewform?vc=0&c=0&w=1&flr=0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                NOMINATE →
+              </a>
+            </Reveal>
+
+            <Reveal as={TiltCard} className="award-card" delay={80}>
+              <div className="award-icon"><Rocket size={28} /></div>
+              <h3>Emerging Entrepreneur Award</h3>
+              <p>Celebrating alumni building bold new ventures.</p>
+              <a
+                href="https://docs.google.com/forms/d/e/1FAIpQLScHI8hXutr0Z-gAWd-PEEvk2cMDtpbhDwrfBXQ0oFNSYvCx5w/viewform?vc=0&c=0&w=1&flr=0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                NOMINATE →
+              </a>
+            </Reveal>
+
+            <Reveal as={TiltCard} className="award-card" delay={160}>
+              <div className="award-icon"><Star size={28} /></div>
+              <h3>Path Breaker Award</h3>
+              <p>Recognizing those who forged new paths in their field.</p>
+              <a
+                href="https://docs.google.com/forms/d/e/1FAIpQLScjLiVQJ-mf5nR4epofh7A4BoVvAUalt8zKivSM3bU66_i-VQ/viewform?vc=0&c=0&w=1&flr=0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                NOMINATE →
+              </a>
+            </Reveal>
+
+            <Reveal as={TiltCard} className="award-card" delay={240}>
+              <div className="award-icon"><Target size={28} /></div>
+              <h3>Optimal Pursuer Award</h3>
+              <p>For alumni pursuing excellence with focus and discipline.</p>
+              <a
+                href="https://docs.google.com/forms/d/e/1FAIpQLSesrerOBVQa50iyDH19RTeNBkYud3MZJgWJscQvr0Oa-3ihUg/viewform?vc=0&c=0&w=1&flr=0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                NOMINATE →
+              </a>
+            </Reveal>
+
+            <Reveal as={TiltCard} className="award-card" delay={320}>
+              <div className="award-icon"><Heart size={28} /></div>
+              <h3>Humanitarian Award</h3>
+              <p>Honoring alumni giving back to society and community.</p>
+              <a
+                href="https://docs.google.com/forms/d/e/1FAIpQLSes17JYKJifNfQGsHxSyoIi7d5YrKm4NGZpN6rT_A_Pvxim7w/viewform?vc=0&c=0&w=1&flr=0"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                NOMINATE →
+              </a>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* =================================================
+          ALUMNI CELL OVERVIEW + VISION
+      ================================================= */}
+
+      <section className="overview-section" id="overview">
+        <div className="landing-container overview-grid">
+          <Reveal className="overview-block">
+            <span className="section-tag">ALUMNI CELL OVERVIEW</span>
+
+            <RevealHeading as="h2" direction="right">
+              {(visible) => (
+                <>
+                  <Words
+                    text="Building lifelong"
+                    visible={visible}
+                    startIndex={0}
+                  />
+                  <br />
+                  <span>
+                    <Words
+                      text="connections."
+                      visible={visible}
+                      startIndex={2}
+                    />
+                  </span>
+                </>
+              )}
+            </RevealHeading>
+
+            <div className="heading-line"></div>
+
+            <p>
+              The VEC Alumni Cell fosters relationships between alumni,
+              students and the institution, nurturing lifelong connections
+              and mutual growth. It plays a crucial role in engaging alumni,
+              leveraging their expertise and strengthening institutional
+              ties for the benefit of current students and the alma mater.
+            </p>
+          </Reveal>
+
+          <Reveal className="vision-card" delay={150}>
+            <span className="vision-card-tag">OUR VISION</span>
+            <p>
+              To establish a strong, lifelong bond between the institution
+              and its alumni, fostering a mutually beneficial relationship
+              that enhances professional growth, knowledge sharing and
+              institutional development.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* =================================================
+          MISSION & OBJECTIVES
+      ================================================= */}
+
+      <section className="mission-section">
+        <div className="landing-container">
+          <Reveal className="center-heading">
+            <span className="section-tag">WHAT DRIVES US</span>
+
+            <RevealHeading as="h2" direction="up">
+              {(visible) => (
+                <>
+                  <Words text="Mission &" visible={visible} startIndex={0} />
+                  <span>
+                    {" "}
+                    <Words
+                      text="Objectives."
+                      visible={visible}
+                      startIndex={2}
+                    />
+                  </span>
+                </>
+              )}
+            </RevealHeading>
+          </Reveal>
+
+          <div className="mission-grid">
+            <Reveal className="mission-panel">
+              <h3>Mission</h3>
+              <ul className="mission-list">
+                <li>
+                  To build a dynamic and engaged alumni network that
+                  contributes to the academic and career growth of current
+                  students.
+                </li>
+                <li>
+                  To facilitate mentorship programs, networking opportunities
+                  and industry collaborations through alumni involvement.
+                </li>
+                <li>
+                  To organize events and initiatives that strengthen
+                  alumni-institution relationships.
+                </li>
+                <li>
+                  To create a platform for alumni to contribute to
+                  institutional growth through knowledge sharing, placements
+                  and corporate connections.
+                </li>
+              </ul>
+            </Reveal>
+
+            <Reveal className="mission-panel" delay={150}>
+              <h3>Objectives of the Alumni Cell</h3>
+              <ul className="mission-list">
+                <li>
+                  <strong>Strengthening Alumni Network</strong> — To create
+                  and maintain a strong bond among alumni, faculty and
+                  current students.
+                </li>
+                <li>
+                  <strong>Mentorship &amp; Career Support</strong> — To
+                  provide guidance, career counseling and professional
+                  mentorship to students and recent graduates.
+                </li>
+                <li>
+                  <strong>Industry Collaboration</strong> — To leverage
+                  alumni expertise for guest lectures, workshops, internships
+                  and job opportunities.
+                </li>
+                <li>
+                  <strong>Institutional Growth &amp; Development</strong> —
+                  To contribute to the institution's progress through
+                  feedback, donations and infrastructure support.
+                </li>
+                <li>
+                  <strong>Reunions &amp; Networking Events</strong> — To
+                  organize meetups, reunions and networking sessions for
+                  alumni to reconnect and collaborate.
+                </li>
+                <li>
+                  <strong>Academic &amp; Research Contributions</strong> — To
+                  support research, knowledge sharing and industry-academic
+                  collaborations.
+                </li>
+              </ul>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -847,7 +1366,7 @@ function LandingPage() {
             <Reveal as={TiltCard} className="feature-card">
               <div className="feature-number">01</div>
               <div className="feature-icon-box">
-                <span>👥</span>
+                <span><Users size={24} /></span>
               </div>
               <h3>Alumni Directory</h3>
               <p>
@@ -855,18 +1374,18 @@ function LandingPage() {
                 departments and industries.
               </p>
               <button
-                type="button"
-                onClick={() => scrollToSection("directory")}
-              >
-                EXPLORE DIRECTORY →
-              </button>
+  type="button"
+  onClick={() => navigate("/signup")}
+>
+  EXPLORE DIRECTORY →
+</button>
               <div className="feature-card-bar" />
             </Reveal>
 
             <Reveal as={TiltCard} className="feature-card" delay={100}>
               <div className="feature-number">02</div>
               <div className="feature-icon-box">
-                <span>🎓</span>
+                <span><GraduationCap size={24} /></span>
               </div>
               <h3>Career & Mentorship</h3>
               <p>
@@ -885,7 +1404,7 @@ function LandingPage() {
             <Reveal as={TiltCard} className="feature-card" delay={200}>
               <div className="feature-number">03</div>
               <div className="feature-icon-box">
-                <span>📅</span>
+                <span><Calendar size={24} /></span>
               </div>
               <h3>Alumni Events</h3>
               <p>
@@ -901,7 +1420,7 @@ function LandingPage() {
             <Reveal as={TiltCard} className="feature-card" delay={300}>
               <div className="feature-number">04</div>
               <div className="feature-icon-box">
-                <span>🏛️</span>
+                <span><Landmark size={24} /></span>
               </div>
               <h3>Give Back to VEC</h3>
               <p>
@@ -1201,113 +1720,6 @@ function LandingPage() {
       </section>
 
       {/* =================================================
-          CAREER OPPORTUNITIES
-      ================================================= */}
-
-      <section className="career-section">
-        <div className="landing-container">
-          <Reveal className="center-heading">
-            <span className="section-tag">CAREER OPPORTUNITIES</span>
-
-            <RevealHeading as="h2" direction="up">
-              {(visible) => (
-                <>
-                  <Words
-                    text="Opportunities from"
-                    visible={visible}
-                    startIndex={0}
-                  />
-                  <span>
-                    {" "}
-                    <Words
-                      text="your network."
-                      visible={visible}
-                      startIndex={2}
-                    />
-                  </span>
-                </>
-              )}
-            </RevealHeading>
-
-            <p>
-              Discover jobs, internships and career opportunities shared by the
-              alumni community.
-            </p>
-          </Reveal>
-
-          <div className="career-grid">
-            <Reveal as={TiltCard} className="career-card">
-              <div className="career-top">
-                <span className="career-type">FULL TIME</span>
-
-                <span>2 DAYS AGO</span>
-              </div>
-
-              <h3>Software Engineer</h3>
-
-              <p>
-                Build scalable applications and work with modern technologies.
-              </p>
-
-              <div className="career-company">
-                <strong>ZOHO</strong>
-
-                <span>Chennai • Hybrid</span>
-              </div>
-
-              <button type="button" onClick={() => navigate("/signup")}>
-                VIEW OPPORTUNITY →
-              </button>
-            </Reveal>
-
-            <Reveal as={TiltCard} className="career-card" delay={100}>
-              <div className="career-top">
-                <span className="career-type">INTERNSHIP</span>
-
-                <span>5 DAYS AGO</span>
-              </div>
-
-              <h3>Data Science Intern</h3>
-
-              <p>Work on real-world analytics and machine learning projects.</p>
-
-              <div className="career-company">
-                <strong>TCS</strong>
-
-                <span>Bengaluru • On-site</span>
-              </div>
-
-              <button type="button" onClick={() => navigate("/signup")}>
-                VIEW OPPORTUNITY →
-              </button>
-            </Reveal>
-
-            <Reveal as={TiltCard} className="career-card" delay={200}>
-              <div className="career-top">
-                <span className="career-type">FULL TIME</span>
-
-                <span>1 WEEK AGO</span>
-              </div>
-
-              <h3>AI Engineer</h3>
-
-              <p>Develop intelligent systems using machine learning and AI.</p>
-
-              <div className="career-company">
-                <strong>PRESIDIO</strong>
-
-                <span>Chennai • Hybrid</span>
-              </div>
-
-              <button type="button" onClick={() => navigate("/signup")}>
-                VIEW OPPORTUNITY →
-              </button>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* =================================================
           EVENTS
       ================================================= */}
 
@@ -1354,7 +1766,7 @@ function LandingPage() {
                   Reconnect with classmates and revisit your college memories.
                 </p>
                 <span className="event-location">
-                  📍 Velammal Engineering College
+                  <MapPin size={11} /> Velammal Engineering College
                 </span>
               </div>
             </article>
@@ -1371,7 +1783,7 @@ function LandingPage() {
                   Meet professionals from different industries and build
                   meaningful connections.
                 </p>
-                <span className="event-location">📍 Chennai</span>
+                <span className="event-location"><MapPin size={11} /> Chennai</span>
               </div>
             </article>
 
@@ -1387,7 +1799,7 @@ function LandingPage() {
                   Experienced alumni share career insights with the next
                   generation.
                 </p>
-                <span className="event-location">📍 Online</span>
+                <span className="event-location"><MapPin size={11} /> Online</span>
               </div>
             </article>
 
@@ -1403,7 +1815,7 @@ function LandingPage() {
                   Hands-on workshop covering the latest in AI, cloud and
                   full-stack development.
                 </p>
-                <span className="event-location">📍 Chennai</span>
+                <span className="event-location"><MapPin size={11} /> Chennai</span>
               </div>
             </article>
 
@@ -1420,7 +1832,7 @@ function LandingPage() {
                   mates.
                 </p>
                 <span className="event-location">
-                  📍 Velammal Engineering College
+                  <MapPin size={11} /> Velammal Engineering College
                 </span>
               </div>
             </article>
@@ -1437,7 +1849,7 @@ function LandingPage() {
                   Alumni entrepreneurs pitch ideas and connect with investors
                   and mentors.
                 </p>
-                <span className="event-location">📍 Bengaluru</span>
+                <span className="event-location"><MapPin size={11} /> Bengaluru</span>
               </div>
             </article>
 
@@ -1454,7 +1866,7 @@ function LandingPage() {
                   Reconnect with classmates and revisit your college memories.
                 </p>
                 <span className="event-location">
-                  📍 Velammal Engineering College
+                  <MapPin size={11} /> Velammal Engineering College
                 </span>
               </div>
             </article>
@@ -1471,7 +1883,7 @@ function LandingPage() {
                   Meet professionals from different industries and build
                   meaningful connections.
                 </p>
-                <span className="event-location">📍 Chennai</span>
+                <span className="event-location"><MapPin size={11} /> Chennai</span>
               </div>
             </article>
 
@@ -1487,7 +1899,7 @@ function LandingPage() {
                   Experienced alumni share career insights with the next
                   generation.
                 </p>
-                <span className="event-location">📍 Online</span>
+                <span className="event-location"><MapPin size={11} /> Online</span>
               </div>
             </article>
 
@@ -1503,7 +1915,7 @@ function LandingPage() {
                   Hands-on workshop covering the latest in AI, cloud and
                   full-stack development.
                 </p>
-                <span className="event-location">📍 Chennai</span>
+                <span className="event-location"><MapPin size={11} /> Chennai</span>
               </div>
             </article>
 
@@ -1520,7 +1932,7 @@ function LandingPage() {
                   mates.
                 </p>
                 <span className="event-location">
-                  📍 Velammal Engineering College
+                  <MapPin size={11} /> Velammal Engineering College
                 </span>
               </div>
             </article>
@@ -1537,62 +1949,13 @@ function LandingPage() {
                   Alumni entrepreneurs pitch ideas and connect with investors
                   and mentors.
                 </p>
-                <span className="event-location">📍 Bengaluru</span>
+                <span className="event-location"><MapPin size={11} /> Bengaluru</span>
               </div>
             </article>
           </div>
 
           {/* Right fade shadow */}
           <div className="events-marquee-shadow" />
-        </div>
-      </section>
-      {/* =========================
-    MENTORSHIP NETWORK
-========================= */}
-      <section className="mentorship-section" id="mentorship">
-        <div className="landing-container">
-          <div className="mentorship-grid">
-            {/* LEFT CONTENT */}
-            <div className="mentorship-content">
-              <div className="section-tag light">ALUMNI CONNECT</div>
-
-              <h2>
-                One campus.
-                <span>Countless connections.</span>
-              </h2>
-
-              <p>
-                Stay connected with the Velammal alumni community, discover
-                professionals across industries, reconnect with your batchmates,
-                and explore opportunities beyond the campus.
-              </p>
-
-              <button
-                className="maroon-button"
-                onClick={() => scrollToSection("directory")}
-              >
-                EXPLORE ALUMNI
-                <span>→</span>
-              </button>
-            </div>
-
-            {/* RIGHT VISUAL */}
-            <div className="mentor-visual">
-              <div className="mentor-orbit">
-                {/* CENTER */}
-                <div className="mentor-center">VEC</div>
-
-                {/* ORBIT NODES */}
-                <div className="mentor-node node-one">🎓</div>
-
-                <div className="mentor-node node-two">💼</div>
-
-                <div className="mentor-node node-three">🚀</div>
-
-                <div className="mentor-node node-four">🤝</div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1627,37 +1990,37 @@ function LandingPage() {
 
           <div className="achievement-grid">
             <Reveal className="achievement-card">
-              <span>🏆</span>
+              <span><Trophy size={30} /></span>
               <strong>Entrepreneurs</strong>
               <small>Building businesses</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={80}>
-              <span>🚀</span>
+              <span><Rocket size={30} /></span>
               <strong>Startup Founders</strong>
               <small>Creating new ideas</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={160}>
-              <span>💻</span>
+              <span><Laptop size={30} /></span>
               <strong>Technology Leaders</strong>
               <small>Driving innovation</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={240}>
-              <span>🔬</span>
+              <span><Microscope size={30} /></span>
               <strong>Researchers</strong>
               <small>Expanding knowledge</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={320}>
-              <span>🎓</span>
+              <span><GraduationCap size={28} /></span>
               <strong>Higher Studies</strong>
               <small>Learning globally</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={400}>
-              <span>🏅</span>
+              <span><Medal size={30} /></span>
               <strong>Public Service</strong>
               <small>Serving society</small>
             </Reveal>
@@ -1701,17 +2064,17 @@ function LandingPage() {
 
             <div className="community-contact-list">
               <div>
-                <span>✉</span>
+                <span><Mail size={16} /></span>
                 <p>alumni@vec.ac.in</p>
               </div>
 
               <div>
-                <span>☎</span>
+                <span><Phone size={16} /></span>
                 <p>Alumni Support Desk</p>
               </div>
 
               <div>
-                <span>📍</span>
+                <span><MapPin size={16} /></span>
                 <p>Velammal Engineering College</p>
               </div>
             </div>
@@ -1764,7 +2127,7 @@ function LandingPage() {
 
             <div className="app-buttons">
               <button type="button">
-                <span>▶</span>
+                <span><PlayCircle size={20} /></span>
                 <div>
                   <small>COMING SOON ON</small>
                   <strong>Google Play</strong>
@@ -1772,7 +2135,7 @@ function LandingPage() {
               </button>
 
               <button type="button">
-                <span></span>
+                <span><Apple size={20} /></span>
                 <div>
                   <small>COMING SOON ON</small>
                   <strong>App Store</strong>
@@ -1810,17 +2173,17 @@ function LandingPage() {
                 </div>
 
                 <div className="phone-card">
-                  👥
+                  <Users size={16} />
                   <span>Find Alumni</span>→
                 </div>
 
                 <div className="phone-card">
-                  💼
+                  <Briefcase size={16} />
                   <span>Career Opportunities</span>→
                 </div>
 
                 <div className="phone-card">
-                  🎓
+                  <GraduationCap size={16} />
                   <span>Find a Mentor</span>→
                 </div>
               </div>
