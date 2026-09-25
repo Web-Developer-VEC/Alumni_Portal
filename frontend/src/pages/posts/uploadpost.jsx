@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowLeft,
@@ -17,38 +17,23 @@ import {
   User,
   MapPin,
   IndianRupee,
-  Briefcase,
   GraduationCap,
+  Code2,
   Calendar,
   UploadCloud,
   Send,
+  Save,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Check,
   X,
   File as FileIcon,
 } from "lucide-react";
 import styles from "./uploadpost.module.css";
 
-/* ==========================================================================
-   uploadpost.jsx — "Create a Post"
-
-   NOTE ON FIELDS NOT IN YOUR SCHEMA YET:
-   - "Experience (Min / Max yrs)" is in this mockup but wasn't in the
-     Mongoose schema you shared. It's collected here as experienceMin /
-     experienceMax and sent in the FormData — add matching fields to the
-     schema (e.g. experienceMin: Number, experienceMax: Number) if you
-     want it persisted, otherwise your backend will just ignore those keys.
-   - "Post Type" maps directly to your existing `type` enum
-     (Full-time / Internship / Part-time / Contract).
-
-   The date/time picker is the same calendar+clock ported from Outpass.jsx.
-   No external alert library is used here (sweetalert2 wasn't installed in
-   this project) — validation messages are shown inline / via a plain
-   window.alert for the one date-order check.
-   ========================================================================== */
+const DRAFT_KEY = "alumniPortal.createPost.draft.v1";
+const AUTOSAVE_DELAY_MS = 800;
 
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -59,6 +44,18 @@ const formatDisplayDateTime = (value) => {
   return d.toLocaleString(undefined, {
     day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
   });
+};
+
+const formatRelativeTime = (date) => {
+  if (!date) return "";
+  const seconds = Math.round((Date.now() - date.getTime()) / 1000);
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return date.toLocaleDateString();
 };
 
 /* -------------------------------------------------------------------------- */
@@ -237,7 +234,7 @@ function IconInput({ icon: IconCmp, counter, ...props }) {
   return (
     <div>
       <div className={styles.inputWrap}>
-        <span className={styles.inputIcon}><IconCmp size={16} /></span>
+        <span className={styles.inputIcon}><IconCmp size={15} /></span>
         <input {...props} className={styles.input} />
       </div>
       {counter && <div className={styles.counterRow}><span className={styles.counter}>{counter}</span></div>}
@@ -248,9 +245,9 @@ function IconInput({ icon: IconCmp, counter, ...props }) {
 function IconSelect({ icon: IconCmp, children, ...props }) {
   return (
     <div className={styles.inputWrap}>
-      <span className={styles.inputIcon}><IconCmp size={16} /></span>
+      <span className={styles.inputIcon}><IconCmp size={15} /></span>
       <select {...props} className={styles.select}>{children}</select>
-      <span className={styles.selectChevron}><ChevronDown size={16} /></span>
+      <span className={styles.selectChevron}><ChevronDown size={15} /></span>
     </div>
   );
 }
@@ -262,10 +259,38 @@ function Checkbox({ checked, onChange, label }) {
         className={`${styles.checkboxBox} ${checked ? styles.checkboxBoxChecked : ""}`}
         onClick={() => onChange(!checked)}
       >
-        {checked && <Check size={13} />}
+        {checked && <Check size={12} />}
       </span>
       <span className={styles.checkboxLabel} onClick={() => onChange(!checked)}>{label}</span>
     </label>
+  );
+}
+
+function ChipInput({ values, onChange, placeholder, limit = 24, max = 10 }) {
+  const [draft, setDraft] = useState("");
+  const commit = () => {
+    const v = draft.trim().slice(0, limit);
+    if (v && !values.includes(v) && values.length < max) onChange([...values, v]);
+    setDraft("");
+  };
+  return (
+    <div className={styles.chipBox}>
+      <div className={styles.chipList}>
+        {values.map((v) => (
+          <span key={v} className={styles.chip}>
+            {v}
+            <button type="button" onClick={() => onChange(values.filter((x) => x !== v))} className={styles.chipRemove} aria-label={`Remove ${v}`}>
+              <X size={12} />
+            </button>
+          </span>
+        ))}
+        {values.length < max && (
+          <input value={draft} maxLength={limit} onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commit(); } }}
+            onBlur={commit} placeholder={placeholder} className={styles.chipInput} />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -273,7 +298,7 @@ function DateTimeField({ label, value, onOpen }) {
   return (
     <Field label={label}>
       <div className={styles.datetimeDisplay} onClick={onOpen}>
-        <span className={styles.inputIcon}><Calendar size={16} /></span>
+        <span className={styles.inputIcon}><Calendar size={15} /></span>
         <span className={value ? styles.datetimeValue : styles.datetimePlaceholder}>
           {value ? formatDisplayDateTime(value) : `Select ${label.toLowerCase()}`}
         </span>
@@ -298,8 +323,8 @@ function Section({ number, title, desc, children }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Rich-text-lite toolbar — wraps the selected text in the content textarea  */
-/*  with markdown-style markers. Not a full WYSIWYG editor.                  */
+/*  Rich-text-lite toolbar — wraps selection in the content textarea with     */
+/*  markdown-style markers. Not a full WYSIWYG editor.                        */
 /* -------------------------------------------------------------------------- */
 function wrapSelection(textareaRef, before, after = before) {
   const el = textareaRef.current;
@@ -307,13 +332,9 @@ function wrapSelection(textareaRef, before, after = before) {
   const { selectionStart: s, selectionEnd: e, value } = el;
   const selected = value.slice(s, e) || "text";
   const next = value.slice(0, s) + before + selected + after + value.slice(e);
-  requestAnimationFrame(() => {
-    el.focus();
-    el.setSelectionRange(s + before.length, s + before.length + selected.length);
-  });
+  requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + before.length, s + before.length + selected.length); });
   return next;
 }
-
 function insertLinePrefix(textareaRef, prefix) {
   const el = textareaRef.current;
   if (!el) return null;
@@ -327,18 +348,42 @@ function insertLinePrefix(textareaRef, prefix) {
 /* -------------------------------------------------------------------------- */
 /*  Constraints & schema-shaped state                                         */
 /* -------------------------------------------------------------------------- */
-const LIMITS = { title: 150, content: 1000, maxFiles: 6 };
+const LIMITS = { title: 150, content: 1000, chip: 24, maxChips: 10, maxFiles: 6 };
 
 const EMPTY_POST = {
-  title: "", postType: "Full-time", content: "", link: "",
-  company: "", role: "", location: "", package: "", experienceMin: "", experienceMax: "", eligibility: "",
-  freshers: true, remote: false, referralAvailable: false,
+  title: "", type: "Full-time", content: "", link: "",
+  company: "", role: "", location: "", package: "", eligibility: "", skills: [],
+  freshers: false, remote: false, referralAvailable: false,
   startTime: "", endTime: "", deadline: "",
 };
 
+// Merge a persisted draft onto EMPTY_POST so an older/partial shape in
+// localStorage never crashes the form if the schema changes later.
+function sanitizeDraft(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const merged = { ...EMPTY_POST };
+  for (const key of Object.keys(EMPTY_POST)) {
+    if (key === "skills") {
+      merged.skills = Array.isArray(raw.skills) ? raw.skills.filter((s) => typeof s === "string") : [];
+    } else if (typeof raw[key] === typeof EMPTY_POST[key]) {
+      merged[key] = raw[key];
+    }
+  }
+  return merged;
+}
+
+function isPostEmpty(post) {
+  return Object.entries(post).every(([key, value]) => {
+    if (key === "type") return true; // default select value doesn't count as "content"
+    if (Array.isArray(value)) return value.length === 0;
+    if (typeof value === "boolean") return value === false;
+    return !value;
+  });
+}
+
 export default function UploadPost({ onPublish, onCancel }) {
   const [post, setPost] = useState(EMPTY_POST);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]); // becomes fileUrls after the server uploads them
   const [activePicker, setActivePicker] = useState(null); // null | "start" | "end" | "deadline"
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -346,6 +391,89 @@ export default function UploadPost({ onPublish, onCancel }) {
   const contentRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  // ---- Draft persistence (localStorage) ----------------------------------
+  const [draftStatus, setDraftStatus] = useState("idle"); // idle | saving | saved | error
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+  const hasLoadedDraft = useRef(false);
+  const isFirstRender = useRef(true);
+  const autosaveTimer = useRef(null);
+
+  const writeDraft = useCallback((data) => {
+    try {
+      if (typeof window === "undefined") return false;
+      if (isPostEmpty(data)) {
+        window.localStorage.removeItem(DRAFT_KEY);
+        return true;
+      }
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ post: data, savedAt: new Date().toISOString() }));
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // Load any saved draft once, on mount.
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") { hasLoadedDraft.current = true; return; }
+      const raw = window.localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const restored = sanitizeDraft(parsed?.post);
+        if (restored && !isPostEmpty(restored)) {
+          setPost(restored);
+          const savedAt = parsed?.savedAt ? new Date(parsed.savedAt) : new Date();
+          setLastSavedAt(Number.isNaN(savedAt.getTime()) ? new Date() : savedAt);
+          setDraftStatus("saved");
+        }
+      }
+    } catch {
+      // Corrupt/unavailable storage — start with a clean form.
+    } finally {
+      hasLoadedDraft.current = true;
+    }
+  }, []);
+
+  // Debounced autosave whenever the post changes (after the initial load).
+  useEffect(() => {
+    if (!hasLoadedDraft.current) return;
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+
+    if (isPostEmpty(post)) {
+      writeDraft(post);
+      setDraftStatus("idle");
+      setLastSavedAt(null);
+      return;
+    }
+
+    setDraftStatus("saving");
+    autosaveTimer.current = setTimeout(() => {
+      const ok = writeDraft(post);
+      setDraftStatus(ok ? "saved" : "error");
+      setLastSavedAt(ok ? new Date() : null);
+    }, AUTOSAVE_DELAY_MS);
+
+    return () => { if (autosaveTimer.current) clearTimeout(autosaveTimer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post, writeDraft]);
+
+  const saveDraftNow = () => {
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    setDraftStatus("saving");
+    const ok = writeDraft(post);
+    setDraftStatus(ok ? "saved" : "error");
+    setLastSavedAt(ok ? new Date() : null);
+  };
+
+  const clearDraft = useCallback(() => {
+    try { if (typeof window !== "undefined") window.localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+    setDraftStatus("idle");
+    setLastSavedAt(null);
+  }, []);
+
+  // ---- Form state helpers --------------------------------------------------
   const set = (key, value) => setPost((p) => ({ ...p, [key]: value }));
 
   const isValidUrl = (v) => { try { const u = new URL(v); return u.protocol === "http:" || u.protocol === "https:"; } catch { return false; } };
@@ -357,15 +485,9 @@ export default function UploadPost({ onPublish, onCancel }) {
 
   const handleFilesSelected = (fileList) => {
     const incoming = Array.from(fileList || []);
-    if (files.length + incoming.length > LIMITS.maxFiles) {
-      window.alert(`You can attach up to ${LIMITS.maxFiles} files.`);
-      return;
-    }
+    if (files.length + incoming.length > LIMITS.maxFiles) { window.alert(`Up to ${LIMITS.maxFiles} files.`); return; }
     const oversized = incoming.find((f) => f.size > 10 * 1024 * 1024);
-    if (oversized) {
-      window.alert("File size exceeds 10MB limit.");
-      return;
-    }
+    if (oversized) { window.alert("File size exceeds 10MB limit."); return; }
     const withPreviews = incoming.map((file) => ({
       file, id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       url: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
@@ -400,7 +522,6 @@ export default function UploadPost({ onPublish, onCancel }) {
   const validate = () => {
     const e = {};
     if (!post.title.trim()) e.title = "Title is required";
-    if (!post.postType) e.postType = "Select a post type";
     if (!post.content.trim()) e.content = "Content is required";
     if (post.link.trim() && !isValidUrl(post.link.trim())) e.link = "Enter a valid link starting with http:// or https://";
     if (post.startTime && post.endTime && new Date(post.endTime) < new Date(post.startTime)) e.endTime = "End time cannot be before start time";
@@ -416,23 +537,22 @@ export default function UploadPost({ onPublish, onCancel }) {
 
     const formData = new FormData();
     formData.append("title", post.title.trim());
-    formData.append("type", post.postType);
     formData.append("content", post.content.trim());
     if (post.link.trim()) formData.append("link", post.link.trim());
-    if (post.company) formData.append("company", post.company);
-    if (post.role) formData.append("role", post.role);
-    if (post.location) formData.append("location", post.location);
-    if (post.package) formData.append("package", post.package);
-    if (post.experienceMin) formData.append("experienceMin", post.experienceMin);
-    if (post.experienceMax) formData.append("experienceMax", post.experienceMax);
-    if (post.eligibility) formData.append("eligibility", post.eligibility);
-    formData.append("freshers", post.freshers);
-    formData.append("remote", post.remote);
-    formData.append("referralAvailable", post.referralAvailable);
     if (post.startTime) formData.append("startTime", new Date(post.startTime).toISOString());
     if (post.endTime) formData.append("endTime", new Date(post.endTime).toISOString());
     if (post.deadline) formData.append("deadline", new Date(post.deadline).toISOString());
-    files.forEach((f) => formData.append("files", f.file));
+    if (post.company) formData.append("company", post.company);
+    if (post.role) formData.append("role", post.role);
+    if (post.eligibility) formData.append("eligibility", post.eligibility);
+    if (post.location) formData.append("location", post.location);
+    formData.append("type", post.type);
+    formData.append("freshers", post.freshers);
+    formData.append("remote", post.remote);
+    formData.append("referralAvailable", post.referralAvailable);
+    if (post.package) formData.append("package", post.package);
+    post.skills.forEach((s) => formData.append("skills", s));
+    files.forEach((f) => formData.append("files", f.file)); // server converts these to fileUrls
 
     try {
       await onPublish?.(formData);
@@ -440,26 +560,44 @@ export default function UploadPost({ onPublish, onCancel }) {
       setTimeout(() => setSubmitted(false), 2600);
       setPost(EMPTY_POST);
       setFiles([]);
+      clearDraft();
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const canSubmit = useMemo(() => post.title.trim() && post.content.trim() && post.postType, [post]);
+  const handleCancel = () => {
+    onCancel?.();
+  };
+
+  const canSubmit = useMemo(() => post.title.trim() && post.content.trim(), [post]);
+
+  const draftBadgeClass = draftStatus === "saving"
+    ? `${styles.draftBadge} ${styles.draftBadgeSaving}`
+    : draftStatus === "error"
+      ? `${styles.draftBadge} ${styles.draftBadgeError}`
+      : styles.draftBadge;
 
   return (
     <div className={styles.page}>
       <div className={styles.wrap}>
         <div className={styles.topBar}>
-          <button type="button" className={styles.backLink} onClick={onCancel}>
-            <ArrowLeft size={17} /> All Posts
+          <button type="button" className={styles.backLink} onClick={handleCancel}>
+            <ArrowLeft size={16} /> All Posts
           </button>
-          <div className={styles.draftBadge}><CheckCircle2 size={14} /> Draft Saved</div>
+
+          {draftStatus !== "idle" && (
+            <div className={draftBadgeClass}>
+              {draftStatus === "saving" && <><span className={styles.draftSpinner} />Saving draft…</>}
+              {draftStatus === "saved" && <><CheckCircle2 size={13} /> Draft saved{lastSavedAt ? ` · ${formatRelativeTime(lastSavedAt)}` : ""}</>}
+              {draftStatus === "error" && <>Couldn't save draft</>}
+            </div>
+          )}
         </div>
 
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <div className={styles.headerIconBox}><Pencil size={20} /></div>
+            <div className={styles.headerIconBox}><Pencil size={18} /></div>
             <div>
               <h1 className={styles.headerTitle}>Create a Post</h1>
               <p className={styles.headerSubtitle}>Share job opportunities, events, updates and more with the alumni community.</p>
@@ -474,8 +612,8 @@ export default function UploadPost({ onPublish, onCancel }) {
                     onChange={(e) => set("title", e.target.value)} placeholder="Enter post title"
                     counter={`${post.title.length}/${LIMITS.title}`} />
                 </Field>
-                <Field label="Post Type" required error={errors.postType}>
-                  <IconSelect icon={Tag} value={post.postType} onChange={(e) => set("postType", e.target.value)}>
+                <Field label="Post Type">
+                  <IconSelect icon={Tag} value={post.type} onChange={(e) => set("type", e.target.value)}>
                     <option value="Full-time">Full-time</option>
                     <option value="Internship">Internship</option>
                     <option value="Part-time">Part-time</option>
@@ -487,21 +625,21 @@ export default function UploadPost({ onPublish, onCancel }) {
               <Field label="Content" required error={errors.content}>
                 <div className={styles.editorBox}>
                   <div className={styles.toolbar}>
-                    <button type="button" className={styles.toolbarBtn} title="Bold" onClick={() => applyToolbar((r) => wrapSelection(r, "**"))}><Bold size={15} /></button>
-                    <button type="button" className={styles.toolbarBtn} title="Italic" onClick={() => applyToolbar((r) => wrapSelection(r, "*"))}><Italic size={15} /></button>
-                    <button type="button" className={styles.toolbarBtn} title="Underline" onClick={() => applyToolbar((r) => wrapSelection(r, "__"))}><Underline size={15} /></button>
+                    <button type="button" className={styles.toolbarBtn} title="Bold" onClick={() => applyToolbar((r) => wrapSelection(r, "**"))}><Bold size={14} /></button>
+                    <button type="button" className={styles.toolbarBtn} title="Italic" onClick={() => applyToolbar((r) => wrapSelection(r, "*"))}><Italic size={14} /></button>
+                    <button type="button" className={styles.toolbarBtn} title="Underline" onClick={() => applyToolbar((r) => wrapSelection(r, "__"))}><Underline size={14} /></button>
                     <div className={styles.toolbarDivider} />
-                    <button type="button" className={styles.toolbarBtn} title="Bullet list" onClick={() => applyToolbar((r) => insertLinePrefix(r, "- "))}><List size={15} /></button>
-                    <button type="button" className={styles.toolbarBtn} title="Numbered list" onClick={() => applyToolbar((r) => insertLinePrefix(r, "1. "))}><ListOrdered size={15} /></button>
+                    <button type="button" className={styles.toolbarBtn} title="Bullet list" onClick={() => applyToolbar((r) => insertLinePrefix(r, "- "))}><List size={14} /></button>
+                    <button type="button" className={styles.toolbarBtn} title="Numbered list" onClick={() => applyToolbar((r) => insertLinePrefix(r, "1. "))}><ListOrdered size={14} /></button>
                     <div className={styles.toolbarDivider} />
                     <button type="button" className={styles.toolbarBtn} title="Insert link" onClick={() => {
                       const url = window.prompt("Link URL:");
                       if (url) applyToolbar((r) => wrapSelection(r, "[", `](${url})`));
-                    }}><Link2 size={15} /></button>
+                    }}><Link2 size={14} /></button>
                     <button type="button" className={styles.toolbarBtn} title="Insert image URL" onClick={() => {
                       const url = window.prompt("Image URL:");
                       if (url) applyToolbar((r) => wrapSelection(r, "![", `](${url})`));
-                    }}><ImageIcon size={15} /></button>
+                    }}><ImageIcon size={14} /></button>
                   </div>
                   <textarea
                     ref={contentRef}
@@ -521,24 +659,15 @@ export default function UploadPost({ onPublish, onCancel }) {
               <div className={styles.grid3}>
                 <Field label="Company"><IconInput icon={Building2} value={post.company} onChange={(e) => set("company", e.target.value)} placeholder="Enter company name" /></Field>
                 <Field label="Role / Position"><IconInput icon={User} value={post.role} onChange={(e) => set("role", e.target.value)} placeholder="Enter role or position" /></Field>
-                <Field label="Location"><IconInput icon={MapPin} value={post.location} onChange={(e) => set("location", e.target.value)} placeholder="Enter location (e.g., Chennai)" /></Field>
+                <Field label="Location"><IconInput icon={MapPin} value={post.location} onChange={(e) => set("location", e.target.value)} placeholder="e.g., Chennai" /></Field>
               </div>
-              <div className={styles.grid3}>
-                <Field label="Package (LPA)"><IconInput icon={IndianRupee} value={post.package} onChange={(e) => set("package", e.target.value)} placeholder="e.g., 6.5" /></Field>
-                <Field label="Experience">
-                  <div className={styles.rangeRow}>
-                    <div className={styles.rangeInputWrap}>
-                      <span className={styles.inputIcon}><Briefcase size={16} /></span>
-                      <input className={styles.input} type="number" min="0" value={post.experienceMin}
-                        onChange={(e) => set("experienceMin", e.target.value)} placeholder="Min (yrs)" />
-                    </div>
-                    <span className={styles.rangeDash}>-</span>
-                    <input className={styles.input} style={{ paddingLeft: 12 }} type="number" min="0" value={post.experienceMax}
-                      onChange={(e) => set("experienceMax", e.target.value)} placeholder="Max (yrs)" />
-                  </div>
-                </Field>
+              <div className={styles.grid2}>
+                <Field label="Package"><IconInput icon={IndianRupee} value={post.package} onChange={(e) => set("package", e.target.value)} placeholder="e.g., 6.5 LPA" /></Field>
                 <Field label="Eligibility"><IconInput icon={GraduationCap} value={post.eligibility} onChange={(e) => set("eligibility", e.target.value)} placeholder="e.g., B.Tech, Any Graduate" /></Field>
               </div>
+              <Field label="Skills">
+                <ChipInput values={post.skills} onChange={(v) => set("skills", v)} placeholder="e.g. React, SQL, System Design" limit={LIMITS.chip} max={LIMITS.maxChips} />
+              </Field>
               <div className={styles.checkboxRow}>
                 <Checkbox checked={post.freshers} onChange={(v) => set("freshers", v)} label="Open for Freshers" />
                 <Checkbox checked={post.remote} onChange={(v) => set("remote", v)} label="Remote Work" />
@@ -569,19 +698,19 @@ export default function UploadPost({ onPublish, onCancel }) {
                   >
                     <input ref={fileInputRef} type="file" multiple className={styles.fileInput}
                       accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" onChange={(e) => handleFilesSelected(e.target.files)} />
-                    <UploadCloud className={styles.uploadIcon} size={26} />
+                    <UploadCloud className={styles.uploadIcon} size={24} />
                     <p className={styles.uploadText}>Click to upload files or drag and drop</p>
-                    <p className={styles.uploadHint}>PDF, Images, Docs (Max 10MB each)</p>
+                    <p className={styles.uploadHint}>PDF, Images, Docs (Max 10MB each) — attachments aren't saved in drafts</p>
 
                     {files.length > 0 && (
                       <div className={styles.attachmentGrid} onClick={(e) => e.stopPropagation()}>
                         {files.map((f) => (
                           <div key={f.id} className={styles.attachmentItem}>
                             <button type="button" className={styles.attachmentRemove} onClick={() => removeFile(f.id)} aria-label={`Remove ${f.file.name}`}>
-                              <X size={12} />
+                              <X size={11} />
                             </button>
                             {f.url ? <img src={f.url} alt={f.file.name} className={styles.attachmentThumb} /> : (
-                              <div className={styles.attachmentFileIcon}><FileIcon size={22} /></div>
+                              <div className={styles.attachmentFileIcon}><FileIcon size={20} /></div>
                             )}
                             <div className={styles.attachmentName}>{f.file.name}</div>
                           </div>
@@ -594,9 +723,18 @@ export default function UploadPost({ onPublish, onCancel }) {
             </Section>
 
             <div className={styles.footer}>
-              <button type="button" className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
+              <button
+                type="button"
+                className={styles.saveDraftBtn}
+                onClick={saveDraftNow}
+                disabled={isPostEmpty(post) || draftStatus === "saving"}
+                title="Save your progress locally so you can come back to it later"
+              >
+                <Save size={14} /> Save Draft
+              </button>
+              <button type="button" className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
               <button type="submit" disabled={!canSubmit || isSubmitting} className={styles.submitBtn}>
-                <Send size={15} /> {isSubmitting ? "Posting..." : "Post to Alumni Community"}
+                <Send size={14} /> {isSubmitting ? "Posting..." : "Post to Alumni Community"}
               </button>
             </div>
           </form>
@@ -616,7 +754,7 @@ export default function UploadPost({ onPublish, onCancel }) {
 
       {submitted && (
         <div className={styles.toast}>
-          <CheckCircle2 size={20} color="#4ade80" />
+          <CheckCircle2 size={18} color="#4ade80" />
           <span>Post published successfully</span>
         </div>
       )}
