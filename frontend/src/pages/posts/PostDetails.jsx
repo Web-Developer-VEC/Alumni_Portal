@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import styles from "./post.module.css";
+import Navbar from "../../components/common/DashboardNavbar"
 
 /* -------------------------------------------------------------------------- */
 /*  Self-contained: no index.html edits needed.                              */
@@ -1480,6 +1481,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
     <div className={styles.page}>
       <FontStyles />
       {/* <TopHeader /> */}
+      <Navbar />
 
       <main className={styles.main}>
         <div className={styles.container}>
@@ -1512,32 +1514,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
       </main>
 
       <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <div className={styles.footerLogo}>
-            <div className={styles.footerLogoIconWrap}>
-              <Icon name="school" className={styles.footerLogoIcon} />
-            </div>
-            <span className={styles.footerLogoTitle}>Alumni Connect</span>
-            <span className={styles.footerLogoSub}>
-              · Distinguished Career Network
-            </span>
-          </div>
-          <div className={styles.footerLinks}>
-            {[
-              "Honor Code",
-              "Network Directory",
-              "Privacy Policy",
-              "Support",
-            ].map((l) => (
-              <a key={l} href="#" className={styles.footerLink}>
-                {l}
-              </a>
-            ))}
-          </div>
-          <div className={styles.footerCopyright}>
-            © 2026 Alumni Association. All rights reserved.
-          </div>
-        </div>
+        
       </footer>
 
       <Toast />
