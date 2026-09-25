@@ -1,0 +1,830 @@
+.approval-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 32px;
+    background: #faf8f2;
+    font-family: "Poppins", sans-serif;
+}
+
+/* =========================
+   PAGE HEADER
+========================= */
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.page-header h1 {
+    margin: 0;
+    color: #7a1f2b;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.page-header p {
+    margin: 6px 0 0;
+    color: #777;
+    font-size: 14px;
+}
+
+.pending-count {
+    min-width: 100px;
+    padding: 12px 20px;
+    border: 1px solid #eadfc5;
+    border-radius: 12px;
+    background: #ffffff;
+    text-align: center;
+}
+
+.pending-count span {
+    display: block;
+    color: #7a1f2b;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.pending-count p {
+    margin: 0;
+    color: #777;
+    font-size: 12px;
+}
+
+/* =========================
+   LIST
+========================= */
+
+.approval-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* =========================
+   ALUMNI CARD
+========================= */
+
+.alumni-card {
+    overflow: hidden;
+    border: 1px solid #e8dfcf;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(80, 50, 30, 0.04);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.alumni-card.expanded {
+    border-color: #d8c5a4;
+    box-shadow: 0 5px 18px rgba(80, 50, 30, 0.08);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.alumni-header {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 16px 20px;
+
+    border: none;
+    background: transparent;
+
+    font-family: inherit;
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.alumni-header:hover {
+    background: #fffdf8;
+}
+
+.header-profile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.header-image,
+.header-placeholder {
+    width: 48px;
+    height: 48px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+}
+
+.header-image {
+    object-fit: cover;
+    border: 2px solid #f5b301;
+}
+
+.header-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #fdf0c8;
+    color: #7a1f2b;
+}
+
+.header-profile h2 {
+    margin: 0;
+
+    color: #292929;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.header-profile p {
+    margin: 4px 0 0;
+
+    color: #888;
+    font-size: 13px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.expand-icon {
+    flex-shrink: 0;
+    color: #7a1f2b;
+}
+
+/* =========================
+   EXPANDED DETAILS
+========================= */
+
+.alumni-details {
+    padding: 0 24px 24px;
+    border-top: 1px solid #eee7da;
+}
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-section {
+    display: flex;
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 22px 0;
+
+    border-bottom: 1px solid #eee7da;
+}
+
+.profile-image,
+.profile-placeholder {
+    width: 120px;
+    height: 120px;
+
+    flex-shrink: 0;
+
+    border-radius: 12px;
+}
+
+.profile-image {
+    object-fit: cover;
+    border: 3px solid #f5b301;
+}
+
+.profile-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #fdf0c8;
+    color: #7a1f2b;
+}
+
+.profile-summary h2 {
+    margin: 0 0 5px;
+
+    color: #7a1f2b;
+    font-size: 21px;
+    font-weight: 600;
+}
+
+.profile-summary p {
+    margin: 0 0 5px;
+
+    color: #555;
+    font-size: 13px;
+}
+
+.profile-summary span {
+    color: #888;
+    font-size: 13px;
+}
+
+/* =========================
+   DETAILS SECTION
+========================= */
+
+.details-section {
+    padding-top: 22px;
+}
+
+.details-section h3 {
+    margin: 0 0 15px;
+
+    color: #7a1f2b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* =========================
+   DETAILS GRID
+========================= */
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    min-width: 0;
+
+    padding: 13px;
+
+    border: 1px solid #eee7da;
+    border-radius: 10px;
+
+    background: #fffdf8;
+}
+
+.detail-item>svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    color: #7a1f2b;
+}
+
+.detail-item>div {
+    min-width: 0;
+}
+
+.detail-item span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #888;
+    font-size: 13px;
+}
+
+.detail-item strong {
+    display: block;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.detail-item a {
+    display: block;
+    color: #0a66c2;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.detail-item a:hover {
+    text-decoration: underline;
+}
+
+/* =========================
+   CONTRIBUTIONS
+========================= */
+
+.contribution-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.contribution-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 13px;
+    border-radius: 9px;
+    font-size: 13px;
+}
+
+.contribution-active {
+    border: 1px solid #d9e6d6;
+    background: #f5faf3;
+    color: #3f6338;
+}
+
+.contribution-inactive {
+    border: 1px solid #e8e3db;
+    background: #faf9f6;
+    color: #aaa;
+}
+
+.contribution-icon {
+    width: 21px;
+    height: 21px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+}
+
+.contribution-active .contribution-icon {
+    background: #dcebd8;
+    color: #4b7542;
+}
+
+.contribution-inactive .contribution-icon {
+    background: #ece9e4;
+    color: #aaa;
+}
+
+/* =========================
+   APPROVAL ACTIONS
+========================= */
+
+.approval-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    margin-top: 24px;
+    padding-top: 20px;
+
+    border-top: 1px solid #eee7da;
+}
+
+.reject-button,
+.approve-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 42px;
+
+    padding: 0 18px;
+
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.reject-button {
+    border: 1px solid #d9b8b8;
+    background: #ffffff;
+    color: #9a3030;
+}
+
+.reject-button:hover {
+    border-color: #9a3030;
+    background: #fff4f4;
+}
+
+.approve-button {
+    border: 1px solid #7a1f2b;
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.approve-button:hover {
+    border-color: #641923;
+    background: #641923;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 300px;
+
+    padding: 40px;
+
+    border: 1px solid #e8dfcf;
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    text-align: center;
+}
+
+.empty-state svg {
+    margin-bottom: 14px;
+    color: #7a1f2b;
+}
+
+.empty-state h2 {
+    margin: 0;
+
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin: 6px 0 0;
+
+    color: #888;
+    font-size: 13px;
+}
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 768px) {
+    .approval-page {
+        padding: 20px;
+    }
+
+    .page-header h1 {
+        font-size: 23px;
+    }
+
+    .details-grid,
+    .contribution-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 520px) {
+    .approval-page {
+        padding: 14px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+    }
+
+    .pending-count {
+        min-width: 80px;
+        padding: 10px 14px;
+    }
+
+    .header-image,
+    .header-placeholder {
+        width: 42px;
+        height: 42px;
+    }
+
+    .header-profile h2 {
+        font-size: 14px;
+    }
+
+    .header-profile p {
+        max-width: 200px;
+    }
+
+    .alumni-details {
+        padding: 0 15px 18px;
+    }
+
+    .profile-section {
+        gap: 14px;
+    }
+
+    .profile-image,
+    .profile-placeholder {
+        width: 85px;
+        height: 85px;
+    }
+
+    .profile-summary h2 {
+        font-size: 17px;
+    }
+
+    .approval-actions {
+        flex-direction: column-reverse;
+    }
+
+    .reject-button,
+    .approve-button {
+        width: 100%;
+    }
+}
+
+/* =========================
+   POPUP OVERLAY
+========================= */
+
+.popup-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(35, 25, 20, 0.55);
+
+    backdrop-filter: blur(3px);
+}
+
+/* =========================
+   POPUP CARD
+========================= */
+
+.popup-card {
+    width: 100%;
+    max-width: 460px;
+
+    padding: 28px;
+
+    border: 1px solid #eadfcf;
+    border-radius: 16px;
+
+    background: #ffffff;
+
+    box-shadow: 0 18px 50px rgba(40, 25, 15, 0.2);
+
+    animation: popupEnter 0.2s ease-out;
+}
+
+@keyframes popupEnter {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================
+   POPUP ICON
+========================= */
+
+.popup-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 16px;
+
+    border-radius: 50%;
+}
+
+.approve-icon {
+    background: #edf7e9;
+    color: #4c7a43;
+}
+
+.reject-icon {
+    background: #fff0f0;
+    color: #a03333;
+}
+
+/* =========================
+   POPUP TEXT
+========================= */
+
+.popup-card h2 {
+    margin: 0 0 8px;
+
+    color: #333333;
+
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.popup-card > p {
+    margin: 0;
+
+    color: #666666;
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.popup-card > p strong {
+    color: #7a1f2b;
+    font-weight: 600;
+}
+
+/* =========================
+   REJECTION REASON
+========================= */
+
+.reason-container {
+    margin-top: 20px;
+}
+
+.reason-container label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #444444;
+
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.reason-container textarea {
+    width: 100%;
+
+    min-height: 100px;
+
+    padding: 12px 13px;
+
+    border: 1px solid #ddd4c6;
+    border-radius: 9px;
+
+    outline: none;
+
+    background: #fffdf9;
+
+    color: #333333;
+
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+
+    resize: vertical;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.reason-container textarea::placeholder {
+    color: #aaa;
+}
+
+.reason-container textarea:focus {
+    border-color: #7a1f2b;
+
+    box-shadow: 0 0 0 3px rgba(122, 31, 43, 0.08);
+}
+
+/* =========================
+   POPUP BUTTONS
+========================= */
+
+.popup-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 24px;
+}
+
+.popup-cancel,
+.popup-approve,
+.popup-reject {
+    min-height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding: 0 17px;
+
+    border-radius: 8px;
+
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.popup-cancel {
+    border: 1px solid #ddd4c6;
+
+    background: #ffffff;
+
+    color: #666666;
+}
+
+.popup-cancel:hover {
+    background: #f8f5ef;
+}
+
+.popup-approve {
+    border: 1px solid #7a1f2b;
+
+    background: #7a1f2b;
+
+    color: #ffffff;
+}
+
+.popup-approve:hover {
+    border-color: #641923;
+    background: #641923;
+}
+
+.popup-reject {
+    border: 1px solid #9a3030;
+
+    background: #9a3030;
+
+    color: #ffffff;
+}
+
+.popup-reject:hover {
+    border-color: #822727;
+    background: #822727;
+}
+
+.popup-reject:disabled {
+    border-color: #d7c1c1;
+
+    background: #e5d4d4;
+
+    color: #9b8585;
+
+    cursor: not-allowed;
+}
+
+/* =========================
+   MOBILE POPUP
+========================= */
+
+@media (max-width: 520px) {
+    .popup-overlay {
+        align-items: flex-end;
+
+        padding: 12px;
+    }
+
+    .popup-card {
+        max-width: none;
+
+        padding: 22px;
+
+        border-radius: 16px 16px 12px 12px;
+    }
+
+    .popup-actions {
+        flex-direction: column-reverse;
+    }
+
+    .popup-cancel,
+    .popup-approve,
+    .popup-reject {
+        width: 100%;
+    }
+}

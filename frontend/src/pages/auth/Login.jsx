@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-import "./Login.css";
+import styles from "./Login.module.css";
 
 
 const alumni = [
@@ -270,42 +270,42 @@ function Login() {
 
 
     return (
-        <div className="login-page">
+        <div className={styles["login-page"]}>
 
             {/* =========================================
                 BACKGROUND DECORATION
             ========================================== */}
 
-            <div className="background-circle circle-one"></div>
-            <div className="background-circle circle-two"></div>
+            <div className={`${styles["background-circle"]} ${styles["circle-one"]}`}></div>
+            <div className={`${styles["background-circle"]} ${styles["circle-two"]}`}></div>
 
 
-            <div className="login-container">
+            <div className={styles["login-container"]}>
 
                 {/* =========================================
                     LEFT SIDE
                 ========================================== */}
 
-                <section className="alumni-section">
+                <section className={styles["alumni-section"]}>
 
                     {/* VEC QUOTE */}
-                    <div className="vec-quote" aria-hidden="true">
+                    <div className={styles["vec-quote"]} aria-hidden="true">
                         <p>
                             <span>Once a VECian</span>
                             <span>Always a VECian</span>
                         </p>
 
-                        <div className="vec-quote-line"></div>
+                        <div className={styles["vec-quote-line"]}></div>
                     </div>
 
                     {/* BRAND */}
-                    <div className="college-brand">
+                    <div className={styles["college-brand"]}>
 
-                        <div className="brand-symbol">
+                        <div className={styles["brand-symbol"]}>
                             <span>✦</span>
                         </div>
 
-                        <div className="brand-text">
+                        <div className={styles["brand-text"]}>
                             <h2>VELAMMAL</h2>
                             <p>ENGINEERING COLLEGE</p>
                         </div>
@@ -314,22 +314,22 @@ function Login() {
 
 
                     {/* HEADING */}
-                    <div className="alumni-heading">
+                    <div className={styles["alumni-heading"]}>
 
                         <h1>
                             Our <span>Alumni</span>
                         </h1>
 
-                        <p className="heading-subtitle">
+                        <p className={styles["heading-subtitle"]}>
                             Different Paths. A Stronger Tomorrow.
                         </p>
 
-                        <div className="heading-line">
+                        <div className={styles["heading-line"]}>
                             <span></span>
                             <span></span>
                         </div>
 
-                        <p className="heading-description">
+                        <p className={styles["heading-description"]}>
                             From classrooms to global opportunities, our alumni
                             continue to make a difference.
                             <br />
@@ -344,14 +344,14 @@ function Login() {
                     ========================================== */}
 
                     <div
-                        className="alumni-carousel-wrapper"
+                        className={styles["alumni-carousel-wrapper"]}
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
                     >
 
                         <button
                             type="button"
-                            className="carousel-arrow carousel-arrow-left"
+                            className={`${styles["carousel-arrow"]} ${styles["carousel-arrow-left"]}`}
                             onClick={previousSlide}
                             aria-label="Previous alumni"
                         >
@@ -359,22 +359,22 @@ function Login() {
                         </button>
 
 
-                        <div className="alumni-carousel">
+                        <div className={styles["alumni-carousel"]}>
 
                             {visibleCards.map((person) => {
                                 const position = getRelativePosition(person.id - 1);
-                                let cardClass = "alumni-card";
+                                let cardClass = styles["alumni-card"];
 
                                 if (position === -2) {
-                                    cardClass += " card-left-far";
+                                    cardClass = `${styles["alumni-card"]} ${styles["card-left-far"]}`;
                                 } else if (position === -1) {
-                                    cardClass += " card-left";
+                                    cardClass = `${styles["alumni-card"]} ${styles["card-left"]}`;
                                 } else if (position === 0) {
-                                    cardClass += " card-active";
+                                    cardClass = `${styles["alumni-card"]} ${styles["card-active"]}`;
                                 } else if (position === 1) {
-                                    cardClass += " card-right";
+                                    cardClass = `${styles["alumni-card"]} ${styles["card-right"]}`;
                                 } else if (position === 2) {
-                                    cardClass += " card-right-far";
+                                    cardClass = `${styles["alumni-card"]} ${styles["card-right-far"]}`;
                                 }
 
 
@@ -389,16 +389,16 @@ function Login() {
                                     >
 
                                         {/* IMAGE */}
-                                        <div className="alumni-card-image">
+                                        <div className={styles["alumni-card-image"]}>
 
                                             <img
                                                 src={person.image}
                                                 alt={person.name}
                                             />
 
-                                            <div className="image-overlay"></div>
+                                            <div className={styles["image-overlay"]}></div>
 
-                                            <div className="batch-badge">
+                                            <div className={styles["batch-badge"]}>
                                                 '{person.batch.slice(-2)}
                                             </div>
 
@@ -406,19 +406,19 @@ function Login() {
 
 
                                         {/* INFORMATION */}
-                                        <div className="alumni-card-content">
+                                        <div className={styles["alumni-card-content"]}>
 
                                             <h3>{person.name}</h3>
 
-                                            <p className="alumni-role">
+                                            <p className={styles["alumni-role"]}>
                                                 {person.role}
                                             </p>
 
-                                            <p className="alumni-company">
+                                            <p className={styles["alumni-company"]}>
                                                 {person.company}
                                             </p>
 
-                                            <div className="card-accent"></div>
+                                            <div className={styles["card-accent"]}></div>
 
                                         </div>
 
@@ -431,7 +431,7 @@ function Login() {
 
                         <button
                             type="button"
-                            className="carousel-arrow carousel-arrow-right"
+                            className={`${styles["carousel-arrow"]} ${styles["carousel-arrow-right"]}`}
                             onClick={nextSlide}
                             aria-label="Next alumni"
                         >
@@ -443,7 +443,7 @@ function Login() {
 
                     {/* CAROUSEL INDICATORS */}
 
-                    <div className="carousel-indicators">
+                    <div className={styles["carousel-indicators"]}>
 
                         {alumni.map((person, index) => (
                             <button
@@ -451,8 +451,8 @@ function Login() {
                                 key={person.id}
                                 className={
                                     index === activeIndex
-                                        ? "indicator active"
-                                        : "indicator"
+                                        ? `${styles["indicator"]} ${styles["active"]}`
+                                        : styles["indicator"]
                                 }
                                 onClick={() => setActiveIndex(index)}
                                 aria-label={`Show ${person.name}`}
@@ -466,9 +466,9 @@ function Login() {
                         STATS
                     ========================================== */}
 
-                    <div className="alumni-stats">
+                    <div className={styles["alumni-stats"]}>
 
-                        <div className="stat-item">
+                        <div className={styles["stat-item"]}>
 
                             <Users size={25} />
 
@@ -480,10 +480,10 @@ function Login() {
                         </div>
 
 
-                        <div className="stat-divider"></div>
+                        <div className={styles["stat-divider"]}></div>
 
 
-                        <div className="stat-item">
+                        <div className={styles["stat-item"]}>
 
                             <Globe2 size={25} />
 
@@ -495,10 +495,10 @@ function Login() {
                         </div>
 
 
-                        <div className="stat-divider"></div>
+                        <div className={styles["stat-divider"]}></div>
 
 
-                        <div className="stat-item">
+                        <div className={styles["stat-item"]}>
 
                             <BriefcaseBusiness size={25} />
 
@@ -510,10 +510,10 @@ function Login() {
                         </div>
 
 
-                        <div className="stat-divider"></div>
+                        <div className={styles["stat-divider"]}></div>
 
 
-                        <div className="stat-item">
+                        <div className={styles["stat-item"]}>
 
                             <BarChart3 size={25} />
 
@@ -533,25 +533,25 @@ function Login() {
                     LOGIN SIDE
                 ========================================== */}
 
-                <section className="login-section">
+                <section className={styles["login-section"]}>
 
-                    <div className="login-card">
+                    <div className={styles["login-card"]}>
 
                         {/* LOGIN ICON */}
 
-                        <div className="login-icon">
+                        <div className={styles["login-icon"]}>
                             <User size={27} strokeWidth={1.8} />
                         </div>
 
 
                         <h2>ALUMNI PORTAL</h2>
 
-                        <p className="login-college">
+                        <p className={styles["login-college"]}>
                             Velammal Engineering College
                         </p>
 
 
-                        <div className="login-divider">
+                        <div className={styles["login-divider"]}>
                             <span></span>
                             <b>◆</b>
                             <span></span>
@@ -565,10 +565,10 @@ function Login() {
                             {/* GOOGLE SIGNUP */}
                             <button
                                 type="button"
-                                className="google-button"
+                                className={styles["google-button"]}
                                 onClick={handleGoogleSignup}
                             >
-                                <span className="google-icon">
+                                <span className={styles["google-icon"]}>
                                     <svg
                                         width="19"
                                         height="19"
@@ -599,10 +599,30 @@ function Login() {
 
                                 <span>Continue with Google</span>
                             </button>
+                            <br />
+                            <button
+                                type="button"
+                                className={styles["google-button"]}
+                            >
+                                <span className={styles["google-icon"]}>
+                                    <svg
+                                        width="19"
+                                        height="19"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fill="#0A66C2"
+                                            d="M20.45 20.45h-3.56v-5.58c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.68H9.35V8.99h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V8.99h3.56v11.46zM22.22 0H1.78C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.78 24h20.44c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"
+                                        />
+                                    </svg>
+                                </span>
+                                <span>Continue with LinkedIn</span>
+                            </button>
 
 
                             {/* OR DIVIDER */}
-                            <div className="or-divider">
+                            <div className={styles["or-divider"]}>
                                 <span></span>
                                 <p>OR</p>
                                 <span></span>
@@ -610,14 +630,14 @@ function Login() {
 
 
                             {/* USERNAME */}
-                            <div className="input-group">
+                            <div className={styles["input-group"]}>
                                 <label htmlFor="username">
                                     USERNAME
                                 </label>
 
-                                <div className="input-wrapper">
+                                <div className={styles["input-wrapper"]}>
                                     <User
-                                        className="input-icon"
+                                        className={styles["input-icon"]}
                                         size={19}
                                     />
 
@@ -635,14 +655,14 @@ function Login() {
 
 
                             {/* PASSWORD */}
-                            <div className="input-group">
+                            <div className={styles["input-group"]}>
                                 <label htmlFor="password">
                                     PASSWORD
                                 </label>
 
-                                <div className="input-wrapper">
+                                <div className={styles["input-wrapper"]}>
                                     <Lock
-                                        className="input-icon"
+                                        className={styles["input-icon"]}
                                         size={19}
                                     />
 
@@ -658,7 +678,7 @@ function Login() {
 
                                     <button
                                         type="button"
-                                        className="password-toggle"
+                                        className={styles["password-toggle"]}
                                         onClick={() =>
                                             setShowPassword((current) => !current)
                                         }
@@ -681,7 +701,7 @@ function Login() {
                             {/* LOGIN BUTTON */}
                             <button
                                 type="submit"
-                                className="login-button"
+                                className={styles["login-button"]}
                             >
                                 <LogIn size={18} />
 
@@ -691,7 +711,7 @@ function Login() {
                         </form>
                         {/* FOOTER */}
 
-                        <div className="login-footer">
+                        <div className={styles["login-footer"]}>
 
                             <span></span>
 
