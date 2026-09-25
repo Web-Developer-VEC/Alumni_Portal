@@ -4,6 +4,7 @@ import path from "path";
 
 import { uploadFileToS3 } from "../../service/s3Upload.js";
 import Post from "../../models/post.js";
+import PrePost from "../../models/prePost.js";
 import User from "../../models/User.js";
 
 interface AuthenticatedUser {
@@ -50,7 +51,7 @@ export const createPost = async (
     // 1. Authentication
     // -----------------------------------------
 
-    if (!req.user?.id) {
+    if (!req.user?.id || !req.user?.email) {
       res.status(401).json({
         message: "Unauthorized",
       });
@@ -252,10 +253,10 @@ export const createPost = async (
     }
 
     // -----------------------------------------
-    // 10. Create MongoDB post
+    // 10. Create MongoDB post in pre_post collection
     // -----------------------------------------
 
-    const post = await Post.create({
+    const post = await PrePost.create({
       title,
       content,
       link,
@@ -277,6 +278,8 @@ export const createPost = async (
 
       // Job data
       ...jobData,
+
+      status: "PENDING",
     });
 
     // -----------------------------------------
@@ -284,7 +287,8 @@ export const createPost = async (
     // -----------------------------------------
 
     res.status(201).json({
-      message: "Post created successfully",
+      success: true,
+      message: "Post submitted successfully and pending HOD approval",
       post,
     });
 
