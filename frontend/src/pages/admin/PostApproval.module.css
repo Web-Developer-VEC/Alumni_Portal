@@ -1,0 +1,1097 @@
+/* =========================================================
+   POST APPROVAL
+   Uses the visual language of the alumni post card.
+   Sidebar and header are intentionally excluded.
+   ========================================================= */
+
+.post-approval-page {
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+    padding: 30px;
+    background: #faf8ff;
+    color: #131b2e;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+.approval-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 auto 24px;
+    max-width: 980px;
+}
+
+.header-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    color: #800000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.approval-header h1 {
+    margin: 0;
+    color: #131b2e;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.approval-header p {
+    margin: 7px 0 0;
+    color: #6e7a73;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.pending-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    min-height: 68px;
+    box-sizing: border-box;
+    border: 1px solid #e2e7ff;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(19, 27, 46, 0.06);
+}
+
+.pending-count span {
+    color: #800000;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.pending-count small {
+    margin-top: 5px;
+    color: #6e7a73;
+    font-size: 10px;
+}
+
+.approval-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.approval-item {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* =========================================================
+   ORIGINAL POST CARD STYLE
+   ========================================================= */
+
+.job-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 16px;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.job-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(19, 27, 46, 0.14);
+}
+
+/* Header */
+
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+}
+
+.card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.avatar-img,
+.avatar-fallback {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+}
+
+.avatar-img {
+    display: block;
+    object-fit: cover;
+}
+
+.avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dae2fd;
+    color: #005d42;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.verified-badge {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: #047857;
+    color: #ffffff;
+}
+
+.alumni-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.alumni-name-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+}
+
+.alumni-name {
+    color: #131b2e;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.batch-tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #e3dfff;
+    color: #372abf;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.posted-ago {
+    color: #6e7a73;
+    font-size: 11px;
+}
+
+.designation-text {
+    margin-top: 4px;
+    color: #3e4943;
+    font-size: 12px;
+}
+
+.review-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    padding: 7px 11px;
+    border: 1px solid #eadfc8;
+    border-radius: 999px;
+    background: #fff8e9;
+    color: #85641d;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.review-badge span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d19b2c;
+    box-shadow: 0 0 0 4px rgba(209, 155, 44, 0.12);
+}
+
+/* Hero */
+
+.hero-banner {
+    position: relative;
+    width: 100%;
+    height: 270px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.hero-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.job-card:hover .hero-img {
+    transform: scale(1.04);
+}
+
+.hero-gradient {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 0 32px;
+    background: linear-gradient(135deg, #800000, #047857, #00766c);
+    color: #ffffff;
+}
+
+.hero-gradient > div:first-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-gradient > div:first-child > span {
+    color: #6bd8cb;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.hero-gradient h2 {
+    max-width: 540px;
+    margin: 7px 0 0;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 23px;
+    line-height: 1.25;
+}
+
+.hero-monogram {
+    width: 92px;
+    height: 92px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.14);
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 29px;
+    font-weight: 700;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.05),
+        rgba(0, 0, 0, 0.08) 45%,
+        rgba(0, 0, 0, 0.65)
+    );
+}
+
+.hero-badges {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #131b2e;
+    font-size: 10px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.badge-freshers {
+    background: #97f5cc;
+    color: #005d42;
+}
+
+.badge-referral {
+    background: #e3dfff;
+    color: #372abf;
+}
+
+.hero-bottom-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+.hero-company-label {
+    margin-bottom: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+.hero-bottom-bar h2 {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.referral-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 7px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(8px);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Body */
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.description-text {
+    margin: 0;
+    color: #3e4943;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: #005d42;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.meta-pill {
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #f2f3ff;
+}
+
+.meta-pill-icon {
+    width: 19px;
+    height: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #6e7a73;
+}
+
+.meta-pill-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+.meta-pill-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.meta-pill-text > span {
+    color: #3e4943;
+    font-size: 10px;
+}
+
+.meta-pill-text strong {
+    overflow-wrap: anywhere;
+    margin-top: 2px;
+    color: #131b2e;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.skills-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+}
+
+.skills-label {
+    margin-right: 3px;
+    color: #3e4943;
+    font-size: 11px;
+}
+
+.skill-chip {
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: #eaedff;
+    color: #283044;
+    font-size: 10px;
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+.skill-chip:hover {
+    background: #e3dfff;
+    transform: translateY(-1px);
+}
+
+.cta-wrap {
+    padding-top: 2px;
+}
+
+.cta-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-sizing: border-box;
+    padding: 13px 20px;
+    border-radius: 12px;
+    background: #fdcc03;
+    color: #000000;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(19, 27, 46, 0.08);
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.cta-btn:hover {
+    background: #800000;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.cta-icon {
+    width: 19px;
+    height: 19px;
+    transition: transform 0.2s ease;
+}
+
+.cta-btn:hover .cta-icon {
+    transform: translateX(4px);
+}
+
+/* Social footer */
+
+.social-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e7ff;
+}
+
+.social-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.social-left > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6e7a73;
+    font-size: 11px;
+}
+
+.social-left svg {
+    color: #6e7a73;
+}
+
+.original-post-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #6e7a73;
+    font-size: 10px;
+}
+
+/* =========================================================
+   APPROVE / REJECT BAR
+   ========================================================= */
+
+.moderation-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 15px 17px;
+    border: 1px solid #e2e7ff;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 3px 12px rgba(19, 27, 46, 0.05);
+}
+
+.moderation-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.moderation-dot {
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #d19b2c;
+    box-shadow: 0 0 0 5px rgba(209, 155, 44, 0.11);
+}
+
+.moderation-info div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.moderation-info strong {
+    color: #283044;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 11px;
+}
+
+.moderation-info span:not(.moderation-dot) {
+    color: #6e7a73;
+    font-size: 10px;
+}
+
+.moderation-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-shrink: 0;
+}
+
+.moderation-actions button {
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 15px;
+    border-radius: 10px;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+.moderation-actions button:hover {
+    transform: translateY(-1px);
+}
+
+.reject-button {
+    border: 1px solid #e6bfc0;
+    background: #ffffff;
+    color: #ba1a1a;
+}
+
+.reject-button:hover {
+    background: #fff4f3;
+    box-shadow: 0 5px 14px rgba(186, 26, 26, 0.08);
+}
+
+.approve-button {
+    border: 1px solid #800000;
+    background: #800000;
+    color: #ffffff;
+}
+
+.approve-button:hover {
+    background: #680000;
+    box-shadow: 0 6px 16px rgba(128, 0, 0, 0.18);
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    max-width: 980px;
+    min-height: 330px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e7ff;
+    border-radius: 24px;
+    background: #ffffff;
+    text-align: center;
+}
+
+.empty-icon {
+    width: 62px;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e8f7f0;
+    color: #047857;
+}
+
+.empty-state h2 {
+    margin: 16px 0 5px;
+    color: #131b2e;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 18px;
+}
+
+.empty-state p {
+    margin: 0;
+    color: #6e7a73;
+    font-size: 12px;
+}
+
+/* =========================================================
+   POPUP
+   ========================================================= */
+
+.popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(19, 27, 46, 0.45);
+    backdrop-filter: blur(5px);
+}
+
+.popup {
+    width: 100%;
+    max-width: 440px;
+    padding: 28px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(19, 27, 46, 0.22);
+    text-align: center;
+    animation: popup-in 0.2s ease-out;
+}
+
+@keyframes popup-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.popup-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+}
+
+.popup-icon-success {
+    background: #e8f7f0;
+    color: #047857;
+}
+
+.popup-icon-danger {
+    background: #ffdad6;
+    color: #ba1a1a;
+}
+
+.popup h2 {
+    margin: 0;
+    color: #131b2e;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 19px;
+}
+
+.popup p {
+    margin: 8px auto 0;
+    color: #6e7a73;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.popup-title {
+    display: block;
+    margin-top: 12px;
+    color: #800000;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.rejection-textarea {
+    width: 100%;
+    margin-top: 17px;
+    padding: 12px;
+    box-sizing: border-box;
+    resize: vertical;
+    border: 1px solid #d9dfef;
+    border-radius: 11px;
+    outline: none;
+    background: #faf8ff;
+    color: #131b2e;
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+}
+
+.rejection-textarea:focus {
+    border-color: #800000;
+    box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+}
+
+.popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.popup-actions button {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 15px;
+    border-radius: 10px;
+    font-family: "Plus Jakarta Sans", Inter, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.popup-cancel {
+    border: 1px solid #d9dfef;
+    background: #ffffff;
+    color: #3e4943;
+}
+
+.popup-approve {
+    border: 1px solid #800000;
+    background: #800000;
+    color: #ffffff;
+}
+
+.popup-reject {
+    border: 1px solid #ba1a1a;
+    background: #ba1a1a;
+    color: #ffffff;
+}
+
+.popup-reject:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .moderation-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .moderation-actions {
+        width: 100%;
+    }
+
+    .moderation-actions button {
+        flex: 1;
+    }
+}
+
+@media (max-width: 650px) {
+    .post-approval-page {
+        padding: 18px 14px;
+    }
+
+    .approval-header {
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .approval-header h1 {
+        font-size: 22px;
+    }
+
+    .approval-header p {
+        font-size: 11px;
+    }
+
+    .pending-count {
+        min-width: 70px;
+        min-height: 58px;
+    }
+
+    .pending-count span {
+        font-size: 19px;
+    }
+
+    .pending-count small {
+        font-size: 9px;
+    }
+
+    .job-card {
+        padding: 13px;
+        border-radius: 18px;
+    }
+
+    .card-header {
+        gap: 10px;
+        padding-bottom: 15px;
+    }
+
+    .card-header-left {
+        gap: 10px;
+    }
+
+    .avatar-img,
+    .avatar-fallback {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+    }
+
+    .alumni-name {
+        font-size: 13px;
+    }
+
+    .designation-text {
+        font-size: 10px;
+    }
+
+    .review-badge {
+        padding: 6px 8px;
+        font-size: 9px;
+    }
+
+    .review-badge span {
+        display: none;
+    }
+
+    .hero-banner {
+        height: 220px;
+        margin-bottom: 18px;
+        border-radius: 13px;
+    }
+
+    .hero-badges {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+    }
+
+    .hero-bottom-bar {
+        padding: 14px;
+    }
+
+    .hero-bottom-bar h2 {
+        font-size: 17px;
+    }
+
+    .hero-company-label {
+        font-size: 9px;
+    }
+
+    .referral-pill {
+        display: none;
+    }
+
+    .hero-gradient {
+        padding: 0 20px;
+    }
+
+    .hero-gradient h2 {
+        font-size: 18px;
+    }
+
+    .hero-monogram {
+        width: 68px;
+        height: 68px;
+        border-radius: 14px;
+        font-size: 22px;
+    }
+
+    .meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .social-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .moderation-actions {
+        flex-direction: column;
+    }
+
+    .moderation-actions button {
+        width: 100%;
+    }
+
+    .popup {
+        padding: 24px 18px;
+    }
+
+    .popup-actions {
+        flex-direction: column-reverse;
+    }
+
+    .popup-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .approval-header {
+        gap: 8px;
+    }
+
+    .header-kicker {
+        font-size: 9px;
+    }
+
+    .approval-header h1 {
+        font-size: 19px;
+    }
+
+    .approval-header p {
+        font-size: 10px;
+    }
+
+    .review-badge {
+        display: none;
+    }
+
+    .hero-banner {
+        height: 195px;
+    }
+
+    .badge {
+        font-size: 9px;
+        padding: 5px 8px;
+    }
+
+    .hero-bottom-bar h2 {
+        font-size: 15px;
+    }
+
+    .description-text {
+        font-size: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .job-card,
+    .hero-img,
+    .cta-btn,
+    .skill-chip,
+    .moderation-actions button {
+        transition: none;
+    }
+
+    .popup {
+        animation: none;
+    }
+}
