@@ -395,6 +395,7 @@ function Members() {
 
                         <input
                             type="text"
+                            className={styles["text-input-field"]}
                             placeholder="Search by name"
                             value={search}
                             onChange={(event) =>
