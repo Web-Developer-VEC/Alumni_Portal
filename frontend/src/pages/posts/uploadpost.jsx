@@ -348,7 +348,7 @@ function insertLinePrefix(textareaRef, prefix) {
 /* -------------------------------------------------------------------------- */
 /*  Constraints & schema-shaped state                                         */
 /* -------------------------------------------------------------------------- */
-const LIMITS = { title: 150, content: 1000, chip: 24, maxChips: 10, maxFiles: 6 };
+const LIMITS = { title: 25, content: 1000, chip: 24, maxChips: 10, maxFiles: 6 };
 
 const EMPTY_POST = {
   title: "", type: "Full-time", content: "", link: "",
@@ -396,6 +396,7 @@ export default function UploadPost({ onPublish, onCancel }) {
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const hasLoadedDraft = useRef(false);
   const isFirstRender = useRef(true);
+  const justRestored = useRef(false);
   const autosaveTimer = useRef(null);
 
   const writeDraft = useCallback((data) => {
@@ -421,6 +422,7 @@ export default function UploadPost({ onPublish, onCancel }) {
         const parsed = JSON.parse(raw);
         const restored = sanitizeDraft(parsed?.post);
         if (restored && !isPostEmpty(restored)) {
+          justRestored.current = true;
           setPost(restored);
           const savedAt = parsed?.savedAt ? new Date(parsed.savedAt) : new Date();
           setLastSavedAt(Number.isNaN(savedAt.getTime()) ? new Date() : savedAt);
@@ -438,6 +440,7 @@ export default function UploadPost({ onPublish, onCancel }) {
   useEffect(() => {
     if (!hasLoadedDraft.current) return;
     if (isFirstRender.current) { isFirstRender.current = false; return; }
+    if (justRestored.current) { justRestored.current = false; return; }
 
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
 
@@ -462,9 +465,11 @@ export default function UploadPost({ onPublish, onCancel }) {
   const saveDraftNow = () => {
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     setDraftStatus("saving");
-    const ok = writeDraft(post);
-    setDraftStatus(ok ? "saved" : "error");
-    setLastSavedAt(ok ? new Date() : null);
+    autosaveTimer.current = setTimeout(() => {
+      const ok = writeDraft(post);
+      setDraftStatus(ok ? "saved" : "error");
+      setLastSavedAt(ok ? new Date() : null);
+    }, 250);
   };
 
   const clearDraft = useCallback(() => {
@@ -485,14 +490,33 @@ export default function UploadPost({ onPublish, onCancel }) {
 
   const handleFilesSelected = (fileList) => {
     const incoming = Array.from(fileList || []);
-    if (files.length + incoming.length > LIMITS.maxFiles) { window.alert(`Up to ${LIMITS.maxFiles} files.`); return; }
-    const oversized = incoming.find((f) => f.size > 10 * 1024 * 1024);
-    if (oversized) { window.alert("File size exceeds 10MB limit."); return; }
-    const withPreviews = incoming.map((file) => ({
-      file, id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      url: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
-    }));
-    setFiles((prev) => [...prev, ...withPreviews]);
+    if (incoming.length === 0) return;
+
+    const remainingSlots = LIMITS.maxFiles - files.length;
+    if (remainingSlots <= 0) {
+      window.alert(`You can attach up to ${LIMITS.maxFiles} files. Remove one first.`);
+      return;
+    }
+
+    const tooBig = incoming.filter((f) => f.size > 10 * 1024 * 1024);
+    const rightSized = incoming.filter((f) => f.size <= 10 * 1024 * 1024);
+    const accepted = rightSized.slice(0, remainingSlots);
+    const skippedForLimit = rightSized.length - accepted.length;
+
+    if (accepted.length > 0) {
+      const withPreviews = accepted.map((file) => ({
+        file, id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        url: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+      }));
+      setFiles((prev) => [...prev, ...withPreviews]);
+    }
+
+    if (tooBig.length > 0) {
+      window.alert(`${tooBig.length} file${tooBig.length === 1 ? "" : "s"} over the 10MB limit ${tooBig.length === 1 ? "wasn't" : "weren't"} added: ${tooBig.map((f) => f.name).join(", ")}`);
+    }
+    if (skippedForLimit > 0) {
+      window.alert(`Only ${LIMITS.maxFiles} files are allowed in total. ${skippedForLimit} file${skippedForLimit === 1 ? "" : "s"} skipped.`);
+    }
   };
 
   const removeFile = (id) => {
@@ -502,6 +526,12 @@ export default function UploadPost({ onPublish, onCancel }) {
       return prev.filter((f) => f.id !== id);
     });
   };
+
+  // Revoke every preview URL on unmount so navigating away doesn't leak them.
+  useEffect(() => {
+    return () => { files.forEach((f) => { if (f.url) URL.revokeObjectURL(f.url); }); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleStartChange = (val) => {
     if (post.endTime && new Date(val) > new Date(post.endTime)) {
@@ -558,6 +588,7 @@ export default function UploadPost({ onPublish, onCancel }) {
       await onPublish?.(formData);
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 2600);
+      files.forEach((f) => { if (f.url) URL.revokeObjectURL(f.url); });
       setPost(EMPTY_POST);
       setFiles([]);
       clearDraft();
@@ -567,6 +598,15 @@ export default function UploadPost({ onPublish, onCancel }) {
   };
 
   const handleCancel = () => {
+    const hasUnsavedWork = !isPostEmpty(post) || files.length > 0;
+    if (hasUnsavedWork) {
+      const ok = window.confirm(
+        draftStatus === "saved"
+          ? "Leave this post? Your draft is saved, so you can pick it up again later."
+          : "Leave this post? Any attached files will be lost, and unsaved text changes may not be kept."
+      );
+      if (!ok) return;
+    }
     onCancel?.();
   };
 
