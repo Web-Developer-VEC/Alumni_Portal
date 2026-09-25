@@ -15,46 +15,17 @@ export interface IUser extends Document {
 
 const userSchema = new mongoose.Schema(
   {
-    displayName: {
-      type: String,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      enum: ["ADMIN", "STUDENT", "ALUMNI"],
-      default: "STUDENT",
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    status: {
-      type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED"],
-      default: "PENDING",
-    },
-    username: {
-      type: String,
-      trim: true,
-    },
-    profilePic: {
-      type: String,
-    },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ['ADMIN','STUDENT','ALUMNI'], default: 'STUDENT' },
+    isActive: { type: Boolean, default: true },
+    status: { type: String, enum: ['PENDING','APPROVED','REJECTED'], default: 'PENDING' },
+    rejectReason: { type: String },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;
+
