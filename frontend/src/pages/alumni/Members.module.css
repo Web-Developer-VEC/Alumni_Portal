@@ -509,12 +509,10 @@
     border-radius: 18px;
 
     background:
-        linear-gradient(
-            135deg,
+        linear-gradient(135deg,
             #ffffff 0%,
             #ffffff 75%,
-            #fffaf0 100%
-        );
+            #fffaf0 100%);
 
     cursor: pointer;
 
@@ -547,8 +545,6 @@
     right: -65px;
 
     border-radius: 50%;
-
-    background: rgba(245, 179, 1, 0.08);
 
     pointer-events: none;
 }
@@ -637,11 +633,9 @@
     outline: 2px solid #f5b301;
 
     background:
-        linear-gradient(
-            135deg,
+        linear-gradient(135deg,
             #fff4c9,
-            #f9e6a5
-        );
+            #f9e6a5);
 
     color: #7a1f2b;
 
@@ -835,11 +829,9 @@
     border-radius: 10px;
 
     background:
-        linear-gradient(
-            90deg,
+        linear-gradient(90deg,
             #fffaf0,
-            #ffffff
-        );
+            #ffffff);
 
     z-index: 2;
 }
@@ -1266,6 +1258,14 @@
 
     .advanced-filters {
         grid-template-columns: 1fr;
+    }
+
+    .search-input-wrapper {
+        height: 60px;
+    }
+
+    .text-input-field{
+        height: 42px;
     }
 
     .page-header {

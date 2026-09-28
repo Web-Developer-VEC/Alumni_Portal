@@ -1,20 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
+import { commentSchema, type IComment } from "./post.js";
 
-export interface IComment {
-  user: Types.ObjectId;
-  text: string;
-  createdAt?: Date;
-}
-
-export const commentSchema = new Schema<IComment>(
-  {
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    text: { type: String, required: true },
-  },
-  { timestamps: true }
-);
-
-export interface IPost extends Document {
+export interface IPrePost extends Document {
   title: string;
   content: string;
   link?: string;
@@ -46,9 +33,14 @@ export interface IPost extends Document {
   views: number;
   likes: number;
   comments: IComment[];
+
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  rejectReason?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export const postSchema = new Schema<IPost>(
+export const prePostSchema = new Schema<IPrePost>(
   {
     title: { type: String, required: true },
     content: { type: String, required: true },
@@ -85,8 +77,21 @@ export const postSchema = new Schema<IPost>(
     views: { type: Number, default: 0 },
     likes: { type: Number, default: 0 },
     comments: { type: [commentSchema], default: [] },
+
+    status: {
+      type: String,
+      enum: ["PENDING", "APPROVED", "REJECTED"],
+      default: "PENDING",
+    },
+    rejectReason: { type: String },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    collection: "pre_post", // Explicitly map to pre_post collection
+  }
 );
 
-export default model<IPost>("Post", postSchema);
+// Explicit collection name "pre_post"
+const PrePost = model<IPrePost>("PrePost", prePostSchema, "pre_post");
+
+export default PrePost;
