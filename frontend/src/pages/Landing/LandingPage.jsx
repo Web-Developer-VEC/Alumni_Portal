@@ -1,5 +1,11 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import { useNavigate, Link } from "react-router-dom";
 import "./LandingPage.css";
 import vecLogo from "../../assets/VEC_Logo.png";
 import {
@@ -15,16 +21,116 @@ import {
   Laptop,
   Microscope,
   Medal,
-  Mail,
-  Phone,
   MapPin,
   MessageCircle,
-  Lock,
   PlayCircle,
   Apple,
-  RefreshCw,
   Briefcase,
+  ArrowRight,
 } from "lucide-react";
+
+/* =========================================================
+   INLINE SOCIAL ICONS
+   (lucide-react no longer ships brand/logo icons)
+========================================================= */
+
+function InstagramIcon(props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function LinkedinIcon(props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M7 10v7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <circle cx="7" cy="7" r="1.1" fill="currentColor" />
+      <path
+        d="M11 17v-4.5c0-1.5 1-2.5 2.3-2.5 1.2 0 1.7 1 1.7 2.5V17"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M11 10v7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function TwitterIcon(props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M4 4l7.5 9.6L4.3 20H6.9l5.8-5.6 4.6 5.6H20l-8-9.9L18.9 4h-2.6l-5.3 5.2L6.8 4H4z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function FacebookIcon(props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M13.5 21v-6.5H15.5L15.8 12H13.5V10.3c0-.7.2-1.2 1.2-1.2H16V6.6c-.2 0-1-.1-1.9-.1-1.9 0-3.1 1.1-3.1 3.2V12H9v2.5h2V21"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 /* =========================================================
    HOOK: useReveal
 ========================================================= */
@@ -292,10 +398,6 @@ function Stat({ target, suffix, label }) {
 }
 
 /* =========================================================
-   CAPTCHA
-========================================================= */
-
-/* =========================================================
    COMPONENT: HeroCardStack
 ========================================================= */
 
@@ -359,267 +461,6 @@ function HeroCardStack({ items, interval = 2600 }) {
     </div>
   );
 }
-function generateQuickCaptcha() {
-  return Math.floor(1000 + Math.random() * 9000);
-}
-
-/* =========================================================
-   COMMUNITY FORM
-========================================================= */
-
-function CommunityQuickForm() {
-  const [name, setName] = useState("");
-
-  const [contactNumber, setContactNumber] = useState("");
-
-  const [email, setEmail] = useState("");
-
-  const [queryAbout, setQueryAbout] = useState("");
-
-  const [category, setCategory] = useState("");
-
-  const [content, setContent] = useState("");
-
-  const [captcha, setCaptcha] = useState(generateQuickCaptcha());
-
-  const [userCaptcha, setUserCaptcha] = useState("");
-
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (userCaptcha !== captcha.toString()) {
-      alert("Incorrect CAPTCHA, please try again.");
-
-      setCaptcha(generateQuickCaptcha());
-
-      setUserCaptcha("");
-
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const response = await fetch("/api/main-backend/get_grievance", {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        credentials: "include",
-
-        body: JSON.stringify({
-          name,
-          email,
-          contact_number: contactNumber,
-          query_about: queryAbout,
-          category,
-          content,
-          original_captcha: captcha.toString(),
-          entered_captcha: userCaptcha.toString(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Message sent successfully. Our team will get back to you.");
-
-        setName("");
-        setContactNumber("");
-        setEmail("");
-        setQueryAbout("");
-        setCategory("");
-        setContent("");
-        setUserCaptcha("");
-
-        setCaptcha(generateQuickCaptcha());
-      } else {
-        alert(data.message || "Something went wrong. Please try again.");
-      }
-    } catch (err) {
-      console.error("Community form submission error:", err);
-
-      alert("Error connecting to the server. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form className="community-form" onSubmit={handleSubmit}>
-      <div className="community-form-header">
-        <div className="community-form-badge">
-          <span className="form-badge-dot"></span>
-          ALUMNI SUPPORT
-        </div>
-
-        <h3>
-          Let's stay
-          <span> connected.</span>
-        </h3>
-
-        <p>Have a question or need assistance? Send us a message.</p>
-      </div>
-
-      <div className="community-form-field">
-        <label>Full Name</label>
-
-        <div className="form-input-wrapper">
-          <input
-            type="text"
-            placeholder="Your full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="community-form-field">
-        <label>Contact Number</label>
-
-        <div className="form-input-wrapper">
-          <input
-            type="tel"
-            placeholder="Your contact number"
-            value={contactNumber}
-            onChange={(e) => setContactNumber(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="community-form-field">
-        <label>Email Address</label>
-
-        <div className="form-input-wrapper">
-          <input
-            type="email"
-            placeholder="Your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="community-form-row">
-        <div className="community-form-field">
-          <label>Query About</label>
-
-          <div className="form-input-wrapper">
-            <select
-              value={queryAbout}
-              onChange={(e) => setQueryAbout(e.target.value)}
-              required
-            >
-              <option value="">Select Query About</option>
-
-              <option value="Alumni Registration">Alumni Registration</option>
-
-              <option value="Profile">Profile</option>
-
-              <option value="Events">Events</option>
-
-              <option value="Mentorship">Mentorship</option>
-
-              <option value="Jobs">Jobs</option>
-
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="community-form-field">
-          <label>Category</label>
-
-          <div className="form-input-wrapper">
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-            >
-              <option value="">Select category</option>
-
-              <option value="General">General</option>
-
-              <option value="Technical">Technical</option>
-
-              <option value="Career">Career</option>
-
-              <option value="Event">Event</option>
-
-              <option value="Feedback">Feedback</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div className="community-form-field">
-        <label>Your Message</label>
-
-        <div className="form-input-wrapper textarea-wrapper">
-          <textarea
-            placeholder="Tell us how we can help..."
-            rows="3"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="captcha-section">
-        <div className="captcha-header">
-          <span>SECURITY CHECK</span>
-
-          <button
-            type="button"
-            className="captcha-refresh"
-            onClick={() => {
-              setCaptcha(generateQuickCaptcha());
-
-              setUserCaptcha("");
-            }}
-          >
-            <RefreshCw size={14} />
-          </button>
-        </div>
-
-        <div className="community-form-captcha-row">
-          <div className="community-form-captcha">{captcha}</div>
-
-          <div className="captcha-input-wrapper">
-            <input
-              type="text"
-              placeholder="Enter Captcha"
-              inputMode="numeric"
-              value={userCaptcha}
-              onChange={(e) => setUserCaptcha(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        className="community-form-submit"
-        disabled={loading}
-      >
-        {loading ? "Sending..." : "Send Message"}
-      </button>
-
-      <div className="form-footer-note">
-        <Lock size={11} /> Your information is securely submitted.
-      </div>
-    </form>
-  );
-}
 
 /* =================================================
    ALUMNI ROLLING CARD
@@ -675,6 +516,7 @@ function DiscussionCard({ initials, name, time, message, replies, likes }) {
     </Reveal>
   );
 }
+
 /* =========================================================
    HERO ALUMNI PREVIEW DATA
    TODO: replace with a backend fetch, e.g.
@@ -724,6 +566,7 @@ const heroAlumniStack = [
     image: "https://i.pravatar.cc/400?img=53",
   },
 ];
+
 /* =========================================================
    MAIN LANDING PAGE
 ========================================================= */
@@ -753,6 +596,30 @@ function LandingPage() {
   };
 
   const heroRef = useRef(null);
+  const navRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const node = navRef.current;
+    if (!node) return;
+
+    const setNavHeight = () => {
+      document.documentElement.style.setProperty(
+        "--nav-h",
+        `${node.offsetHeight}px`,
+      );
+    };
+
+    setNavHeight();
+
+    const ro = new ResizeObserver(setNavHeight);
+    ro.observe(node);
+    window.addEventListener("resize", setNavHeight);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", setNavHeight);
+    };
+  }, []);
 
   const [scrollY, setScrollY] = useState(0);
 
@@ -802,6 +669,7 @@ function LandingPage() {
     ================================================= */}
 
       <header
+        ref={navRef}
         className={`lp-navbar ${scrollY > 8 ? "lp-navbar--scrolled" : ""}`}
       >
         {/* ---------- BRAND ---------- */}
@@ -828,7 +696,7 @@ function LandingPage() {
         {/* ---------- APP NAME (CENTERED) ---------- */}
 
         <span className="lp-navbar__app-name">
-          VEC<span className="lp-navbar__app-name-accent">ALMA Connect</span>
+          VEC<span className="lp-navbar__app-name-accent">Connect</span>
         </span>
 
         {/* ---------- ACTION BUTTONS ---------- */}
@@ -1000,8 +868,11 @@ function LandingPage() {
               onClick={() => navigate("/signup")}
             >
               JOIN THE ALUMNI NETWORK
-              <span>→</span>
+              <span className="btn-arrow">
+                <ArrowRight size={18} />
+              </span>
             </button>
+<<<<<<< Updated upstream
 
             <button
               className="hero-secondary"
@@ -1010,12 +881,9 @@ function LandingPage() {
             >
               EXPLORE NETWORK
             </button>
+=======
+>>>>>>> Stashed changes
           </div>
-        </div>
-
-        <div className="hero-scroll">
-          <span></span>
-          SCROLL TO EXPLORE
         </div>
       </section>
 
@@ -1066,11 +934,17 @@ function LandingPage() {
               onClick={() => navigate("/signup")}
             >
               BECOME A MEMBER
-              <span>→</span>
+              <span className="btn-arrow">
+                <ArrowRight size={18} />
+              </span>
             </button>
           </Reveal>
         </div>
       </section>
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
       {/* =================================================
           AWARDS / NOMINATIONS
       ================================================= */}
@@ -1101,15 +975,17 @@ function LandingPage() {
             </RevealHeading>
 
             <p>
-              We recognize our great minds cultivated by Velammal who leap
-              above and beyond in their domain and inspire the young hearts
-              to grow agile, by awarding them in the following categories.
+              We recognize our great minds cultivated by Velammal who leap above
+              and beyond in their domain and inspire the young hearts to grow
+              agile, by awarding them in the following categories.
             </p>
           </Reveal>
 
           <div className="awards-grid">
             <Reveal as={TiltCard} className="award-card">
-              <div className="award-icon"><Trophy size={28} /></div>
+              <div className="award-icon">
+                <Trophy size={28} />
+              </div>
               <h3>Placement Icon Award</h3>
               <p>Honoring outstanding placement achievements.</p>
               <a
@@ -1117,12 +993,14 @@ function LandingPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                NOMINATE →
+                NOMINATE <ArrowRight size={13} />
               </a>
             </Reveal>
 
             <Reveal as={TiltCard} className="award-card" delay={80}>
-              <div className="award-icon"><Rocket size={28} /></div>
+              <div className="award-icon">
+                <Rocket size={28} />
+              </div>
               <h3>Emerging Entrepreneur Award</h3>
               <p>Celebrating alumni building bold new ventures.</p>
               <a
@@ -1130,12 +1008,14 @@ function LandingPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                NOMINATE →
+                NOMINATE <ArrowRight size={13} />
               </a>
             </Reveal>
 
             <Reveal as={TiltCard} className="award-card" delay={160}>
-              <div className="award-icon"><Star size={28} /></div>
+              <div className="award-icon">
+                <Star size={28} />
+              </div>
               <h3>Path Breaker Award</h3>
               <p>Recognizing those who forged new paths in their field.</p>
               <a
@@ -1143,12 +1023,14 @@ function LandingPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                NOMINATE →
+                NOMINATE <ArrowRight size={13} />
               </a>
             </Reveal>
 
             <Reveal as={TiltCard} className="award-card" delay={240}>
-              <div className="award-icon"><Target size={28} /></div>
+              <div className="award-icon">
+                <Target size={28} />
+              </div>
               <h3>Optimal Pursuer Award</h3>
               <p>For alumni pursuing excellence with focus and discipline.</p>
               <a
@@ -1156,12 +1038,14 @@ function LandingPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                NOMINATE →
+                NOMINATE <ArrowRight size={13} />
               </a>
             </Reveal>
 
             <Reveal as={TiltCard} className="award-card" delay={320}>
-              <div className="award-icon"><Heart size={28} /></div>
+              <div className="award-icon">
+                <Heart size={28} />
+              </div>
               <h3>Humanitarian Award</h3>
               <p>Honoring alumni giving back to society and community.</p>
               <a
@@ -1169,7 +1053,7 @@ function LandingPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                NOMINATE →
+                NOMINATE <ArrowRight size={13} />
               </a>
             </Reveal>
           </div>
@@ -1208,21 +1092,21 @@ function LandingPage() {
             <div className="heading-line"></div>
 
             <p>
-              The VEC Alumni Cell fosters relationships between alumni,
-              students and the institution, nurturing lifelong connections
-              and mutual growth. It plays a crucial role in engaging alumni,
-              leveraging their expertise and strengthening institutional
-              ties for the benefit of current students and the alma mater.
+              The VEC Alumni Cell fosters relationships between alumni, students
+              and the institution, nurturing lifelong connections and mutual
+              growth. It plays a crucial role in engaging alumni, leveraging
+              their expertise and strengthening institutional ties for the
+              benefit of current students and the alma mater.
             </p>
           </Reveal>
 
           <Reveal className="vision-card" delay={150}>
             <span className="vision-card-tag">OUR VISION</span>
             <p>
-              To establish a strong, lifelong bond between the institution
-              and its alumni, fostering a mutually beneficial relationship
-              that enhances professional growth, knowledge sharing and
-              institutional development.
+              To establish a strong, lifelong bond between the institution and
+              its alumni, fostering a mutually beneficial relationship that
+              enhances professional growth, knowledge sharing and institutional
+              development.
             </p>
           </Reveal>
         </div>
@@ -1259,9 +1143,8 @@ function LandingPage() {
               <h3>Mission</h3>
               <ul className="mission-list">
                 <li>
-                  To build a dynamic and engaged alumni network that
-                  contributes to the academic and career growth of current
-                  students.
+                  To build a dynamic and engaged alumni network that contributes
+                  to the academic and career growth of current students.
                 </li>
                 <li>
                   To facilitate mentorship programs, networking opportunities
@@ -1272,9 +1155,9 @@ function LandingPage() {
                   alumni-institution relationships.
                 </li>
                 <li>
-                  To create a platform for alumni to contribute to
-                  institutional growth through knowledge sharing, placements
-                  and corporate connections.
+                  To create a platform for alumni to contribute to institutional
+                  growth through knowledge sharing, placements and corporate
+                  connections.
                 </li>
               </ul>
             </Reveal>
@@ -1283,29 +1166,29 @@ function LandingPage() {
               <h3>Objectives of the Alumni Cell</h3>
               <ul className="mission-list">
                 <li>
-                  <strong>Strengthening Alumni Network</strong> — To create
-                  and maintain a strong bond among alumni, faculty and
-                  current students.
+                  <strong>Strengthening Alumni Network</strong> — To create and
+                  maintain a strong bond among alumni, faculty and current
+                  students.
                 </li>
                 <li>
-                  <strong>Mentorship &amp; Career Support</strong> — To
-                  provide guidance, career counseling and professional
-                  mentorship to students and recent graduates.
+                  <strong>Mentorship &amp; Career Support</strong> — To provide
+                  guidance, career counseling and professional mentorship to
+                  students and recent graduates.
                 </li>
                 <li>
-                  <strong>Industry Collaboration</strong> — To leverage
-                  alumni expertise for guest lectures, workshops, internships
-                  and job opportunities.
+                  <strong>Industry Collaboration</strong> — To leverage alumni
+                  expertise for guest lectures, workshops, internships and job
+                  opportunities.
                 </li>
                 <li>
-                  <strong>Institutional Growth &amp; Development</strong> —
-                  To contribute to the institution's progress through
-                  feedback, donations and infrastructure support.
+                  <strong>Institutional Growth &amp; Development</strong> — To
+                  contribute to the institution's progress through feedback,
+                  donations and infrastructure support.
                 </li>
                 <li>
                   <strong>Reunions &amp; Networking Events</strong> — To
-                  organize meetups, reunions and networking sessions for
-                  alumni to reconnect and collaborate.
+                  organize meetups, reunions and networking sessions for alumni
+                  to reconnect and collaborate.
                 </li>
                 <li>
                   <strong>Academic &amp; Research Contributions</strong> — To
@@ -1341,10 +1224,6 @@ function LandingPage() {
       ================================================= */}
 
       <section className="features-section">
-        <div className="corner-br" />
-        <div className="corner-gold-tl" />
-        <div className="corner-gold-br" />
-
         <div className="landing-container">
           <Reveal className="center-heading">
             <span className="section-tag">ALUMNI SERVICES</span>
@@ -1377,18 +1256,25 @@ function LandingPage() {
             <Reveal as={TiltCard} className="feature-card">
               <div className="feature-number">01</div>
               <div className="feature-icon-box">
-                <span><Users size={24} /></span>
+                <span>
+                  <Users size={24} />
+                </span>
               </div>
               <h3>Alumni Directory</h3>
               <p>
                 Discover and connect with alumni across different batches,
                 departments and industries.
               </p>
+<<<<<<< Updated upstream
               <button
                 type="button"
                 onClick={() => navigate("/signup")}
               >
                 EXPLORE DIRECTORY →
+=======
+              <button type="button" onClick={() => navigate("/signup")}>
+                EXPLORE DIRECTORY <ArrowRight size={14} />
+>>>>>>> Stashed changes
               </button>
               <div className="feature-card-bar" />
             </Reveal>
@@ -1396,7 +1282,9 @@ function LandingPage() {
             <Reveal as={TiltCard} className="feature-card" delay={100}>
               <div className="feature-number">02</div>
               <div className="feature-icon-box">
-                <span><GraduationCap size={24} /></span>
+                <span>
+                  <GraduationCap size={24} />
+                </span>
               </div>
               <h3>Career & Mentorship</h3>
               <p>
@@ -1407,7 +1295,7 @@ function LandingPage() {
                 type="button"
                 onClick={() => scrollToSection("mentorship")}
               >
-                FIND OPPORTUNITIES →
+                FIND OPPORTUNITIES <ArrowRight size={14} />
               </button>
               <div className="feature-card-bar" />
             </Reveal>
@@ -1415,7 +1303,9 @@ function LandingPage() {
             <Reveal as={TiltCard} className="feature-card" delay={200}>
               <div className="feature-number">03</div>
               <div className="feature-icon-box">
-                <span><Calendar size={24} /></span>
+                <span>
+                  <Calendar size={24} />
+                </span>
               </div>
               <h3>Alumni Events</h3>
               <p>
@@ -1423,7 +1313,7 @@ function LandingPage() {
                 institutional activities.
               </p>
               <button type="button" onClick={() => scrollToSection("events")}>
-                VIEW EVENTS →
+                VIEW EVENTS <ArrowRight size={14} />
               </button>
               <div className="feature-card-bar" />
             </Reveal>
@@ -1431,7 +1321,9 @@ function LandingPage() {
             <Reveal as={TiltCard} className="feature-card" delay={300}>
               <div className="feature-number">04</div>
               <div className="feature-icon-box">
-                <span><Landmark size={24} /></span>
+                <span>
+                  <Landmark size={24} />
+                </span>
               </div>
               <h3>Give Back to VEC</h3>
               <p>
@@ -1439,7 +1331,7 @@ function LandingPage() {
                 institution.
               </p>
               <button type="button" onClick={() => navigate("/signup")}>
-                GET INVOLVED →
+                GET INVOLVED <ArrowRight size={14} />
               </button>
               <div className="feature-card-bar" />
             </Reveal>
@@ -1458,17 +1350,11 @@ function LandingPage() {
 
             <RevealHeading as="h2" direction="down">
               {(visible) => (
-                <>
-                  <Words text="From VEC to" visible={visible} startIndex={0} />
-                  <span>
-                    {" "}
-                    <Words
-                      text=" the world."
-                      visible={visible}
-                      startIndex={3}
-                    />
-                  </span>
-                </>
+                <Words
+                  text="From VEC to the world."
+                  visible={visible}
+                  startIndex={0}
+                />
               )}
             </RevealHeading>
 
@@ -1722,7 +1608,9 @@ function LandingPage() {
 
             <button type="button" onClick={() => navigate("/signup")}>
               EXPLORE ALUMNI NETWORK
-              <span>→</span>
+              <span className="btn-arrow">
+                <ArrowRight size={18} />
+              </span>
             </button>
 
             <span></span>
@@ -1756,7 +1644,9 @@ function LandingPage() {
               onClick={() => navigate("/signup")}
             >
               VIEW ALL EVENTS
-              <span>→</span>
+              <span className="btn-arrow">
+                <ArrowRight size={18} />
+              </span>
             </button>
           </Reveal>
         </div>
@@ -1794,7 +1684,9 @@ function LandingPage() {
                   Meet professionals from different industries and build
                   meaningful connections.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Chennai</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Chennai
+                </span>
               </div>
             </article>
 
@@ -1810,7 +1702,9 @@ function LandingPage() {
                   Experienced alumni share career insights with the next
                   generation.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Online</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Online
+                </span>
               </div>
             </article>
 
@@ -1826,7 +1720,9 @@ function LandingPage() {
                   Hands-on workshop covering the latest in AI, cloud and
                   full-stack development.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Chennai</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Chennai
+                </span>
               </div>
             </article>
 
@@ -1860,7 +1756,9 @@ function LandingPage() {
                   Alumni entrepreneurs pitch ideas and connect with investors
                   and mentors.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Bengaluru</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Bengaluru
+                </span>
               </div>
             </article>
 
@@ -1894,7 +1792,9 @@ function LandingPage() {
                   Meet professionals from different industries and build
                   meaningful connections.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Chennai</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Chennai
+                </span>
               </div>
             </article>
 
@@ -1910,7 +1810,9 @@ function LandingPage() {
                   Experienced alumni share career insights with the next
                   generation.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Online</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Online
+                </span>
               </div>
             </article>
 
@@ -1926,7 +1828,9 @@ function LandingPage() {
                   Hands-on workshop covering the latest in AI, cloud and
                   full-stack development.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Chennai</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Chennai
+                </span>
               </div>
             </article>
 
@@ -1960,7 +1864,9 @@ function LandingPage() {
                   Alumni entrepreneurs pitch ideas and connect with investors
                   and mentors.
                 </p>
-                <span className="event-location"><MapPin size={11} /> Bengaluru</span>
+                <span className="event-location">
+                  <MapPin size={11} /> Bengaluru
+                </span>
               </div>
             </article>
           </div>
@@ -2001,108 +1907,53 @@ function LandingPage() {
 
           <div className="achievement-grid">
             <Reveal className="achievement-card">
-              <span><Trophy size={30} /></span>
+              <span>
+                <Trophy size={30} />
+              </span>
               <strong>Entrepreneurs</strong>
               <small>Building businesses</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={80}>
-              <span><Rocket size={30} /></span>
+              <span>
+                <Rocket size={30} />
+              </span>
               <strong>Startup Founders</strong>
               <small>Creating new ideas</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={160}>
-              <span><Laptop size={30} /></span>
+              <span>
+                <Laptop size={30} />
+              </span>
               <strong>Technology Leaders</strong>
               <small>Driving innovation</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={240}>
-              <span><Microscope size={30} /></span>
+              <span>
+                <Microscope size={30} />
+              </span>
               <strong>Researchers</strong>
               <small>Expanding knowledge</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={320}>
-              <span><GraduationCap size={28} /></span>
+              <span>
+                <GraduationCap size={28} />
+              </span>
               <strong>Higher Studies</strong>
               <small>Learning globally</small>
             </Reveal>
 
             <Reveal className="achievement-card" delay={400}>
-              <span><Medal size={30} /></span>
+              <span>
+                <Medal size={30} />
+              </span>
               <strong>Public Service</strong>
               <small>Serving society</small>
             </Reveal>
           </div>
-        </div>
-      </section>
-
-      {/* =================================================
-          COMMUNITY / CONTACT
-      ================================================= */}
-
-      <section className="community-section" id="community">
-        <div className="landing-container community-grid">
-          <Reveal className="community-content">
-            <span className="section-tag light">THE VEC COMMUNITY</span>
-
-            <RevealHeading as="h2" direction="right">
-              {(visible) => (
-                <>
-                  <Words
-                    text="Your college journey"
-                    visible={visible}
-                    startIndex={0}
-                  />
-                  <br />
-                  <span>
-                    <Words
-                      text="doesn't end at graduation."
-                      visible={visible}
-                      startIndex={3}
-                    />
-                  </span>
-                </>
-              )}
-            </RevealHeading>
-
-            <p>
-              Whether you graduated recently or decades ago, the VEC community
-              remains a place to reconnect, contribute and grow.
-            </p>
-
-            <div className="community-contact-list">
-              <div>
-                <span><Mail size={16} /></span>
-                <p>alumni@vec.ac.in</p>
-              </div>
-
-              <div>
-                <span><Phone size={16} /></span>
-                <p>Alumni Support Desk</p>
-              </div>
-
-              <div>
-                <span><MapPin size={16} /></span>
-                <p>Velammal Engineering College</p>
-              </div>
-            </div>
-
-            <button
-              className="community-button"
-              type="button"
-              onClick={() => navigate("/signup")}
-            >
-              JOIN THE COMMUNITY
-              <span>→</span>
-            </button>
-          </Reveal>
-
-          <Reveal className="community-form-card" delay={200}>
-            <CommunityQuickForm />
-          </Reveal>
         </div>
       </section>
 
@@ -2138,7 +1989,9 @@ function LandingPage() {
 
             <div className="app-buttons">
               <button type="button">
-                <span><PlayCircle size={20} /></span>
+                <span>
+                  <PlayCircle size={20} />
+                </span>
                 <div>
                   <small>COMING SOON ON</small>
                   <strong>Google Play</strong>
@@ -2146,7 +1999,9 @@ function LandingPage() {
               </button>
 
               <button type="button">
-                <span><Apple size={20} /></span>
+                <span>
+                  <Apple size={20} />
+                </span>
                 <div>
                   <small>COMING SOON ON</small>
                   <strong>App Store</strong>
@@ -2202,6 +2057,226 @@ function LandingPage() {
           </Reveal>
         </div>
       </section>
+
+      {/* =================================================
+          FOOTER
+      ================================================= */}
+
+      <footer id="footer" className="lp-footer">
+        {/* ---------- CONTACT DETAILS ---------- */}
+        <div className="lp-footer-contact">
+          <div className="lp-footer-contact-inner">
+            <div className="lp-footer-address-block">
+              <h3>Contact Address</h3>
+              <p className="lp-footer-address">
+                Velammal Engineering College (Autonomous)
+                <br />
+                (Unit of Velammal Educational Trust),
+                <br />
+                Ambattur Red-hills Road, Surapet,
+                <br />
+                Chennai – 600 066. Tamil Nadu, India.
+              </p>
+            </div>
+
+            <div className="lp-footer-contact-info">
+              <p>
+                Contact: <a href="tel:04426590758">044 26590758</a>
+              </p>
+              <p>
+                Student Affairs: <a href="tel:04426591771">044 26591771</a>
+              </p>
+              <p>
+                For Admissions: <a href="tel:9123547550">9123547550</a>,{" "}
+                <a href="tel:8939221120">8939221120</a>
+              </p>
+
+              <div>
+                <a
+                  href="/Term_and_Conditions"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="lp-footer-privacy"
+                >
+                  Privacy, Terms and Conditions
+                </a>
+              </div>
+
+              <div className="lp-footer-socials">
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                >
+                  <InstagramIcon width={26} height={26} />
+                </a>
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                >
+                  <LinkedinIcon width={26} height={26} />
+                </a>
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Twitter"
+                >
+                  <TwitterIcon width={26} height={26} />
+                </a>
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                >
+                  <FacebookIcon width={26} height={26} />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ---------- MAP ---------- */}
+        <div className="lp-footer-map">
+          <iframe
+            title="Google Maps"
+            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1757.9530530830932!2d80.19081618175407!3d13.149609328912868!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5264a10c856599%3A0xac3348f41097ba7f!2sVelammal%20Engineering%20College!5e1!3m2!1sen!2sin!4v1723700873764!5m2!1sen!2sin"
+            width="400"
+            height="260"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+          />
+        </div>
+
+        {/* ---------- QUICK LINKS ---------- */}
+        <div className="lp-footer-quick">
+          <h3>Quick Links</h3>
+
+          <div className="lp-footer-quick-grid">
+            {/* Profile */}
+            <div>
+              <h4 className="lp-quick-head">Profile</h4>
+              <ul>
+                <li>
+                  <Link to="/abt-us">About Us</Link>
+                </li>
+                <li>
+                  <Link to="/abt-yr">AISHE</Link>
+                </li>
+                <li>
+                  <Link to="/Accredation" state={{ section: "NBA" }}>
+                    NBA
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/Accredation" state={{ section: "NAAC" }}>
+                    NAAC
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/Accredation" state={{ section: "NIRF" }}>
+                    NIRF
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/Accredation" state={{ section: "QS Rating" }}>
+                    QS Rating
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/iic">IIC</Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Academics */}
+            <div>
+              <h4 className="lp-quick-head">Academics</h4>
+              <ul>
+                <li>
+                  <a href="/departments">Departments</a>
+                </li>
+                <li>
+                  <a href="/programs">Programmes</a>
+                </li>
+                <li>
+                  <a href="/library">Library</a>
+                </li>
+                <li>
+                  <a href="/nss">NSS</a>
+                </li>
+                <li>
+                  <a href="/ncc">NCC</a>
+                </li>
+                <li>
+                  <a href="/yrc">YRC</a>
+                </li>
+                <li>
+                  <a href="/sports">Sports</a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Important */}
+            <div>
+              <h4 className="lp-quick-head">Important</h4>
+              <ul>
+                <li>
+                  <a
+                    href="https://vecchennai.org/studentlogin/login.php?done=/studentlogin/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Student Login
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://vecchennai.org/stafflogin/login.php?done=/stafflogin/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Faculty Login
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://easycollege.in/vecengg/college/webpayindex.aspx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Fees Payment
+                  </a>
+                </li>
+                <li>
+                  <a href="/grievances">Grievances</a>
+                </li>
+                <li>
+                  <a href="/admin_auth">Login</a>
+                </li>
+                <li>
+                  <a href="/careers">Careers</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* ---------- COPYRIGHT ---------- */}
+        <div className="lp-footer-bottom">
+          <p>
+            <a href="https://velammal.edu.in/webteam" rel="noopener noreferrer">
+              © WebOps VEC
+            </a>
+            , Velammal Engineering College, Chennai
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }
