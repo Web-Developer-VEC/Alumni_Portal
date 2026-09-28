@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import LandingPage from "../pages/Landing/LandingPage";
 import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register"
 import AlumniJobFeed from "../pages/posts/PostDetails";
 
 import AlumniApproval from "../pages/admin/AlumniApproval";
@@ -21,7 +22,7 @@ function AppRoute() {
         <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
 
             <Route path="/members" element={<Members />} />
