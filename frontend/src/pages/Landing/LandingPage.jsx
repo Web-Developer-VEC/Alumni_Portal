@@ -872,7 +872,6 @@ function LandingPage() {
                 <ArrowRight size={18} />
               </span>
             </button>
-<<<<<<< Updated upstream
 
             <button
               className="hero-secondary"
@@ -881,8 +880,6 @@ function LandingPage() {
             >
               EXPLORE NETWORK
             </button>
-=======
->>>>>>> Stashed changes
           </div>
         </div>
       </section>
@@ -941,10 +938,6 @@ function LandingPage() {
           </Reveal>
         </div>
       </section>
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
       {/* =================================================
           AWARDS / NOMINATIONS
       ================================================= */}
@@ -1265,16 +1258,8 @@ function LandingPage() {
                 Discover and connect with alumni across different batches,
                 departments and industries.
               </p>
-<<<<<<< Updated upstream
-              <button
-                type="button"
-                onClick={() => navigate("/signup")}
-              >
-                EXPLORE DIRECTORY →
-=======
               <button type="button" onClick={() => navigate("/signup")}>
                 EXPLORE DIRECTORY <ArrowRight size={14} />
->>>>>>> Stashed changes
               </button>
               <div className="feature-card-bar" />
             </Reveal>
