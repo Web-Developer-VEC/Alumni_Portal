@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import styles from "./post.module.css";
-import Navbar from "../../components/common/DashboardNavbar"
+import Navbar from "../../components/common/DashboardNavbar";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 /* -------------------------------------------------------------------------- */
 /*  Self-contained: no index.html edits needed.                              */
@@ -21,7 +25,9 @@ function FontStyles() {
 /* -------------------------------------------------------------------------- */
 /*  Sample data – replace with your API response                              */
 /*  Only `company`, `role`, `eligibility` and `applyLink` are required.       */
-/*  Every other field is optional; the card hides what is missing.           */
+/*  Every other field is optional; the card hides what is missing.            */
+/*  Media: use either `image: "url"` (portrait or landscape) or              */
+/*  `pdf: { url, title }`. If both exist, the PDF wins.                       */
 /* -------------------------------------------------------------------------- */
 const SAMPLE_JOBS = [
   {
@@ -139,6 +145,62 @@ const SAMPLE_JOBS = [
         text: "Sir, does the internal referral require LeetCode contest rating verification or university project repositories?",
       },
     ],
+  },
+  {
+    id: 4,
+    alumni: {
+      name: "Meera Iyer",
+      batch: "AI & DS '20",
+      designation: "Product Analyst",
+      avatar: null,
+      verified: true,
+    },
+    postedAgo: "2d ago",
+    company: "Razorpay",
+    role: "Product Analyst",
+    eligibility: "2026 graduates · Strong SQL",
+    location: "Bengaluru",
+    type: "Full-time",
+    package: "₹8 – 10 LPA",
+    deadline: "20 Oct 2026",
+    skills: ["SQL", "Excel", "Product Thinking"],
+    description:
+      "Full job description attached as a document. Swipe through the pages.",
+    tags: [],
+    // Put a PDF in your project's /public folder, e.g. public/sample-jd.pdf
+    pdf: { url: "/sample-jd.pdf", title: "Product Analyst · Job Description" },
+    applyLink: "https://razorpay.com/jobs/",
+    applyLabel: "Apply on Razorpay Careers",
+    views: 640,
+    likes: 41,
+    comments: [],
+  },
+  {
+    id: 5,
+    alumni: {
+      name: "Karthik R",
+      batch: "AI & DS '23",
+      designation: "Software Engineer",
+      avatar: null,
+      verified: true,
+    },
+    postedAgo: "3d ago",
+    company: "Postman",
+    role: "Backend Intern",
+    eligibility: "Pre-final year students",
+    location: "Bengaluru",
+    type: "Internship",
+    package: "₹30,000 / month",
+    deadline: "12 Oct 2026",
+    skills: ["Node.js", "REST APIs"],
+    description: "Hiring poster shared by our team, in portrait format.",
+    tags: [],
+    image: "https://picsum.photos/seed/hiring/800/1000",
+    applyLink: "https://www.postman.com/company/careers/",
+    applyLabel: "Apply on Postman Careers",
+    views: 320,
+    likes: 19,
+    comments: [],
   },
 ];
 
@@ -354,6 +416,32 @@ function Icon({ name, className = "", filled = false }) {
         <svg {...base} {...stroke}>
           <path d="m7 15 5 5 5-5" />
           <path d="m7 9 5-5 5 5" />
+        </svg>
+      );
+    case "chevron_left":
+      return (
+        <svg {...base} {...stroke}>
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      );
+    case "chevron_right":
+      return (
+        <svg {...base} {...stroke}>
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      );
+    case "fullscreen":
+      return (
+        <svg {...base} {...stroke}>
+          <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+        </svg>
+      );
+    case "download":
+      return (
+        <svg {...base} {...stroke}>
+          <path d="M12 3v12" />
+          <path d="m7 10 5 5 5-5" />
+          <path d="M5 21h14" />
         </svg>
       );
     case "check_circle":
@@ -689,22 +777,45 @@ function ShareModal({
     close();
   };
 
-  // "More" — hands off to whatever the OS/browser offers (native share sheet),
-  // falling back to a clipboard copy when navigator.share isn't available.
+  // "More" — opens the OS share sheet (WhatsApp, Gmail, etc. on Android).
+  // Falls back to copying the link when the browser has no share support
+  // (navigator.share only exists on HTTPS or localhost).
   const openMore = async () => {
-    try {
-      if (navigator.share) {
+    if (navigator.share) {
+      try {
         await navigator.share({
           title: `${job.role} at ${job.company}`,
           text: shareText,
           url: shareUrl,
         });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        showToast("Link copied to clipboard");
+        close();
+      } catch (err) {
+        // AbortError just means the user dismissed the sheet; keep ours open.
+        if (err?.name !== "AbortError") {
+          console.error("Share failed:", err);
+          showToast("Couldn't open the share sheet");
+        }
       }
+      return;
+    }
+
+    // Fallback: no navigator.share (e.g. page is not on HTTPS)
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = shareUrl;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      showToast("Link copied to clipboard");
     } catch {
-      /* user cancelled the native share sheet */
+      showToast("Sharing isn't supported on this browser");
     }
     close();
   };
@@ -845,6 +956,255 @@ function MetaPill({ icon, label, value }) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  PDF document viewer (LinkedIn style)                                      */
+/* -------------------------------------------------------------------------- */
+function PdfPage({ pdf, pageNumber }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!pdf) return;
+    let cancelled = false;
+    let task = null;
+
+    (async () => {
+      const page = await pdf.getPage(pageNumber);
+      if (cancelled || !canvasRef.current) return;
+
+      const canvas = canvasRef.current;
+      const base = page.getViewport({ scale: 1 });
+      const cssWidth = canvas.parentElement.clientWidth || 800;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const scale = Math.min(cssWidth * dpr, 1600) / base.width;
+      const viewport = page.getViewport({ scale });
+
+      // Draw off-screen first, then copy: no flicker when changing pages.
+      const off = document.createElement("canvas");
+      off.width = viewport.width;
+      off.height = viewport.height;
+      task = page.render({
+        canvasContext: off.getContext("2d"),
+        viewport,
+      });
+      try {
+        await task.promise;
+      } catch {
+        return; // cancelled
+      }
+      if (cancelled) return;
+      canvas.width = off.width;
+      canvas.height = off.height;
+      canvas.getContext("2d").drawImage(off, 0, 0);
+    })();
+
+    return () => {
+      cancelled = true;
+      task?.cancel();
+    };
+  }, [pdf, pageNumber]);
+
+  return <canvas ref={canvasRef} className={styles.pdfCanvas} />;
+}
+
+function PdfStage({ pdf, error, page, numPages, onGo, className, style }) {
+  const touchX = useRef(null);
+
+  return (
+    <div
+      className={cx(styles.pdfStage, className)}
+      style={style}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight") onGo(1);
+        if (e.key === "ArrowLeft") onGo(-1);
+      }}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0].clientX;
+      }}
+      onTouchEnd={(e) => {
+        if (touchX.current == null) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        touchX.current = null;
+        if (Math.abs(dx) > 45) onGo(dx < 0 ? 1 : -1);
+      }}
+    >
+      {error ? (
+        <div className={styles.pdfState}>Couldn't load this document</div>
+      ) : !pdf ? (
+        <div className={styles.pdfState}>
+          <span className={styles.pdfSpinner} />
+        </div>
+      ) : (
+        <PdfPage pdf={pdf} pageNumber={page} />
+      )}
+
+      {pdf && page > 1 && (
+        <button
+          aria-label="Previous page"
+          onClick={() => onGo(-1)}
+          className={cx(styles.pdfNav, styles.pdfNavPrev)}
+        >
+          <Icon name="chevron_left" className={styles.icon20} />
+        </button>
+      )}
+      {pdf && page < numPages && (
+        <button
+          aria-label="Next page"
+          onClick={() => onGo(1)}
+          className={cx(styles.pdfNav, styles.pdfNavNext)}
+        >
+          <Icon name="chevron_right" className={styles.icon20} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function PdfLightbox({
+  title,
+  src,
+  pdf,
+  error,
+  page,
+  numPages,
+  onGo,
+  onClose,
+}) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") onGo(1);
+      if (e.key === "ArrowLeft") onGo(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose, onGo]);
+
+  return createPortal(
+    <div className={styles.pdfLightbox} role="dialog" aria-modal="true">
+      <div className={styles.pdfLightboxBar}>
+        <span className={styles.pdfLightboxTitle}>{title}</span>
+        <span className={styles.pdfCount}>
+          {page} / {numPages}
+        </span>
+        <a
+          href={src}
+          download
+          className={styles.pdfIconBtn}
+          aria-label="Download"
+        >
+          <Icon name="download" className={styles.icon20} />
+        </a>
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className={styles.pdfIconBtn}
+        >
+          <Icon name="close" className={styles.icon20} />
+        </button>
+      </div>
+      <div className={styles.pdfLightboxBody}>
+        <PdfStage
+          pdf={pdf}
+          error={error}
+          page={page}
+          numPages={numPages}
+          onGo={onGo}
+          className={styles.pdfStageFull}
+        />
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function PdfViewer({ src, title }) {
+  const [pdf, setPdf] = useState(null);
+  const [numPages, setNumPages] = useState(0);
+  const [page, setPage] = useState(1);
+  const [ratio, setRatio] = useState(4 / 3);
+  const [error, setError] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const task = pdfjsLib.getDocument(src);
+    task.promise
+      .then(async (doc) => {
+        const first = await doc.getPage(1);
+        if (cancelled) return;
+        const vp = first.getViewport({ scale: 1 });
+        setRatio(vp.width / vp.height);
+        setNumPages(doc.numPages);
+        setPdf(doc);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      });
+    return () => {
+      cancelled = true;
+      task.destroy();
+    };
+  }, [src]);
+
+  const go = (d) =>
+    setPage((p) => Math.min(numPages || 1, Math.max(1, p + d)));
+
+  return (
+    <div className={styles.pdfWrap}>
+      <PdfStage
+        pdf={pdf}
+        error={error}
+        page={page}
+        numPages={numPages}
+        onGo={go}
+        style={{ aspectRatio: ratio }}
+      />
+      <div className={styles.pdfBar}>
+        <span className={styles.pdfTitle}>{title}</span>
+        {numPages > 0 && (
+          <span className={styles.pdfCount}>
+            {page} / {numPages}
+          </span>
+        )}
+        <a
+          href={src}
+          download
+          className={styles.pdfIconBtn}
+          aria-label="Download PDF"
+        >
+          <Icon name="download" className={styles.icon18} />
+        </a>
+        <button
+          onClick={() => setExpanded(true)}
+          aria-label="Open fullscreen"
+          className={styles.pdfIconBtn}
+        >
+          <Icon name="fullscreen" className={styles.icon18} />
+        </button>
+      </div>
+
+      {expanded && (
+        <PdfLightbox
+          title={title}
+          src={src}
+          pdf={pdf}
+          error={error}
+          page={page}
+          numPages={numPages}
+          onGo={go}
+          onClose={() => setExpanded(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Job card                                                                  */
 /* -------------------------------------------------------------------------- */
 function JobCard({ job, onReport, showToast }) {
@@ -857,25 +1217,40 @@ function JobCard({ job, onReport, showToast }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [portrait, setPortrait] = useState(false);
 
   const menuRef = useRef(null);
   useOutsideClick(menuRef, () => setMenuOpen(false));
 
-  // Clicking anywhere outside this card closes the comments drawer, if open.
+  // Clicking outside this card closes the comments drawer instantly, without
+  // any scroll jump, and NOT while the comment input is focused (keyboard open).
   const cardRef = useRef(null);
+  const commentInputRef = useRef(null);
   useEffect(() => {
     if (!showComments) return;
     const handler = (e) => {
+      // Keyboard open: the first outside tap only dismisses the keyboard.
+      const inputFocused =
+        commentInputRef.current &&
+        document.activeElement === commentInputRef.current;
+      if (inputFocused) return;
+
       if (cardRef.current && !cardRef.current.contains(e.target)) {
-        setShowComments(false);
+        const anchor = e.target;
+        const topBefore = anchor.getBoundingClientRect().top;
+
+        // Close synchronously so the layout change happens right now...
+        flushSync(() => setShowComments(false));
+
+        // ...then cancel out the shift before the browser paints.
+        const delta = anchor.getBoundingClientRect().top - topBefore;
+        if (delta) {
+          window.scrollBy({ top: delta, left: 0, behavior: "instant" });
+        }
       }
     };
-    document.addEventListener("mousedown", handler);
-    document.addEventListener("touchstart", handler);
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("touchstart", handler);
-    };
+    document.addEventListener("pointerdown", handler);
+    return () => document.removeEventListener("pointerdown", handler);
   }, [showComments]);
 
   const toggleLike = () => {
@@ -991,70 +1366,97 @@ function JobCard({ job, onReport, showToast }) {
         </div>
       </div>
 
-      {/* ---------- Hero banner ---------- */}
-      <div className={styles.heroBanner}>
-        {job.image ? (
-          <img
-            src={job.image}
-            alt={`${job.company} workplace`}
-            loading="lazy"
-            className={styles.heroImg}
-          />
-        ) : (
-          <div className={styles.heroGradientBg}>
-            <div className={styles.heroGradientTextWrap}>
-              <span className={styles.heroTypeLabel}>
-                {job.type ? `${job.type} Program` : "Opportunity"}
-              </span>
-              <h2 className={styles.heroRoleTitle}>{job.role}</h2>
-            </div>
-            <div className={styles.heroMonogram}>{initials(job.company)}</div>
-          </div>
-        )}
-        <div className={styles.heroOverlay} />
-
-        <div className={styles.heroBadges}>
-          {job.type && <span className={styles.badge}>{job.type}</span>}
-          {job.freshers && (
-            <span className={cx(styles.badge, styles.badgeFreshers)}>
-              Freshers Welcome
-            </span>
+      {/* ---------- Hero banner / PDF document ---------- */}
+      {job.pdf ? (
+        <PdfViewer
+          src={job.pdf.url}
+          title={job.pdf.title || `${job.role} · ${job.company}`}
+        />
+      ) : (
+        <div
+          className={cx(
+            styles.heroBanner,
+            portrait && styles.heroBannerPortrait,
           )}
-          {job.remote && (
-            <span className={cx(styles.badge, styles.badgeRemote)}>
-              Remote Eligible
-            </span>
-          )}
-          {job.referralAvailable && (
-            <span className={cx(styles.badge, styles.badgeReferral)}>
-              Referral Available
-            </span>
-          )}
-          {job.highVolumeReferrals && (
-            <span className={cx(styles.badge, styles.badgeHighVolume)}>
-              High Volume Referrals
-            </span>
-          )}
-        </div>
-
-        {job.image && (
-          <div className={styles.heroBottomBar}>
-            <div>
-              <div className={styles.heroCompanyLabel}>{job.company}</div>
-              <h2 className={styles.heroRoleHeading}>{job.role}</h2>
-            </div>
-            {(job.directReferral || job.highVolumeReferrals) && (
-              <div className={styles.heroReferralPill}>
-                <Icon
-                  name="verified_user"
-                  className={styles.heroReferralIcon}
+        >
+          {job.image ? (
+            <>
+              {portrait && (
+                <img
+                  src={job.image}
+                  alt=""
+                  aria-hidden="true"
+                  className={styles.heroBackdrop}
                 />
-                {job.directReferral || "Velammal Exclusive Priority"}
+              )}
+              <img
+                src={job.image}
+                alt={`${job.company} workplace`}
+                loading="lazy"
+                onLoad={(e) =>
+                  setPortrait(
+                    e.currentTarget.naturalHeight > e.currentTarget.naturalWidth,
+                  )
+                }
+                className={cx(styles.heroImg, portrait && styles.heroImgContain)}
+              />
+            </>
+          ) : (
+            <div className={styles.heroGradientBg}>
+              <div className={styles.heroGradientTextWrap}>
+                <span className={styles.heroTypeLabel}>
+                  {job.type ? `${job.type} Program` : "Opportunity"}
+                </span>
+                <h2 className={styles.heroRoleTitle}>{job.role}</h2>
               </div>
+              <div className={styles.heroMonogram}>{initials(job.company)}</div>
+            </div>
+          )}
+          <div className={styles.heroOverlay} />
+
+          <div className={styles.heroBadges}>
+            {job.type && <span className={styles.badge}>{job.type}</span>}
+            {job.freshers && (
+              <span className={cx(styles.badge, styles.badgeFreshers)}>
+                Freshers Welcome
+              </span>
+            )}
+            {job.remote && (
+              <span className={cx(styles.badge, styles.badgeRemote)}>
+                Remote Eligible
+              </span>
+            )}
+            {job.referralAvailable && (
+              <span className={cx(styles.badge, styles.badgeReferral)}>
+                Referral Available
+              </span>
+            )}
+            {job.highVolumeReferrals && (
+              <span className={cx(styles.badge, styles.badgeHighVolume)}>
+                High Volume Referrals
+              </span>
             )}
           </div>
-        )}
-      </div>
+
+          {job.image && (
+            <div className={styles.heroBottomBar}>
+              <div>
+                <div className={styles.heroCompanyLabel}>{job.company}</div>
+                <h2 className={styles.heroRoleHeading}>{job.role}</h2>
+              </div>
+              {(job.directReferral || job.highVolumeReferrals) && (
+                <div className={styles.heroReferralPill}>
+                  <Icon
+                    name="verified_user"
+                    className={styles.heroReferralIcon}
+                  />
+                  {job.directReferral || "Velammal Exclusive Priority"}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ---------- Body ---------- */}
       <div className={styles.cardBody}>
@@ -1217,6 +1619,7 @@ function JobCard({ job, onReport, showToast }) {
           )}
           <form onSubmit={addComment} className={styles.commentForm}>
             <input
+              ref={commentInputRef}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Write a comment or query..."
@@ -1375,6 +1778,22 @@ function StatsBanner({ jobCount }) {
 /*  Search + filters                                                          */
 /* -------------------------------------------------------------------------- */
 function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
+  const filtersRef = useRef(null);
+  const [atEnd, setAtEnd] = useState(false);
+
+  // Hide the fade once the row is scrolled all the way to the right.
+  const updateFade = () => {
+    const el = filtersRef.current;
+    if (!el) return;
+    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 4);
+  };
+
+  useEffect(() => {
+    updateFade();
+    window.addEventListener("resize", updateFade);
+    return () => window.removeEventListener("resize", updateFade);
+  }, []);
+
   return (
     <div className={styles.controls}>
       <div className={styles.controlsLeft}>
@@ -1401,22 +1820,30 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
         </div>
       </div>
 
-      <div className={styles.filtersRow}>
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFilter(f.value)}
-            className={cx(
-              styles.filterBtn,
-              filter === f.value && styles.filterBtnActive,
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className={styles.filtersWrap}>
+        <div
+          ref={filtersRef}
+          onScroll={updateFade}
+          className={styles.filtersRow}
+        >
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={cx(
+                styles.filterBtn,
+                filter === f.value && styles.filterBtnActive,
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {/* Fade hint: visible only while there is more to scroll to on the right */}
+        <div
+          className={cx(styles.fadeHint, atEnd && styles.fadeHintHidden)}
+        />
       </div>
-      {/* Fade hint — signals there's more to scroll to on the right */}
-      <div className={styles.fadeHint} />
     </div>
   );
 }
@@ -1513,9 +1940,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
         </div>
       </main>
 
-      <footer className={styles.footer}>
-        
-      </footer>
+      <footer className={styles.footer}></footer>
 
       <Toast />
     </div>
