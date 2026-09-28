@@ -4,9 +4,12 @@ import LandingPage from "../pages/Landing/LandingPage";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register"
 import AlumniJobFeed from "../pages/posts/PostDetails";
+import CreatePost from "../pages/posts/uploadpost";
+
 
 import AlumniApproval from "../pages/admin/AlumniApproval";
 import PostApproval from "../pages/admin/PostApproval";
+
 
 import AdminLayout from "../layouts/adminLayout";
 import AlumniLayout from "../layouts/AlumniLayout";
@@ -24,6 +27,8 @@ function AppRoute() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
+            <Route path="/createpost" element={<CreatePost />} />
+
 
             <Route path="/members" element={<Members />} />
             <Route path="/student" element={<StudentLayout />} />
