@@ -6,7 +6,7 @@ export interface IComment {
   createdAt?: Date;
 }
 
-const commentSchema = new Schema<IComment>(
+export const commentSchema = new Schema<IComment>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     text: { type: String, required: true },
@@ -31,16 +31,24 @@ export interface IPost extends Document {
   freshers?: boolean;
   remote?: boolean;
   referralAvailable?: boolean;
+  highVolumeReferrals?: boolean;
+  directReferral?: string;
   package?: string;
   deadline?: Date;
+  ppo?: string;
+  hiringLoop?: string;
   skills?: string[];
+  pledge?: string;
+  tags?: string[];
+  applyLink?: string;
+  applyLabel?: string;
 
   views: number;
   likes: number;
   comments: IComment[];
 }
 
-const postSchema = new Schema<IPost>(
+export const postSchema = new Schema<IPost>(
   {
     title: { type: String, required: true },
     content: { type: String, required: true },
@@ -61,10 +69,18 @@ const postSchema = new Schema<IPost>(
     freshers: { type: Boolean, default: false },
     remote: { type: Boolean, default: false },
     referralAvailable: { type: Boolean, default: false },
+    highVolumeReferrals: { type: Boolean, default: false },
+    directReferral: { type: String },
 
     package: { type: String },
     deadline: { type: Date },
+    ppo: { type: String },
+    hiringLoop: { type: String },
     skills: { type: [String], default: [] },
+    pledge: { type: String },
+    tags: { type: [String], default: [] },
+    applyLink: { type: String },
+    applyLabel: { type: String },
 
     views: { type: Number, default: 0 },
     likes: { type: Number, default: 0 },
@@ -73,4 +89,4 @@ const postSchema = new Schema<IPost>(
   { timestamps: true }
 );
 
-export default model<IPost>("Post", postSchema);
+export default model<IPost>("Post", postSchema);
