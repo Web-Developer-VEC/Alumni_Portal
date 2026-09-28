@@ -1,24 +1,11 @@
 import { useRef, useState } from "react";
 import { Mail, Eye, EyeOff, Clock, Check, X } from "lucide-react";
-import "./Register.css";
+import styles from "./Register.module.css";
 
 const steps = ["Email & OTP", "Password", "Details"];
 const STORAGE_KEY = "alumniRegistration";
 
-/* ------------------------------------------------------------------ */
-/* TODO (backend): replace this placeholder with the real request.     */
-/* `payload` has everything from the form. Send it to your endpoint,   */
-/* and return the reference ID that the backend gives you, e.g.:       */
-/*                                                                     */
-/*   const res = await fetch("<YOUR_SUBMIT_ENDPOINT>", {               */
-/*     method: "POST",                                                 */
-/*     headers: { "Content-Type": "application/json" },                */
-/*     body: JSON.stringify({ ...payload, password }),                 */
-/*   });                                                               */
-/*   if (!res.ok) throw new Error("Could not submit your registration."); */
-/*   const data = await res.json();                                    */
-/*   return { referenceId: data.referenceId };                         */
-/* ------------------------------------------------------------------ */
+
 async function submitRegistration(payload) {
   await new Promise((resolve) => setTimeout(resolve, 700)); // fake network delay
   return {
@@ -41,10 +28,7 @@ export default function Register() {
   const [submitted, setSubmitted] = useState(readSaved); // { referenceId, firstName, email } | null
   const [submitting, setSubmitting] = useState(false);
 
-  // TODO (backend): turn these into state and fill them from your status endpoint
-  // (poll it every few seconds, or use a websocket) using submitted.referenceId.
-  //   status: "pending" | "accepted" | "rejected"
-  // To preview the other screens right now, change "pending" to "accepted" or "rejected".
+
   const registrationStatus = "pending";
   const statusReason = ""; // rejection reason from the admin, if any
 
@@ -232,18 +216,18 @@ export default function Register() {
   };
 
   return (
-    <div className="register-page">
-      <div className="layout">
-        <section className="intro">
-          <div className="college-brand">
-            <div className="brand-line" />
+    <div className={styles["register-page"]}>
+      <div className={styles["layout"]}>
+        <section className={styles["intro"]}>
+          <div className={styles["college-brand"]}>
+            <div className={styles["brand-line"]} />
             <div>
-              <p className="college-name">VELAMMAL ENGINEERING COLLEGE</p>
-              <p className="college-sub">Alumni Community</p>
+              <p className={styles["college-name"]}>VELAMMAL ENGINEERING COLLEGE</p>
+              <p className={styles["college-sub"]}>Alumni Community</p>
             </div>
           </div>
 
-          <p className="intro-kicker">
+          <p className={styles["intro-kicker"]}>
             PEOPLE · STORIES · OPPORTUNITIES · ALWAYS AHEAD
           </p>
 
@@ -253,25 +237,25 @@ export default function Register() {
             Starts <span>Here.</span>
           </h1>
 
-          <p className="intro-copy">
+          <p className={styles["intro-copy"]}>
             Join a growing community of alumni, stay connected, explore
             opportunities, and make an impact.
           </p>
 
-          <div className="benefits">
+          <div className={styles["benefits"]}>
             <Benefit icon="♧" title="Reconnect" text="Find and stay in touch with your peers." />
             <Benefit icon="▣" title="Explore" text="Discover opportunities and collaborations." />
             <Benefit icon="↗" title="Grow" text="Learn, share, and build together." />
           </div>
 
-          <div className="intro-foot">
+          <div className={styles["intro-foot"]}>
             <i />
             SAME PEOPLE · BIGGER TOMORROWS.
           </div>
         </section>
 
-        <section className="panel">
-          <div className="top-row">
+        <section className={styles["panel"]}>
+          <div className={styles["top-row"]}>
             <span>Already have an account?</span>
             <button
               type="button"
@@ -290,9 +274,9 @@ export default function Register() {
             />
           ) : (
             <>
-              <p className="kicker">Alumni Registration</p>
-              <h2 className="title">Create Your Account</h2>
-              <p className="subtitle">
+              <p className={styles["kicker"]}>Alumni Registration</p>
+              <h2 className={styles["title"]}>Create Your Account</h2>
+              <p className={styles["subtitle"]}>
                 {step === 1
                   ? "Verify your email to get started."
                   : step === 2
@@ -302,8 +286,8 @@ export default function Register() {
 
               <Stepper step={step} />
 
-              {message && <div className="alert success">{message}</div>}
-              {error && <div className="alert error">{error}</div>}
+              {message && <div className={`${styles["alert"]} ${styles["success"]}`}>{message}</div>}
+              {error && <div className={`${styles["alert"]} ${styles["error"]}`}>{error}</div>}
 
               {step === 1 && (
                 <EmailVerificationStep
@@ -457,16 +441,16 @@ function DetailsScreens({
   };
 
   return (
-    <form className="form" onSubmit={(e) => { e.preventDefault(); if (!submitting) next(); }}>
+    <form className={styles["form"]} onSubmit={(e) => { e.preventDefault(); if (!submitting) next(); }}>
       {screen === 1 && (
         <FormSection title="Personal Information">
-          <div className="grid grid-cols-2">
+          <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
             <Field label="Full Name *" value={name} onChange={setName} placeholder="Enter your full name" autoComplete="name" />
             <Field label="Mobile Number *" value={mobileNumber} onChange={(v) => setMobileNumber(v.replace(/\D/g, "").slice(0, 10))} type="tel" placeholder="Enter your 10-digit mobile number" autoComplete="tel" />
             <Field label="Date of Birth" value={dateOfBirth} onChange={setDateOfBirth} type="date" />
             <Select label="Gender" value={gender} onChange={setGender} options={["Male", "Female", "Other", "Prefer not to say"]} />
           </div>
-          <div className="profile-photo-field">
+          <div className={styles["profile-photo-field"]}>
             <label>Profile Photo</label>
             <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => setProfilePhoto(e.target.files?.[0] || null)} />
           </div>
@@ -475,7 +459,7 @@ function DetailsScreens({
 
       {screen === 2 && (
         <FormSection title="Academic Information">
-          <div className="grid grid-cols-2">
+          <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
             <ReadOnlyField label="Register Number" value={registerNumber} />
             <ReadOnlyField label="Programme" value={programme} />
             <ReadOnlyField label="Department" value={department} />
@@ -486,8 +470,8 @@ function DetailsScreens({
 
       {screen === 3 && (
         <FormSection title="Address">
-          <div className="grid grid-cols-2">
-            <div className="col-span-2"><Field label="Address" value={address} onChange={setAddress} placeholder="Enter your address" /></div>
+          <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
+            <div className={styles["col-span-2"]}><Field label="Address" value={address} onChange={setAddress} placeholder="Enter your address" /></div>
             <Field label="City" value={city} onChange={setCity} placeholder="Enter city" />
             <Field label="State" value={state} onChange={setState} placeholder="Enter state" />
             <Field label="Country" value={country} onChange={setCountry} placeholder="Enter country" />
@@ -498,7 +482,7 @@ function DetailsScreens({
 
       {screen === 4 && (
         <FormSection title="Professional Information">
-          <div className="grid grid-cols-2">
+          <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
             <Select label="Current Status *" value={currentStatus} onChange={setCurrentStatus} options={["Employed", "Self-Employed", "Entrepreneur", "Higher Studies", "Looking for Opportunities", "Student", "Other"]} />
             <Field label={"Company / Organization" + (needsEmploymentDetails ? " *" : "")} value={company} onChange={setCompany} placeholder="Enter company / organization" />
             <Field label={"Job Title / Designation" + (needsEmploymentDetails ? " *" : "")} value={jobTitle} onChange={setJobTitle} placeholder="Enter designation" />
@@ -513,7 +497,7 @@ function DetailsScreens({
       {screen === 5 && (
         <FormSection title="Alumni Engagement">
           <p>Select the ways you would like to contribute to the alumni community.</p>
-          <div className="grid grid-cols-2">
+          <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
             {["Attend Alumni Events", "Mentor Current Students", "Provide Internship Opportunities", "Provide Job Opportunities", "Give Guest Lectures", "Support College Activities", "Make Donations"].map((item) => (
               <label key={item}>
                 <input
@@ -534,9 +518,9 @@ function DetailsScreens({
         </FormSection>
       )}
 
-      <div className="button-row">
-        <button type="button" className="button secondary" onClick={back} disabled={submitting}>Back</button>
-        <button className="button" disabled={submitting}>
+      <div className={styles["button-row"]}>
+        <button type="button" className={`${styles["button"]} ${styles["secondary"]}`} onClick={back} disabled={submitting}>Back</button>
+        <button className={styles["button"]} disabled={submitting}>
           {screen === 5 ? (submitting ? "Submitting…" : "Complete registration") : "Continue"}
         </button>
       </div>
@@ -546,8 +530,8 @@ function DetailsScreens({
 
 function Benefit({ icon, title, text }) {
   return (
-    <div className="benefit">
-      <div className="benefit-icon">{icon}</div>
+    <div className={styles["benefit"]}>
+      <div className={styles["benefit-icon"]}>{icon}</div>
       <div>
         <strong>{title}</strong>
         <span>{text}</span>
@@ -558,19 +542,19 @@ function Benefit({ icon, title, text }) {
 
 function Stepper({ step }) {
   return (
-    <div className="stepper" aria-label={`Step ${step} of 3`}>
+    <div className={styles["stepper"]} aria-label={`Step ${step} of 3`}>
       {steps.map((label, index) => {
         const number = index + 1;
 
         return (
           <div
-            className={`step ${step === number ? "active" : ""} ${step > number ? "done" : ""}`}
+            className={`${styles["step"]} ${step === number ? styles["active"] : ""} ${step > number ? styles["done"] : ""}`}
             key={label}
           >
-            <div className="step-circle">
+            <div className={styles["step-circle"]}>
               {step > number ? "✓" : number}
             </div>
-            <span className="step-label">{label}</span>
+            <span className={styles["step-label"]}>{label}</span>
           </div>
         );
       })}
@@ -580,10 +564,10 @@ function Stepper({ step }) {
 
 function Field({ label, value, onChange, placeholder, type = "text", autoComplete, icon, inputMode }) {
   return (
-    <div className="field">
+    <div className={styles["field"]}>
       <label>{label}</label>
-      <div className={`input-wrap ${icon ? "has-icon" : ""}`}>
-        {icon && <span className="input-icon">{icon}</span>}
+      <div className={`${styles["input-wrap"]} ${icon ? styles["has-icon"] : ""}`}>
+        {icon && <span className={styles["input-icon"]}>{icon}</span>}
         <input
           type={type}
           value={value}
@@ -598,7 +582,9 @@ function Field({ label, value, onChange, placeholder, type = "text", autoComplet
 }
 
 function FormSection({ title, children }) {
-  const sectionClass = title === "Academic Information" ? "details-section academic-section" : "details-section";
+  const sectionClass = title === "Academic Information"
+    ? `${styles["details-section"]} ${styles["academic-section"]}`
+    : styles["details-section"];
 
   return (
     <section className={sectionClass}>
@@ -610,7 +596,7 @@ function FormSection({ title, children }) {
 
 function ReadOnlyField({ label, value }) {
   return (
-    <div className="field">
+    <div className={styles["field"]}>
       <label>{label}</label>
       <input value={value} readOnly />
     </div>
@@ -619,7 +605,7 @@ function ReadOnlyField({ label, value }) {
 
 function Select({ label, value, onChange, options }) {
   return (
-    <div className="field">
+    <div className={styles["field"]}>
       <label>{label}</label>
       <select value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">Select {label.replace(" *", "").toLowerCase()}</option>
@@ -669,7 +655,7 @@ function EmailVerificationStep({
 
   if (!otpSent) {
     return (
-      <form className="form" onSubmit={onSendOtp}>
+      <form className={styles["form"]} onSubmit={onSendOtp}>
         <Field
           label="Email address"
           icon={<Mail size={18} strokeWidth={2} />}
@@ -680,20 +666,20 @@ function EmailVerificationStep({
           autoComplete="email"
         />
         <p>We'll send a verification code to this email.</p>
-        <button className="button">Send OTP <span style={{ marginLeft: 10, fontSize: 18 }}>→</span></button>
-        <div className="secure">🔒 We'll never share your email with anyone.</div>
+        <button className={styles["button"]}>Send OTP <span style={{ marginLeft: 10, fontSize: 18 }}>→</span></button>
+        <div className={styles["secure"]}>🔒 We'll never share your email with anyone.</div>
       </form>
     );
   }
 
   return (
-    <form className="form" onSubmit={onVerifyOtp}>
+    <form className={styles["form"]} onSubmit={onVerifyOtp}>
       <div>
-        <p className="otp-title">Verification code</p>
-        <p className="otp-hint">We sent a 6-digit code to <b>{email}</b></p>
+        <p className={styles["otp-title"]}>Verification code</p>
+        <p className={styles["otp-hint"]}>We sent a 6-digit code to <b>{email}</b></p>
       </div>
 
-      <div className="otp-grid">
+      <div className={styles["otp-grid"]}>
         {Array.from({ length: 6 }, (_, index) => (
           <input
             key={index}
@@ -709,13 +695,13 @@ function EmailVerificationStep({
         ))}
       </div>
 
-      <div className="links">
-        <button type="button" className="link" onClick={onChangeEmail}>← Change email</button>
-        <button type="button" className="link" onClick={onResend}>Resend code</button>
+      <div className={styles["links"]}>
+        <button type="button" className={styles["link"]} onClick={onChangeEmail}>← Change email</button>
+        <button type="button" className={styles["link"]} onClick={onResend}>Resend code</button>
       </div>
 
-      <div className="demo"><span>Demo mode · no email is sent</span><b>123456</b></div>
-      <button className="button">Verify email →</button>
+      <div className={styles["demo"]}><span>Demo mode · no email is sent</span><b>123456</b></div>
+      <button className={styles["button"]}>Verify email →</button>
     </form>
   );
 }
@@ -732,10 +718,10 @@ function PasswordStep({ password, setPassword, confirmPassword, setConfirmPasswo
   const labels = ["", "Weak", "Fair", "Good", "Strong"];
 
   return (
-    <form className="form" onSubmit={onSubmit}>
-      <div className="field">
+    <form className={styles["form"]} onSubmit={onSubmit}>
+      <div className={styles["field"]}>
         <label>New password</label>
-        <div className="input-wrap has-eye">
+        <div className={`${styles["input-wrap"]} ${styles["has-eye"]}`}>
           <input
             type={showPassword ? "text" : "password"}
             value={password}
@@ -745,19 +731,19 @@ function PasswordStep({ password, setPassword, confirmPassword, setConfirmPasswo
           />
           <button
             type="button"
-            className="eye-btn"
+            className={styles["eye-btn"]}
             aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? <EyeOff size={19} strokeWidth={2} /> : <Eye size={19} strokeWidth={2} />}
           </button>
         </div>
-        {password && <span className="hint">Strength: {labels[Math.max(score, 1)]}</span>}
+        {password && <span className={styles["hint"]}>Strength: {labels[Math.max(score, 1)]}</span>}
       </div>
 
-      <div className="field">
+      <div className={styles["field"]}>
         <label>Confirm password</label>
-        <div className="input-wrap has-eye">
+        <div className={`${styles["input-wrap"]} ${styles["has-eye"]}`}>
           <input
             type={showConfirmPassword ? "text" : "password"}
             value={confirmPassword}
@@ -767,7 +753,7 @@ function PasswordStep({ password, setPassword, confirmPassword, setConfirmPasswo
           />
           <button
             type="button"
-            className="eye-btn"
+            className={styles["eye-btn"]}
             aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
@@ -775,15 +761,15 @@ function PasswordStep({ password, setPassword, confirmPassword, setConfirmPasswo
           </button>
         </div>
         {confirmPassword && (
-          <span className={`hint ${confirmPassword === password ? "ok" : "bad"}`}>
+          <span className={`${styles["hint"]} ${confirmPassword === password ? styles["ok"] : styles["bad"]}`}>
             {confirmPassword === password ? "✓ Passwords match" : "Passwords don't match yet"}
           </span>
         )}
       </div>
 
-      <div className="button-row">
-        <button type="button" className="button secondary" onClick={onBack}>Back</button>
-        <button className="button">Continue</button>
+      <div className={styles["button-row"]}>
+        <button type="button" className={`${styles["button"]} ${styles["secondary"]}`} onClick={onBack}>Back</button>
+        <button className={styles["button"]}>Continue</button>
       </div>
     </form>
   );
@@ -826,37 +812,37 @@ function RegistrationStatus({ submitted, status, reason, onReset }) {
   }[status];
 
   return (
-    <div className="success-panel" aria-live="polite">
-      <div className={`success-icon ${status}`}>{view.icon}</div>
+    <div className={styles["success-panel"]} aria-live="polite">
+      <div className={`${styles["success-icon"]} ${styles[status]}`}>{view.icon}</div>
 
       <div>
-        <h2 className="success-title">{view.title}</h2>
-        <p className="success-copy">{view.copy}</p>
+        <h2 className={styles["success-title"]}>{view.title}</h2>
+        <p className={styles["success-copy"]}>{view.copy}</p>
       </div>
 
-      <div className="reference">
+      <div className={styles["reference"]}>
         <small>Registration reference ID</small>
         <strong>{referenceId}</strong>
       </div>
 
-      <div className="summary">
-        <div className="summary-row">
+      <div className={styles["summary"]}>
+        <div className={styles["summary-row"]}>
           <span>Status</span>
-          <b className={`pill ${status === "missing" ? "rejected" : status}`}>{view.pill}</b>
+          <b className={`${styles["pill"]} ${status === "missing" ? styles["rejected"] : styles[status]}`}>{view.pill}</b>
         </div>
-        <div className="summary-row">
+        <div className={styles["summary-row"]}>
           <span>Email</span>
           <span>{email}</span>
         </div>
       </div>
 
       {status === "pending" && (
-        <p className="status-note">
+        <p className={styles["status-note"]}>
           You'll get an email at {email} as soon as the admin reviews your registration.
         </p>
       )}
 
-      <button className={status === "pending" ? "button secondary" : "button"} onClick={onReset}>
+      <button className={status === "pending" ? `${styles["button"]} ${styles["secondary"]}` : styles["button"]} onClick={onReset}>
         Register another account
       </button>
     </div>
