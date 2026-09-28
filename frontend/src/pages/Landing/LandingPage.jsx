@@ -731,6 +731,16 @@ const heroAlumniStack = [
 function LandingPage() {
   const navigate = useNavigate();
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const scrollToSection = (id) => {
     const section = document.getElementById(id);
 
@@ -785,6 +795,7 @@ function LandingPage() {
   };
 
   return (
+
     <main className="landing-page">
       {/* =================================================
         NAVBAR
@@ -871,7 +882,7 @@ function LandingPage() {
           <button
             type="button"
             className="lp-navbar__register-btn"
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("/register")}
             aria-label="Register"
           >
             <span className="lp-navbar__icon-glass" aria-hidden="true">
@@ -998,7 +1009,7 @@ function LandingPage() {
               onClick={() => navigate("/signup")}
             >
               EXPLORE NETWORK
-            </button> 
+            </button>
           </div>
         </div>
 
@@ -1060,7 +1071,7 @@ function LandingPage() {
           </Reveal>
         </div>
       </section>
-          {/* =================================================
+      {/* =================================================
           AWARDS / NOMINATIONS
       ================================================= */}
 
@@ -1374,11 +1385,11 @@ function LandingPage() {
                 departments and industries.
               </p>
               <button
-  type="button"
-  onClick={() => navigate("/signup")}
->
-  EXPLORE DIRECTORY →
-</button>
+                type="button"
+                onClick={() => navigate("/signup")}
+              >
+                EXPLORE DIRECTORY →
+              </button>
               <div className="feature-card-bar" />
             </Reveal>
 
