@@ -19,7 +19,7 @@ function AppRoute() {
     return (
         <Routes>
             <Route path="/login" element={<Login />} />
-
+            <Route path="/" element={<LandingPage />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
 
             <Route path="members" element={<Members />} />
