@@ -4,7 +4,6 @@ import LandingPage from "../pages/Landing/LandingPage";
 import Login from "../pages/auth/Login";
 import AlumniJobFeed from "../pages/posts/PostDetails";
 
-<<<<<<< Updated upstream
 import AlumniApproval from "../pages/admin/AlumniApproval";
 import PostApproval from "../pages/admin/PostApproval";
 
@@ -14,15 +13,18 @@ import StudentLayout from "../layouts/StudentLayout";
 
 import Members from "../pages/alumni/Members"
 
+import NotFound from "../components/common/NotFound";
+
 // import FeedbackForm from "../pages/feedback/FeedbackForm"; 
 function AppRoute() {
     return (
         <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<LandingPage />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
 
-            <Route path="members" element={<Members />} />
+            <Route path="/members" element={<Members />} />
             <Route path="/student" element={<StudentLayout />} />
             <Route />
 
@@ -33,18 +35,9 @@ function AppRoute() {
             <Route path="/alumni" element={<AlumniLayout/>}>
             </Route>
             {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
+            <Route path="*" element={<NotFound />} />
         </Routes>
     );
-=======
-function AppRoute() {
-  return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/jobs" element={<AlumniJobFeed />} />
-    </Routes>
-  );
->>>>>>> Stashed changes
 }
 
 export default AppRoute;
