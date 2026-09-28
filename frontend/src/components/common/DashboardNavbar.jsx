@@ -141,7 +141,7 @@ const Navbar = () => {
             }}
           >
             <div className={styles.avatar}>
-              <img src={Profile} alt="Profile" />
+              {/* <img src={Profile} alt="Profile" /> */}
               <span className={styles.onlineDot}></span>
             </div>
 
