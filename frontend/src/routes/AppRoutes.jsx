@@ -4,7 +4,6 @@ import LandingPage from "../pages/Landing/LandingPage";
 import Login from "../pages/auth/Login";
 import AlumniJobFeed from "../pages/posts/PostDetails";
 
-<<<<<<< Updated upstream
 import AlumniApproval from "../pages/admin/AlumniApproval";
 import PostApproval from "../pages/admin/PostApproval";
 
@@ -35,16 +34,6 @@ function AppRoute() {
             {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
         </Routes>
     );
-=======
-function AppRoute() {
-  return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/jobs" element={<AlumniJobFeed />} />
-    </Routes>
-  );
->>>>>>> Stashed changes
 }
 
 export default AppRoute;
