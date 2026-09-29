@@ -7,6 +7,7 @@ import postRoutes from "./posts/post.routes.js";
 import galleryRoutes from "./gallery/gallery.routes.js";
 import hodRoutes from "./hod/hod.routes.js"
 import eventRoutes from "./event/event.route.js";
+import landingRoutes from "./landing/landing.routes.js";
 
 router.use("/event", eventRoutes);
 router.use("/posts", postRoutes);
@@ -14,7 +15,7 @@ router.use("/auth", authRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/alumni",alumniroute)
 router.use("/gallery", galleryRoutes);
-
+router.use("/landing", landingRoutes);
 
 router.use("/hod", hodRoutes);
 
