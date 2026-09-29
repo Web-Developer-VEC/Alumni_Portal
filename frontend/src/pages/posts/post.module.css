@@ -848,6 +848,7 @@
   height: 100%;
   width: 100%;
   object-fit: cover;
+  cursor: zoom-in;
   transition: transform 0.5s ease;
 }
 .jobCard:hover .heroImg {
@@ -1014,6 +1015,108 @@
   height: 1rem;
   width: 1rem;
   color: var(--color-green);
+}
+
+/* -- image carousel controls (hero banner + fullscreen viewer) -- */
+.imgNav {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: rgba(19, 27, 46, 0.72);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.imgNav:hover {
+  background: rgba(19, 27, 46, 0.9);
+}
+.imgNavPrev {
+  left: 0.75rem;
+}
+.imgNavNext {
+  right: 0.75rem;
+}
+.imgCount {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  border-radius: var(--radius-full);
+  background: rgba(19, 27, 46, 0.72);
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+/* -- fullscreen image viewer -- */
+.imgLightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.imgLightboxBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  pointer-events: none;
+}
+.imgLightboxCount {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+.imgLightboxClose {
+  pointer-events: auto;
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+}
+.imgLightboxStage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.imgLightboxImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  will-change: transform;
+  -webkit-user-drag: none;
 }
 
 /* -- PDF document viewer (LinkedIn style) -- */
@@ -2152,12 +2255,12 @@
 .emptyResetBtn {
   margin-top: 1.25rem;
   border-radius: var(--radius-xl);
-  background: var(--color-green-accent);
+  background: var(--color-yellow);
   padding: 0.625rem 1.5rem;
   font-family: var(--font-head);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-black);
   border: none;
   cursor: pointer;
   transition: opacity 0.15s ease;
