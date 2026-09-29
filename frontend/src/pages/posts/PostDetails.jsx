@@ -133,7 +133,9 @@ function usePosts() {
         setError(null);
         const res = await api.get("/posts/", { signal: controller.signal });
         const data = res.data;
-        const list = Array.isArray(data) ? data : data?.posts || data?.data || [];
+        const list = Array.isArray(data)
+          ? data
+          : data?.posts || data?.data || [];
         setJobs(list.map(mapPostToJob));
       } catch (err) {
         if (err.code === "ERR_CANCELED" || err.name === "CanceledError") return;
@@ -472,7 +474,12 @@ function ReportModal({ onClose, onSubmit }) {
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 10);
-    return () => clearTimeout(t);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = prevOverflow;
+    };
   }, []);
 
   const close = () => {
@@ -480,7 +487,7 @@ function ReportModal({ onClose, onSubmit }) {
     setTimeout(onClose, 180);
   };
 
-  return (
+  return createPortal(
     <div
       className={styles.reportOverlay}
       onPointerDown={(e) => {
@@ -567,7 +574,8 @@ function ReportModal({ onClose, onSubmit }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -578,13 +586,7 @@ function ReportModal({ onClose, onSubmit }) {
 /*  Until that is wired up, the list is empty and "More" (native share /      */
 /*  copy link) still works.                                                   */
 /* -------------------------------------------------------------------------- */
-function ShareModal({
-  job,
-  conversations = [],
-  onClose,
-  onSend,
-  showToast,
-}) {
+function ShareModal({ job, conversations = [], onClose, onSend, showToast }) {
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
@@ -1037,8 +1039,7 @@ function PdfViewer({ src, title }) {
     };
   }, [src]);
 
-  const go = (d) =>
-    setPage((p) => Math.min(numPages || 1, Math.max(1, p + d)));
+  const go = (d) => setPage((p) => Math.min(numPages || 1, Math.max(1, p + d)));
 
   return (
     <div className={styles.pdfWrap}>
@@ -1216,9 +1217,7 @@ function ImageLightbox({ images, index, onChange, onClose, alt }) {
       if (now - (c.lastTap || 0) < 300) {
         setAnimate(true);
         setView(
-          viewRef.current.s > 1
-            ? { s: 1, x: 0, y: 0 }
-            : { s: 2.5, x: 0, y: 0 },
+          viewRef.current.s > 1 ? { s: 1, x: 0, y: 0 } : { s: 2.5, x: 0, y: 0 },
         );
         g.current = {};
       } else {
@@ -1236,10 +1235,7 @@ function ImageLightbox({ images, index, onChange, onClose, alt }) {
   const onWheel = (e) => {
     setAnimate(false);
     const v = viewRef.current;
-    const s = Math.min(
-      5,
-      Math.max(1, v.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15)),
-    );
+    const s = Math.min(5, Math.max(1, v.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
     setView(clamp(s, v.x, v.y));
   };
 
@@ -1308,6 +1304,43 @@ function ImageLightbox({ images, index, onChange, onClose, alt }) {
 /* -------------------------------------------------------------------------- */
 /*  Job card                                                                  */
 /* -------------------------------------------------------------------------- */
+function CommentText({ text }) {
+  const ref = useRef(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      if (!expanded) setOverflowing(el.scrollHeight > el.clientHeight + 1);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, expanded]);
+
+  return (
+    <>
+      <p
+        ref={ref}
+        className={cx(styles.commentText, !expanded && styles.commentTextClamped)}
+      >
+        {text}
+      </p>
+      {(overflowing || expanded) && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className={styles.commentMoreBtn}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
+    </>
+  );
+}
+
 function JobCard({ job, conversations, onReport, showToast }) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(job.likes);
@@ -1492,7 +1525,12 @@ function JobCard({ job, conversations, onReport, showToast }) {
           )}
           style={
             fullImage
-              ? { height: "auto", minHeight: 0, maxHeight: "none", aspectRatio: "auto" }
+              ? {
+                  height: "auto",
+                  minHeight: 0,
+                  maxHeight: "none",
+                  aspectRatio: "auto",
+                }
               : undefined
           }
           onTouchStart={(e) => {
@@ -1533,10 +1571,14 @@ function JobCard({ job, conversations, onReport, showToast }) {
                 }}
                 onLoad={(e) =>
                   setPortrait(
-                    e.currentTarget.naturalHeight > e.currentTarget.naturalWidth,
+                    e.currentTarget.naturalHeight >
+                      e.currentTarget.naturalWidth,
                   )
                 }
-                className={cx(styles.heroImg, portrait && styles.heroImgContain)}
+                className={cx(
+                  styles.heroImg,
+                  portrait && styles.heroImgContain,
+                )}
                 style={
                   fullImage
                     ? {
@@ -1589,29 +1631,7 @@ function JobCard({ job, conversations, onReport, showToast }) {
             </>
           )}
 
-          <div className={styles.heroBadges}>
-            {job.type && <span className={styles.badge}>{job.type}</span>}
-            {job.freshers && (
-              <span className={cx(styles.badge, styles.badgeFreshers)}>
-                Freshers Welcome
-              </span>
-            )}
-            {job.remote && (
-              <span className={cx(styles.badge, styles.badgeRemote)}>
-                Remote Eligible
-              </span>
-            )}
-            {job.referralAvailable && (
-              <span className={cx(styles.badge, styles.badgeReferral)}>
-                Referral Available
-              </span>
-            )}
-            {job.highVolumeReferrals && (
-              <span className={cx(styles.badge, styles.badgeHighVolume)}>
-                High Volume Referrals
-              </span>
-            )}
-          </div>
+          
 
           {currentImage && (
             <div
@@ -1646,6 +1666,46 @@ function JobCard({ job, conversations, onReport, showToast }) {
 
       {/* ---------- Body ---------- */}
       <div className={styles.cardBody}>
+        {(job.type ||
+          job.freshers ||
+          job.remote ||
+          job.referralAvailable ||
+          job.highVolumeReferrals) && (
+          <div className={styles.heroBadges}>
+            {job.type && <span className={styles.badge}>{job.type}</span>}
+            {job.freshers && (
+              <span className={cx(styles.badge, styles.badgeFreshers)}>
+                Freshers Welcome
+              </span>
+            )}
+            {job.remote && (
+              <span className={cx(styles.badge, styles.badgeRemote)}>
+                Remote Eligible
+              </span>
+            )}
+            {job.referralAvailable && (
+              <span className={cx(styles.badge, styles.badgeReferral)}>
+                Referral Available
+              </span>
+            )}
+            {job.highVolumeReferrals && (
+              <span className={cx(styles.badge, styles.badgeHighVolume)}>
+                High Volume Referrals
+              </span>
+            )}
+          </div>
+        )}
+        {job.directReferral && (
+          <div className={styles.pledgeBox}>
+            <Icon name="verified_user" className={styles.pledgeIcon} />
+            <p className={styles.pledgeText}>
+              <strong className={styles.pledgeStrong}>
+                Referral contact:{" "}
+              </strong>
+              {job.directReferral}
+            </p>
+          </div>
+        )}
         {job.pledge && (
           <div className={styles.pledgeBox}>
             <Icon name="school" className={styles.pledgeIcon} />
@@ -1797,7 +1857,7 @@ function JobCard({ job, conversations, onReport, showToast }) {
                           <span className={styles.commentTag}>{c.tag}</span>
                         )}
                       </div>
-                      <p className={styles.commentText}>{c.text}</p>
+                      <CommentText text={c.text} />
                     </div>
                   </div>
                 ))}
@@ -1983,9 +2043,7 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
             </button>
           ))}
         </div>
-        <div
-          className={cx(styles.fadeHint, atEnd && styles.fadeHintHidden)}
-        />
+        <div className={cx(styles.fadeHint, atEnd && styles.fadeHintHidden)} />
       </div>
     </div>
   );
