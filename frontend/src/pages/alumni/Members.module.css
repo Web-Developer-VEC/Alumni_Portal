@@ -9,6 +9,20 @@
     font-family: "Poppins", sans-serif;
 }
 
+.modal-profile-image {
+    width: 120px;
+    height: 120px;
+    min-width: 120px;
+    min-height: 120px;
+
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    object-fit: cover;
+
+    display: block;
+    flex: 0 0 120px;
+}
+
 /* =========================
    PAGE HEADER
 ========================= */
@@ -1023,26 +1037,20 @@
 .modal-close:hover {
     background: #eee8dc;
 }
-
 .modal-profile-header {
     display: flex;
     align-items: center;
-
     gap: 18px;
 
-    padding-bottom: 22px;
+    padding: 0 48px 22px 0;
 
     border-bottom: 1px solid #eee7da;
 }
 
 .modal-profile-header img,
 .modal-placeholder {
-    width: 100px;
-    height: 100px;
-
     flex-shrink: 0;
-
-    border-radius: 50%;
+    border-radius: 12px;
 }
 
 .modal-profile-header img {
@@ -1052,15 +1060,19 @@
 }
 
 .modal-placeholder {
+    width: 120px;
+    height: 120px;
+    min-width: 120px;
+    border-radius: 12px;
+
     display: flex;
     align-items: center;
     justify-content: center;
 
-    background: #fdf0c8;
-
+    background: #f5b301;
     color: #7a1f2b;
 
-    font-size: 34px;
+    font-size: 42px;
     font-weight: 600;
 }
 
@@ -1264,7 +1276,7 @@
         height: 60px;
     }
 
-    .text-input-field{
+    .text-input-field {
         height: 42px;
     }
 
@@ -1315,28 +1327,53 @@
         grid-template-columns: 1fr;
     }
 
+    /* IMPORTANT: keep cards one per row */
     .members-grid {
         grid-template-columns: 1fr;
     }
 
-    .profile-modal {
-        padding: 22px;
+    /* =========================
+       MODAL
+    ========================= */
 
+    .profile-modal {
+        padding: 18px;
         max-height: 94vh;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .modal-profile-header {
         align-items: flex-start;
+        gap: 14px;
+        padding: 0 42px 18px 0;
+    }
+
+    .modal-close {
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
     }
 
     .modal-profile-header img,
     .modal-placeholder {
         width: 80px;
         height: 80px;
+        min-width: 80px;
+        min-height: 80px;
+        flex: 0 0 80px;
+        border-radius: 10px;
+    }
+
+    .modal-name-row {
+        min-width: 0;
     }
 
     .modal-name-row h2 {
         font-size: 18px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
     }
 
     .modal-details {
