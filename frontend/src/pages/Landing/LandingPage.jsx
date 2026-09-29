@@ -865,7 +865,7 @@ function LandingPage() {
             <button
               className="hero-primary"
               type="button"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/register")}
             >
               JOIN THE ALUMNI NETWORK
               <span className="btn-arrow">
@@ -876,7 +876,7 @@ function LandingPage() {
             <button
               className="hero-secondary"
               type="button"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/register")}
             >
               EXPLORE NETWORK
             </button>
@@ -928,7 +928,7 @@ function LandingPage() {
             <button
               className="text-button"
               type="button"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/register")}
             >
               BECOME A MEMBER
               <span className="btn-arrow">
@@ -1258,7 +1258,7 @@ function LandingPage() {
                 Discover and connect with alumni across different batches,
                 departments and industries.
               </p>
-              <button type="button" onClick={() => navigate("/signup")}>
+              <button type="button" onClick={() => navigate("/register")}>
                 EXPLORE DIRECTORY <ArrowRight size={14} />
               </button>
               <div className="feature-card-bar" />
@@ -1315,7 +1315,7 @@ function LandingPage() {
                 Support students and contribute to the continued growth of the
                 institution.
               </p>
-              <button type="button" onClick={() => navigate("/signup")}>
+              <button type="button" onClick={() => navigate("/register")}>
                 GET INVOLVED <ArrowRight size={14} />
               </button>
               <div className="feature-card-bar" />
@@ -1591,7 +1591,7 @@ function LandingPage() {
           <div className="alumni-showcase-footer">
             <span></span>
 
-            <button type="button" onClick={() => navigate("/signup")}>
+            <button type="button" onClick={() => navigate("/register")}>
               EXPLORE ALUMNI NETWORK
               <span className="btn-arrow">
                 <ArrowRight size={18} />
@@ -1626,7 +1626,7 @@ function LandingPage() {
             <button
               type="button"
               className="text-button"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/register")}
             >
               VIEW ALL EVENTS
               <span className="btn-arrow">

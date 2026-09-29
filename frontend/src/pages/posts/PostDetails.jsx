@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal, flushSync } from "react-dom";
-import * as pdfjsLib from "pdfjs-dist";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+// import * as pdfjsLib from "pdfjs-dist";
+// import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import styles from "./post.module.css";
 import Navbar from "../../components/common/DashboardNavbar";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 /* -------------------------------------------------------------------------- */
 /*  Self-contained: no index.html edits needed.                              */
@@ -1130,26 +1130,26 @@ function PdfViewer({ src, title }) {
   const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    const task = pdfjsLib.getDocument(src);
-    task.promise
-      .then(async (doc) => {
-        const first = await doc.getPage(1);
-        if (cancelled) return;
-        const vp = first.getViewport({ scale: 1 });
-        setRatio(vp.width / vp.height);
-        setNumPages(doc.numPages);
-        setPdf(doc);
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      });
-    return () => {
-      cancelled = true;
-      task.destroy();
-    };
-  }, [src]);
+  // useEffect(() => {
+  //   let cancelled = false;
+  //   const task = pdfjsLib.getDocument(src);
+  //   task.promise
+  //     .then(async (doc) => {
+  //       const first = await doc.getPage(1);
+  //       if (cancelled) return;
+  //       const vp = first.getViewport({ scale: 1 });
+  //       setRatio(vp.width / vp.height);
+  //       setNumPages(doc.numPages);
+  //       setPdf(doc);
+  //     })
+  //     .catch(() => {
+  //       if (!cancelled) setError(true);
+  //     });
+  //   return () => {
+  //     cancelled = true;
+  //     task.destroy();
+  //   };
+  // }, [src]);
 
   const go = (d) =>
     setPage((p) => Math.min(numPages || 1, Math.max(1, p + d)));
