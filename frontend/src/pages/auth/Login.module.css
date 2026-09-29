@@ -53,7 +53,19 @@ body {
     align-items: center;
     justify-content: center;
 }
+.login-error,
+.google-error {
+    margin: 8px 0 10px;
+    color: #b42318;
+    font-family: "Poppins", sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+}
 
+.google-error {
+    margin: 8px 2px 12px;
+}
 
 /* =========================================================
    BACKGROUND DECORATIONS
@@ -229,7 +241,7 @@ body {
 
     border-radius: 50%;
 
-    background: #fbb400;
+    background: #fafaf9;
 
     display: flex;
     align-items: center;
