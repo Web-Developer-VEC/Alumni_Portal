@@ -248,6 +248,7 @@ function Login() {
             console.error("Login failed:", error.response);
 
             toast.error(
+                error.response?.data?.message ||
                 error.response?.data?.detail ||
                 "Login failed"
             );
@@ -262,6 +263,7 @@ function Login() {
             console.error("Google signup failed:", error);
 
             toast.error(
+                error.response?.data?.message ||
                 error.response?.data?.detail ||
                 "Google signup failed"
             );
