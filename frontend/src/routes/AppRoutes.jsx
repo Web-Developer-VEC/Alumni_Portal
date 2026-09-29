@@ -34,7 +34,6 @@ function AppRoute() {
 
             <Route path="/members" element={<Members />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/student" element={<StudentLayout />} />
             <Route path="/student" element={<StudentLayout />} >
                 <Route path="gallery" element={<Gallery />}/>
             </Route>
