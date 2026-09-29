@@ -8,6 +8,7 @@ import React, {
 import { useNavigate, Link } from "react-router-dom";
 import "./LandingPage.css";
 import vecLogo from "../../assets/VEC_Logo.png";
+import { getLandingData } from "../../api/landing";
 import {
   Users,
   GraduationCap,
@@ -401,10 +402,12 @@ function Stat({ target, suffix, label }) {
    COMPONENT: HeroCardStack
 ========================================================= */
 
-function HeroCardStack({ items, interval = 2600 }) {
+function HeroCardStack({ items = [], interval = 2600 }) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
+    if (!items || items.length === 0) return;
+
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -416,10 +419,12 @@ function HeroCardStack({ items, interval = 2600 }) {
     }, interval);
 
     return () => clearInterval(id);
-  }, [items.length, interval]);
+  }, [items?.length, interval]);
+
+  if (!items || items.length === 0) return null;
 
   const count = items.length;
-  const front = items[active];
+  const front = items[active] || items[0] || {};
 
   return (
     <div className="hero-carousel">
@@ -442,7 +447,7 @@ function HeroCardStack({ items, interval = 2600 }) {
             <div
               className={`hero-carousel-card ${isFront ? "is-front" : ""}`}
               style={cardStyle}
-              key={person.id}
+              key={person.id || i}
             >
               <img src={person.image} alt={person.name} loading="lazy" />
             </div>
@@ -518,15 +523,7 @@ function DiscussionCard({ initials, name, time, message, replies, likes }) {
 }
 
 /* =========================================================
-   HERO ALUMNI PREVIEW DATA
-   TODO: replace with a backend fetch, e.g.
-   const [heroAlumni, setHeroAlumni] = useState([]);
-   useEffect(() => {
-     fetch("/api/main-backend/alumni/featured")
-       .then((r) => r.json())
-       .then(setHeroAlumni);
-   }, []);
-   Shape expected: { id, name, role, image }
+   FALLBACK DATASETS (used if backend is slow/offline)
 ========================================================= */
 
 const heroAlumniStack = [
@@ -535,35 +532,107 @@ const heroAlumniStack = [
     name: "Arun Kumar",
     batch: "Batch of 2019",
     role: "Software Engineer @ Zoho",
-    image: "https://i.pravatar.cc/400?img=12",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "s2",
     name: "Priya S",
     batch: "Batch of 2020",
     role: "Data Analyst @ TCS",
-    image: "https://i.pravatar.cc/400?img=32",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "s3",
     name: "Rahul V",
     batch: "Batch of 2018",
     role: "AI Engineer @ Presidio",
-    image: "https://i.pravatar.cc/400?img=11",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "s4",
     name: "Keerthana R",
     batch: "Batch of 2021",
     role: "Product Designer @ Freshworks",
-    image: "https://i.pravatar.cc/400?img=47",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "s5",
     name: "Vignesh M",
     batch: "Batch of 2017",
     role: "Cloud Engineer @ Infosys",
-    image: "https://i.pravatar.cc/400?img=53",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+  },
+];
+
+const fallbackShowcaseAlumni = [
+  { id: "f1", name: "Arun Kumar", role: "Software Engineer @ Zoho", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" },
+  { id: "f2", name: "Priya S", role: "Data Analyst @ TCS", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80" },
+  { id: "f3", name: "Rahul V", role: "AI Engineer @ Presidio", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" },
+  { id: "f4", name: "Keerthana R", role: "Product Designer @ Freshworks", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" },
+  { id: "f5", name: "Vignesh M", role: "Cloud Engineer @ Infosys", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80" },
+  { id: "f6", name: "Harish Kumar", role: "Full Stack Developer @ Amazon", image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80" },
+  { id: "f7", name: "Divya S", role: "Business Analyst @ Deloitte", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" },
+  { id: "f8", name: "Sanjay Kumar", role: "DevOps Engineer @ Microsoft", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80" },
+  { id: "f9", name: "Nithya R", role: "HR Manager @ Google", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80" },
+  { id: "f10", name: "Karthik S", role: "Software Architect @ Cisco", image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80" },
+  { id: "f11", name: "Swetha P", role: "UX Designer", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" },
+  { id: "f12", name: "Adithya R", role: "Machine Learning Engineer", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" },
+];
+
+const fallbackEvents = [
+  {
+    id: "fe1",
+    day: "15",
+    month: "MAR",
+    category: "REUNION",
+    title: "VEC Alumni Meet 2026",
+    description: "Reconnect with classmates and revisit your college memories.",
+    venue: "Velammal Engineering College",
+  },
+  {
+    id: "fe2",
+    day: "22",
+    month: "APR",
+    category: "NETWORKING",
+    title: "Alumni Industry Connect",
+    description: "Meet professionals from different industries and build meaningful connections.",
+    venue: "Chennai Trade Centre",
+  },
+  {
+    id: "fe3",
+    day: "10",
+    month: "MAY",
+    category: "MENTORSHIP",
+    title: "Alumni Mentorship Session",
+    description: "Experienced alumni share career insights with the next generation.",
+    venue: "Online (Google Meet)",
+  },
+  {
+    id: "fe4",
+    day: "18",
+    month: "JUN",
+    category: "WORKSHOP",
+    title: "Tech Skills Bootcamp",
+    description: "Hands-on workshop covering the latest in AI, cloud and full-stack development.",
+    venue: "VEC Auditorium, Chennai",
+  },
+  {
+    id: "fe5",
+    day: "05",
+    month: "JUL",
+    category: "REUNION",
+    title: "Department Batch Meetup",
+    description: "Celebrate your department's legacy and reconnect with batch mates.",
+    venue: "Velammal Engineering College",
+  },
+  {
+    id: "fe6",
+    day: "20",
+    month: "AUG",
+    category: "NETWORKING",
+    title: "Startup & Innovation Summit",
+    description: "Alumni entrepreneurs pitch ideas and connect with investors and mentors.",
+    venue: "Taj Coromandel, Bengaluru",
   },
 ];
 
@@ -576,13 +645,86 @@ function LandingPage() {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+  // Dynamic Landing Page State from Backend
+  const [stats, setStats] = useState({
+    yearsOfExcellence: 25,
+    alumniCount: 10,
+    alumniSuffix: "K+",
+    departmentsCount: 20,
+    eventsCount: 50,
+  });
+  const [heroAlumni, setHeroAlumni] = useState(heroAlumniStack);
+  const [showcaseAlumni, setShowcaseAlumni] = useState(fallbackShowcaseAlumni);
+  const [events, setEvents] = useState(fallbackEvents);
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    let isMounted = true;
+
+    // Fetch dynamic landing page data from backend
+    getLandingData()
+      .then((res) => {
+        if (!isMounted) return;
+        const data = res?.data || res;
+        if (data?.stats) {
+          setStats(data.stats);
+        }
+        if (data?.heroAlumni && data.heroAlumni.length > 0) {
+          setHeroAlumni(data.heroAlumni);
+        }
+        if (data?.showcaseAlumni && data.showcaseAlumni.length > 0) {
+          setShowcaseAlumni(data.showcaseAlumni);
+        }
+        if (data?.events && data.events.length > 0) {
+          setEvents(data.events);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch landing page data from backend:", err);
+      });
+
+    const timer = setTimeout(() => {
+      if (isMounted) setIsLoading(false);
+    }, 1200);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, []);
+
+  // Split showcase alumni evenly across 3 marquee rows
+  const displayAlumni = showcaseAlumni && showcaseAlumni.length > 0 ? showcaseAlumni : fallbackShowcaseAlumni;
+  const row1 = [];
+  const row2 = [];
+  const row3 = [];
+  displayAlumni.forEach((item, index) => {
+    if (index % 3 === 0) row1.push(item);
+    else if (index % 3 === 1) row2.push(item);
+    else row3.push(item);
+  });
+
+  const fillRow = (row) => {
+    if (row.length === 0) return displayAlumni.slice(0, 6);
+    let filled = [...row];
+    while (filled.length < 6) {
+      filled = filled.concat(row);
+    }
+    return filled;
+  };
+  const filledRow1 = fillRow(row1);
+  const filledRow2 = fillRow(row2);
+  const filledRow3 = fillRow(row3);
+
+  // Prepare events for infinite marquee
+  const fillEvents = (evList) => {
+    const list = evList && evList.length > 0 ? evList : fallbackEvents;
+    let filled = [...list];
+    while (filled.length < 6) {
+      filled = filled.concat(list);
+    }
+    return filled;
+  };
+  const displayEvents = fillEvents(events);
 
   const scrollToSection = (id) => {
     const section = document.getElementById(id);
@@ -832,7 +974,7 @@ function LandingPage() {
         </div>
 
         <div className="hero-visual" aria-hidden="true">
-          <HeroCardStack items={heroAlumniStack} />
+          <HeroCardStack items={heroAlumni && heroAlumni.length > 0 ? heroAlumni : heroAlumniStack} />
         </div>
         <div
           className="landing-container hero-content"
@@ -1194,13 +1336,29 @@ function LandingPage() {
         <div className="stats-glow" aria-hidden="true" />
 
         <div className="landing-container stats-grid">
-          <Stat target={25} suffix="+" label="YEARS OF EXCELLENCE" />
+          <Stat
+            target={stats.yearsOfExcellence || 25}
+            suffix="+"
+            label="YEARS OF EXCELLENCE"
+          />
 
-          <Stat target={10} suffix="K+" label="ALUMNI COMMUNITY" />
+          <Stat
+            target={stats.alumniCount || 10}
+            suffix={stats.alumniSuffix || "K+"}
+            label="ALUMNI COMMUNITY"
+          />
 
-          <Stat target={20} suffix="+" label="DEPARTMENTS & PROGRAMMES" />
+          <Stat
+            target={stats.departmentsCount || 20}
+            suffix="+"
+            label="DEPARTMENTS & PROGRAMMES"
+          />
 
-          <Stat target={50} suffix="+" label="ALUMNI EVENTS" />
+          <Stat
+            target={stats.eventsCount || 50}
+            suffix="+"
+            label="ALUMNI EVENTS"
+          />
         </div>
       </section>
 
@@ -1345,237 +1503,72 @@ function LandingPage() {
             {/* ROW 1 */}
             <div className="alumni-marquee">
               <div className="alumni-marquee-track">
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=12"
-                  name="Arun Kumar"
-                  role="Software Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=32"
-                  name="Priya S"
-                  role="Data Analyst"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=11"
-                  name="Rahul V"
-                  role="AI Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=47"
-                  name="Keerthana R"
-                  role="Product Designer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=53"
-                  name="Vignesh M"
-                  role="Cloud Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=68"
-                  name="Harish Kumar"
-                  role="Full Stack Developer"
-                />
+                {filledRow1.map((al, idx) => (
+                  <AlumniRollingCard
+                    key={`r1-${idx}-${al.id || idx}`}
+                    image={al.image}
+                    name={al.name}
+                    role={al.role}
+                  />
+                ))}
 
                 {/* DUPLICATE FOR INFINITE LOOP */}
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=12"
-                  name="Arun Kumar"
-                  role="Software Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=32"
-                  name="Priya S"
-                  role="Data Analyst"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=11"
-                  name="Rahul V"
-                  role="AI Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=47"
-                  name="Keerthana R"
-                  role="Product Designer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=53"
-                  name="Vignesh M"
-                  role="Cloud Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=68"
-                  name="Harish Kumar"
-                  role="Full Stack Developer"
-                />
+                {filledRow1.map((al, idx) => (
+                  <AlumniRollingCard
+                    key={`r1-dup-${idx}-${al.id || idx}`}
+                    image={al.image}
+                    name={al.name}
+                    role={al.role}
+                  />
+                ))}
               </div>
             </div>
 
             {/* ROW 2 */}
             <div className="alumni-marquee alumni-marquee-reverse">
               <div className="alumni-marquee-track">
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=44"
-                  name="Divya S"
-                  role="Business Analyst"
-                />
+                {filledRow2.map((al, idx) => (
+                  <AlumniRollingCard
+                    key={`r2-${idx}-${al.id || idx}`}
+                    image={al.image}
+                    name={al.name}
+                    role={al.role}
+                  />
+                ))}
 
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=15"
-                  name="Sanjay Kumar"
-                  role="DevOps Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=25"
-                  name="Nithya R"
-                  role="HR Manager"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=60"
-                  name="Karthik S"
-                  role="Software Architect"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=35"
-                  name="Swetha P"
-                  role="UX Designer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=51"
-                  name="Adithya R"
-                  role="Machine Learning Engineer"
-                />
-
-                {/* DUPLICATE */}
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=44"
-                  name="Divya S"
-                  role="Business Analyst"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=15"
-                  name="Sanjay Kumar"
-                  role="DevOps Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=25"
-                  name="Nithya R"
-                  role="HR Manager"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=60"
-                  name="Karthik S"
-                  role="Software Architect"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=35"
-                  name="Swetha P"
-                  role="UX Designer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=51"
-                  name="Adithya R"
-                  role="Machine Learning Engineer"
-                />
+                {/* DUPLICATE FOR INFINITE LOOP */}
+                {filledRow2.map((al, idx) => (
+                  <AlumniRollingCard
+                    key={`r2-dup-${idx}-${al.id || idx}`}
+                    image={al.image}
+                    name={al.name}
+                    role={al.role}
+                  />
+                ))}
               </div>
             </div>
 
             {/* ROW 3 */}
             <div className="alumni-marquee">
               <div className="alumni-marquee-track alumni-marquee-slow">
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=5"
-                  name="Rohit K"
-                  role="Product Manager"
-                />
+                {filledRow3.map((al, idx) => (
+                  <AlumniRollingCard
+                    key={`r3-${idx}-${al.id || idx}`}
+                    image={al.image}
+                    name={al.name}
+                    role={al.role}
+                  />
+                ))}
 
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=21"
-                  name="Ananya M"
-                  role="AI Researcher"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=58"
-                  name="Gokul R"
-                  role="Backend Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=31"
-                  name="Meena S"
-                  role="Marketing Lead"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=64"
-                  name="Suresh V"
-                  role="Cyber Security Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=9"
-                  name="Aishwarya K"
-                  role="Software Developer"
-                />
-
-                {/* DUPLICATE */}
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=5"
-                  name="Rohit K"
-                  role="Product Manager"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=21"
-                  name="Ananya M"
-                  role="AI Researcher"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=58"
-                  name="Gokul R"
-                  role="Backend Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=31"
-                  name="Meena S"
-                  role="Marketing Lead"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=64"
-                  name="Suresh V"
-                  role="Cyber Security Engineer"
-                />
-
-                <AlumniRollingCard
-                  image="https://i.pravatar.cc/400?img=9"
-                  name="Aishwarya K"
-                  role="Software Developer"
-                />
+                {/* DUPLICATE FOR INFINITE LOOP */}
+                {filledRow3.map((al, idx) => (
+                  <AlumniRollingCard
+                    key={`r3-dup-${idx}-${al.id || idx}`}
+                    image={al.image}
+                    name={al.name}
+                    role={al.role}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -1631,221 +1624,40 @@ function LandingPage() {
         {/* Full-width scrolling track */}
         <div className="events-marquee-outer">
           <div className="events-marquee-track">
-            {/* ── your real cards ── */}
-            <article className="event-card">
-              <div className="event-date">
-                <strong>15</strong>
-                <span>MAR</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">REUNION</span>
-                <h3>VEC Alumni Meet</h3>
-                <p>
-                  Reconnect with classmates and revisit your college memories.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Velammal Engineering College
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>22</strong>
-                <span>APR</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">NETWORKING</span>
-                <h3>Alumni Industry Connect</h3>
-                <p>
-                  Meet professionals from different industries and build
-                  meaningful connections.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Chennai
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>10</strong>
-                <span>MAY</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">MENTORSHIP</span>
-                <h3>Alumni Mentorship Session</h3>
-                <p>
-                  Experienced alumni share career insights with the next
-                  generation.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Online
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>18</strong>
-                <span>JUN</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">WORKSHOP</span>
-                <h3>Tech Skills Bootcamp</h3>
-                <p>
-                  Hands-on workshop covering the latest in AI, cloud and
-                  full-stack development.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Chennai
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>05</strong>
-                <span>JUL</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">REUNION</span>
-                <h3>Department Batch Meetup</h3>
-                <p>
-                  Celebrate your department's legacy and reconnect with batch
-                  mates.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Velammal Engineering College
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>20</strong>
-                <span>AUG</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">NETWORKING</span>
-                <h3>Startup & Innovation Summit</h3>
-                <p>
-                  Alumni entrepreneurs pitch ideas and connect with investors
-                  and mentors.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Bengaluru
-                </span>
-              </div>
-            </article>
+            {displayEvents.map((ev, i) => (
+              <article className="event-card" key={`ev-${i}-${ev.id || i}`}>
+                <div className="event-date">
+                  <strong>{ev.day}</strong>
+                  <span>{ev.month}</span>
+                </div>
+                <div className="event-info">
+                  <span className="event-type">{ev.category || "EVENT"}</span>
+                  <h3>{ev.title}</h3>
+                  <p>{ev.description}</p>
+                  <span className="event-location">
+                    <MapPin size={11} /> {ev.venue}
+                  </span>
+                </div>
+              </article>
+            ))}
 
             {/* ── duplicates for seamless infinite loop ── */}
-            <article className="event-card">
-              <div className="event-date">
-                <strong>15</strong>
-                <span>MAR</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">REUNION</span>
-                <h3>VEC Alumni Meet</h3>
-                <p>
-                  Reconnect with classmates and revisit your college memories.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Velammal Engineering College
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>22</strong>
-                <span>APR</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">NETWORKING</span>
-                <h3>Alumni Industry Connect</h3>
-                <p>
-                  Meet professionals from different industries and build
-                  meaningful connections.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Chennai
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>10</strong>
-                <span>MAY</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">MENTORSHIP</span>
-                <h3>Alumni Mentorship Session</h3>
-                <p>
-                  Experienced alumni share career insights with the next
-                  generation.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Online
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>18</strong>
-                <span>JUN</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">WORKSHOP</span>
-                <h3>Tech Skills Bootcamp</h3>
-                <p>
-                  Hands-on workshop covering the latest in AI, cloud and
-                  full-stack development.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Chennai
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>05</strong>
-                <span>JUL</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">REUNION</span>
-                <h3>Department Batch Meetup</h3>
-                <p>
-                  Celebrate your department's legacy and reconnect with batch
-                  mates.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Velammal Engineering College
-                </span>
-              </div>
-            </article>
-
-            <article className="event-card">
-              <div className="event-date">
-                <strong>20</strong>
-                <span>AUG</span>
-              </div>
-              <div className="event-info">
-                <span className="event-type">NETWORKING</span>
-                <h3>Startup & Innovation Summit</h3>
-                <p>
-                  Alumni entrepreneurs pitch ideas and connect with investors
-                  and mentors.
-                </p>
-                <span className="event-location">
-                  <MapPin size={11} /> Bengaluru
-                </span>
-              </div>
-            </article>
+            {displayEvents.map((ev, i) => (
+              <article className="event-card" key={`ev-dup-${i}-${ev.id || i}`}>
+                <div className="event-date">
+                  <strong>{ev.day}</strong>
+                  <span>{ev.month}</span>
+                </div>
+                <div className="event-info">
+                  <span className="event-type">{ev.category || "EVENT"}</span>
+                  <h3>{ev.title}</h3>
+                  <p>{ev.description}</p>
+                  <span className="event-location">
+                    <MapPin size={11} /> {ev.venue}
+                  </span>
+                </div>
+              </article>
+            ))}
           </div>
 
           {/* Right fade shadow */}

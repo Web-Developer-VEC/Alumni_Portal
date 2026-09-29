@@ -51,7 +51,7 @@ export const createPost = async (
     // 1. Authentication
     // -----------------------------------------
 
-    if (!req.user?.id || !req.user?.email) {
+   if (!req.user?.id || !req.user?.email) {
       res.status(401).json({
         message: "Unauthorized",
       });
