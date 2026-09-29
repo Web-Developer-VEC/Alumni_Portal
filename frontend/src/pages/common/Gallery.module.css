@@ -1,0 +1,450 @@
+.gallery-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 32px;
+    background: #faf8f2;
+    font-family: "Poppins", sans-serif;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.gallery-header {
+    margin-bottom: 28px;
+}
+
+.gallery-eyebrow {
+    color: #f5b301;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.gallery-header h1 {
+    margin: 5px 0 4px;
+    color: #7a1f2b;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.gallery-header p {
+    margin: 0;
+    color: #777;
+    font-size: 13px;
+}
+
+/* =========================
+   GALLERY GRID
+========================= */
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.gallery-card {
+    overflow: hidden;
+    border: 1px solid #e8dfcf;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 5px 18px rgba(60, 35, 20, 0.06);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.gallery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 30px rgba(60, 35, 20, 0.12);
+}
+
+/* =========================
+   COVER
+========================= */
+
+.gallery-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    overflow: hidden;
+}
+
+.gallery-cover {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.gallery-card:hover .gallery-cover {
+    transform: scale(1.05);
+}
+
+.photo-count {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 6px 9px;
+
+    border-radius: 7px;
+
+    background: rgba(0, 0, 0, 0.65);
+    color: #ffffff;
+
+    font-size: 11px;
+}
+
+/* =========================
+   CARD CONTENT
+========================= */
+
+.gallery-card-content {
+    padding: 16px;
+}
+
+.gallery-card-content h2 {
+    min-height: 42px;
+    margin: 0 0 14px;
+
+    color: #292929;
+
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.gallery-card-content button {
+    height: 40px;
+    padding: 0 17px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #f5b301;
+    color: #3a2b00;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.gallery-card-content button:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.gallery-card-content button:active {
+    transform: scale(0.96);
+}
+
+/* =========================
+   ALBUM MODAL
+========================= */
+
+.album-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(30, 20, 15, 0.65);
+    backdrop-filter: blur(4px);
+}
+
+.album-modal {
+    position: relative;
+
+    width: 100%;
+    max-width: 1000px;
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    padding: 28px;
+
+    border-radius: 16px;
+
+    background: #ffffff;
+
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+
+    scrollbar-width: thin;
+    scrollbar-color: #7a1f2b transparent;
+}
+
+.album-modal::-webkit-scrollbar {
+    width: 6px;
+}
+
+.album-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.album-modal::-webkit-scrollbar-thumb {
+    background: #7a1f2b;
+    border-radius: 10px;
+}
+
+/* =========================
+   ALBUM HEADER
+========================= */
+
+.album-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-right: 45px;
+    margin-bottom: 22px;
+}
+
+.album-header span {
+    color: #f5b301;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.album-header h2 {
+    margin: 3px 0 0;
+    color: #7a1f2b;
+    font-size: 22px;
+}
+
+.album-count {
+    color: #888;
+    font-size: 12px;
+}
+
+.album-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f7f3eb;
+    color: #666;
+
+    cursor: pointer;
+}
+
+.album-close:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+/* =========================
+   PHOTO GRID
+========================= */
+
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.album-photo {
+    position: relative;
+
+    width: 100%;
+    aspect-ratio: 4 / 3;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #eee;
+
+    cursor: pointer;
+}
+
+.album-photo img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    transition: transform 0.3s ease;
+}
+
+.album-photo:hover img {
+    transform: scale(1.06);
+}
+
+/* =========================
+   FULL PHOTO VIEWER
+========================= */
+
+.photo-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.photo-viewer img {
+    max-width: 95vw;
+    max-height: 90vh;
+
+    object-fit: contain;
+
+    border-radius: 6px;
+}
+
+.photo-viewer-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+
+    cursor: pointer;
+}
+
+.photo-viewer-close:hover {
+    background: #7a1f2b;
+}
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 1100px) {
+    .gallery-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .album-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+    .gallery-page {
+        padding: 20px 14px;
+    }
+
+    .gallery-header h1 {
+        font-size: 25px;
+    }
+
+    .gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .gallery-image-wrapper {
+        height: 140px;
+    }
+
+    .gallery-card-content {
+        padding: 12px;
+    }
+
+    .gallery-card-content h2 {
+        font-size: 13px;
+        min-height: 38px;
+    }
+
+    .gallery-card-content button {
+        width: 100%;
+        height: 38px;
+    }
+
+    .album-overlay {
+        padding: 10px;
+    }
+
+    .album-modal {
+        max-height: 94vh;
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .album-header {
+        padding-right: 40px;
+    }
+
+    .album-header h2 {
+        font-size: 18px;
+    }
+
+    .album-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .album-photo {
+        border-radius: 7px;
+    }
+}
+
+@media (max-width: 400px) {
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gallery-image-wrapper {
+        height: 190px;
+    }
+
+    .album-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
