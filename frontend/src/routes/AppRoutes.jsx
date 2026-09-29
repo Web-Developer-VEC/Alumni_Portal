@@ -17,6 +17,7 @@ import StudentLayout from "../layouts/StudentLayout";
 
 import Members from "../pages/common/Members"
 import Gallery from "../pages/common/Gallery"
+import Events from "../components/common/events";
 
 import NotFound from "../components/common/NotFound";
 
@@ -29,9 +30,10 @@ function AppRoute() {
             <Route path="/register" element={<Register />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
             <Route path="/createpost" element={<CreatePost />} />
-
+            <Route path="/createpost" element={<CreatePost />} />
 
             <Route path="/members" element={<Members />} />
+            <Route path="/events" element={<Events />} />
             <Route path="/student" element={<StudentLayout />} >
                 <Route path="gallery" element={<Gallery />}/>
             </Route>
