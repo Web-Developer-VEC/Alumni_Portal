@@ -16,6 +16,7 @@ import AlumniLayout from "../layouts/AlumniLayout";
 import StudentLayout from "../layouts/StudentLayout";
 
 import Members from "../pages/alumni/Members"
+import Events from "../components/common/events";
 
 import NotFound from "../components/common/NotFound";
 
@@ -28,11 +29,11 @@ function AppRoute() {
             <Route path="/register" element={<Register />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
             <Route path="/createpost" element={<CreatePost />} />
-
+            <Route path="/createpost" element={<CreatePost />} />
 
             <Route path="/members" element={<Members />} />
+            <Route path="/events" element={<Events />} />
             <Route path="/student" element={<StudentLayout />} />
-            <Route />
 
             <Route path="/admin" element={<AdminLayout />}>
                 <Route path="alumni-approval" element={<AlumniApproval />} />
