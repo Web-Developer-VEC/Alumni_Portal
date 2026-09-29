@@ -239,15 +239,16 @@ function Login() {
                 password,
             });
 
-            console.log("Login response:", data);
+            // console.log("Login response:", data);
 
             toast.success("Login successful");
 
-            // navigate("/dashboard");
+            navigate("/jobs");
         } catch (error) {
-            console.error("Login failed:", error);
+            console.error("Login failed:", error.response);
 
             toast.error(
+                error.response?.data?.message ||
                 error.response?.data?.detail ||
                 "Login failed"
             );
@@ -262,6 +263,7 @@ function Login() {
             console.error("Google signup failed:", error);
 
             toast.error(
+                error.response?.data?.message ||
                 error.response?.data?.detail ||
                 "Google signup failed"
             );
