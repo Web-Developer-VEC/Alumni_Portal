@@ -2,16 +2,9 @@ import { useRef, useState } from "react";
 import { Mail, Eye, EyeOff, Clock, Check, X } from "lucide-react";
 import styles from "./Register.module.css";
 
+const API_BASE_URL = "http://localhost:5000";
 const steps = ["Email & OTP", "Password", "Details"];
 const STORAGE_KEY = "alumniRegistration";
-
-
-async function submitRegistration(payload) {
-  await new Promise((resolve) => setTimeout(resolve, 700)); // fake network delay
-  return {
-    referenceId: `AL-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`,
-  };
-}
 
 // Remember the submitted registration so a page refresh keeps showing its status.
 function readSaved() {
@@ -43,10 +36,10 @@ export default function Register() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [mobileNumber, setMobileNumber] = useState("");
 
-  const [registerNumber] = useState("22AD123");
-  const [programme] = useState("B.Tech");
-  const [department] = useState("AI & Data Science");
-  const [batch] = useState("2022-2026");
+  const [registerNumber, setRegisterNumber] = useState("");
+  const [programme, setProgramme] = useState("");
+  const [department, setDepartment] = useState("");
+  const [batch, setBatch] = useState("");
 
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -78,7 +71,7 @@ export default function Register() {
     setStep(nextStep);
   };
 
-  const sendOtp = (e) => {
+  const sendOtp = async (e) => {
     e.preventDefault();
     clearMessages();
 
@@ -92,11 +85,34 @@ export default function Register() {
       return;
     }
 
-    setMessage("OTP sent successfully. Demo OTP: 123456");
-    setOtpSent(true);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/send-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send OTP.");
+      }
+
+      setMessage("OTP sent successfully. Please check your email.");
+      setOtpSent(true);
+    } catch (error) {
+      setError(error.message || "Unable to send OTP.");
+    }
   };
 
-  const verifyOtp = (e) => {
+  const verifyOtp = async (e) => {
     e.preventDefault();
     clearMessages();
 
@@ -105,16 +121,35 @@ export default function Register() {
       return;
     }
 
-    if (otp !== "123456") {
-      setError("Invalid OTP. Please enter 123456.");
-      return;
-    }
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            otp,
+          }),
+        }
+      );
 
-    setMessage("Email verified successfully.");
-    setStep(2);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid OTP.");
+      }
+
+      setMessage("Email verified successfully.");
+      setStep(2);
+    } catch (error) {
+      setError(error.message || "OTP verification failed.");
+    }
   };
 
-  const continuePassword = (e) => {
+  const continuePassword = async (e) => {
     e.preventDefault();
     clearMessages();
 
@@ -133,8 +168,33 @@ export default function Register() {
       return;
     }
 
-    setDetailsScreen(1);
-    setStep(3);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/set-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to set password.");
+      }
+
+      setMessage("Account created successfully. Complete your profile.");
+      setDetailsScreen(1);
+      setStep(3);
+    } catch (error) {
+      setError(error.message || "Unable to create your account.");
+    }
   };
 
   const completeRegistration = async (e) => {
@@ -151,34 +211,92 @@ export default function Register() {
       return;
     }
 
-    const needsEmploymentDetails = ["Employed", "Self-Employed", "Entrepreneur"].includes(currentStatus);
-    if (needsEmploymentDetails && (!company.trim() || !jobTitle.trim())) {
-      setError("Please enter your company / organization and job title.");
+    const needsEmploymentDetails = [
+      "Employed",
+      "Self-Employed",
+      "Entrepreneur",
+    ].includes(currentStatus);
+
+    if (needsEmploymentDetails && !company.trim()) {
+      setError("Please enter your company / organization.");
       return;
     }
 
-    const payload = {
-      email,
-      personal: { name, dateOfBirth, gender, mobileNumber },
-      academic: { registerNumber, programme, department, batch },
-      address: { address, city, state, country, pincode },
-      professional: { currentStatus, company, jobTitle, industry, workLocation, officialEmail, linkedinUrl },
-      alumniEngagement: engagements,
-    };
+    if (needsEmploymentDetails && !jobTitle.trim()) {
+      setError("Please enter your job title / designation.");
+      return;
+    }
 
-    setSubmitting(true);
     try {
-      const { referenceId } = await submitRegistration(payload);
+      setSubmitting(true);
+
+      const formData = new FormData();
+
+      formData.append("email", email.trim());
+      formData.append("fullName", name.trim());
+      formData.append("dateOfBirth", dateOfBirth || "");
+      formData.append("gender", gender || "");
+      formData.append("mobileNumber", mobileNumber);
+
+      formData.append("registerNumber", registerNumber);
+      formData.append("programme", programme);
+      formData.append("department", department);
+      formData.append("batch", batch);
+
+      formData.append("address", address);
+      formData.append("city", city);
+      formData.append("state", state);
+      formData.append("country", country);
+      formData.append("pincode", pincode);
+
+      formData.append("company", company);
+      formData.append("designation", jobTitle);
+      formData.append("industry", industry);
+      formData.append("workLocation", workLocation);
+      formData.append("officialEmail", officialEmail);
+      formData.append("linkedInUrl", linkedinUrl);
+
+      if (profilePhoto) {
+        formData.append("profilePic", profilePhoto);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/alumni/complete-profile`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to complete your profile."
+        );
+      }
+
+      setMessage("Registration completed successfully!");
 
       const saved = {
-        referenceId,
+        referenceId: data.profile?._id || `AL-${Date.now()}`,
         firstName: name.trim().split(" ")[0],
         email,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(saved)
+      );
+
       setSubmitted(saved);
-    } catch (err) {
-      setError(err.message || "Could not submit your registration. Please try again.");
+
+    } catch (error) {
+      console.error("Profile submission error:", error);
+      setError(
+        error.message ||
+        "Could not complete your registration. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -337,9 +455,13 @@ export default function Register() {
                   mobileNumber={mobileNumber}
                   setMobileNumber={setMobileNumber}
                   registerNumber={registerNumber}
+                  setRegisterNumber={setRegisterNumber}
                   programme={programme}
+                  setProgramme={setProgramme}
                   department={department}
+                  setDepartment={setDepartment}
                   batch={batch}
+                  setBatch={setBatch}
                   address={address}
                   setAddress={setAddress}
                   city={city}
@@ -380,12 +502,58 @@ export default function Register() {
 }
 
 function DetailsScreens({
-  screen, setScreen, submitting, name, setName, dateOfBirth, setDateOfBirth, gender, setGender,
-  profilePhoto, setProfilePhoto, mobileNumber, setMobileNumber, registerNumber, programme,
-  department, batch, address, setAddress, city, setCity, state, setState, country, setCountry,
-  pincode, setPincode, currentStatus, setCurrentStatus, company, setCompany, jobTitle, setJobTitle,
-  industry, setIndustry, workLocation, setWorkLocation, officialEmail, setOfficialEmail,
-  linkedinUrl, setLinkedinUrl, engagements, setEngagements, onBackToPassword, onComplete, setError,
+  screen,
+  setScreen,
+  submitting,
+  name,
+  setName,
+  dateOfBirth,
+  setDateOfBirth,
+  gender,
+  setGender,
+  profilePhoto,
+  setProfilePhoto,
+  mobileNumber,
+  setMobileNumber,
+
+  registerNumber,
+  setRegisterNumber,
+  programme,
+  setProgramme,
+  department,
+  setDepartment,
+  batch,
+  setBatch,
+
+  address,
+  setAddress,
+  city,
+  setCity,
+  state,
+  setState,
+  country,
+  setCountry,
+  pincode,
+  setPincode,
+  currentStatus,
+  setCurrentStatus,
+  company,
+  setCompany,
+  jobTitle,
+  setJobTitle,
+  industry,
+  setIndustry,
+  workLocation,
+  setWorkLocation,
+  officialEmail,
+  setOfficialEmail,
+  linkedinUrl,
+  setLinkedinUrl,
+  engagements,
+  setEngagements,
+  onBackToPassword,
+  onComplete,
+  setError,
 }) {
   const needsEmploymentDetails = ["Employed", "Self-Employed", "Entrepreneur"].includes(currentStatus);
 
@@ -397,18 +565,36 @@ function DetailsScreens({
         setError("Please enter your full name.");
         return;
       }
+
       if (!/^\d{10}$/.test(mobileNumber)) {
         setError("Please enter a valid 10-digit mobile number.");
         return;
       }
+
       setScreen(2);
       return;
     }
 
     if (screen === 2) {
+      if (
+        !registerNumber.trim() ||
+        !programme.trim() ||
+        !department.trim() ||
+        !batch.trim()
+      ) {
+        setError("Please fill in all required academic details.");
+        return;
+      }
+
       setScreen(3);
       return;
     }
+
+    if (screen === 3) {
+      setScreen(4);
+      return;
+    }
+
 
     if (screen === 3) {
       setScreen(4);
@@ -460,10 +646,33 @@ function DetailsScreens({
       {screen === 2 && (
         <FormSection title="Academic Information">
           <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
-            <ReadOnlyField label="Register Number" value={registerNumber} />
-            <ReadOnlyField label="Programme" value={programme} />
-            <ReadOnlyField label="Department" value={department} />
-            <ReadOnlyField label="Batch" value={batch} />
+            <Field
+              label="Register Number *"
+              value={registerNumber}
+              onChange={setRegisterNumber}
+              placeholder="Enter your register number"
+            />
+
+            <Field
+              label="Programme *"
+              value={programme}
+              onChange={setProgramme}
+              placeholder="Enter your programme"
+            />
+
+            <Field
+              label="Department *"
+              value={department}
+              onChange={setDepartment}
+              placeholder="Enter your department"
+            />
+
+            <Field
+              label="Batch *"
+              value={batch}
+              onChange={setBatch}
+              placeholder="Example: 2022-2026"
+            />
           </div>
         </FormSection>
       )}
@@ -594,15 +803,6 @@ function FormSection({ title, children }) {
   );
 }
 
-function ReadOnlyField({ label, value }) {
-  return (
-    <div className={styles["field"]}>
-      <label>{label}</label>
-      <input value={value} readOnly />
-    </div>
-  );
-}
-
 function Select({ label, value, onChange, options }) {
   return (
     <div className={styles["field"]}>
@@ -699,8 +899,6 @@ function EmailVerificationStep({
         <button type="button" className={styles["link"]} onClick={onChangeEmail}>← Change email</button>
         <button type="button" className={styles["link"]} onClick={onResend}>Resend code</button>
       </div>
-
-      <div className={styles["demo"]}><span>Demo mode · no email is sent</span><b>123456</b></div>
       <button className={styles["button"]}>Verify email →</button>
     </form>
   );
