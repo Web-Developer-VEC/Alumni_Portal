@@ -19,123 +19,6 @@ import {
 
 import styles from "./Members.module.css";
 
-const fallbackAlumniData = [
-    {
-        id: "1",
-        name: "Arun Kumar",
-        email: "arun.zoho@alumni.vec.ac.in",
-        registerNumber: "2015IT101",
-        programme: "B.Tech",
-        department: "Information Technology",
-        batch: "2015-2019",
-        location: "Chennai",
-        company: "Zoho",
-        designation: "Software Engineer",
-        industry: "Information Technology",
-        workExperience: "5-10 Years",
-        profilePhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-        phone: "+91 9876543210",
-        linkedIn: "https://linkedin.com",
-        skills: ["React", "Node.js", "AWS", "Python"],
-        verified: true,
-    },
-    {
-        id: "2",
-        name: "Priya S",
-        email: "priya.tcs@alumni.vec.ac.in",
-        registerNumber: "2016CS202",
-        programme: "B.E",
-        department: "Computer Science and Engineering",
-        batch: "2016-2020",
-        location: "Chennai",
-        company: "TCS",
-        designation: "Data Analyst",
-        industry: "Information Technology",
-        workExperience: "5-10 Years",
-        profilePhoto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
-        phone: "+91 9123456789",
-        linkedIn: "https://linkedin.com",
-        skills: ["Full Stack", "Data Structures", "Cloud Architecture"],
-        verified: true,
-    },
-    {
-        id: "3",
-        name: "Rahul V",
-        email: "rahul.presidio@alumni.vec.ac.in",
-        registerNumber: "2014AD303",
-        programme: "B.Tech",
-        department: "AI & Data Science",
-        batch: "2014-2018",
-        location: "Bengaluru",
-        company: "Presidio",
-        designation: "AI Engineer",
-        industry: "Technology",
-        workExperience: "5-10 Years",
-        profilePhoto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
-        phone: "+91 9000000000",
-        linkedIn: "https://linkedin.com",
-        skills: ["Machine Learning", "Python", "Deep Learning", "SQL"],
-        verified: true,
-    },
-    {
-        id: "4",
-        name: "Keerthana R",
-        email: "keerthana.freshworks@alumni.vec.ac.in",
-        registerNumber: "2017EC404",
-        programme: "B.E",
-        department: "Electronics and Communication",
-        batch: "2017-2021",
-        location: "Chennai",
-        company: "Freshworks",
-        designation: "Product Designer",
-        industry: "Software",
-        workExperience: "3-5 Years",
-        profilePhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-        phone: "+91 9555555555",
-        linkedIn: "https://linkedin.com",
-        skills: ["VLSI", "Embedded Systems", "IoT", "MATLAB"],
-        verified: true,
-    },
-    {
-        id: "5",
-        name: "Vignesh M",
-        email: "vignesh.infosys@alumni.vec.ac.in",
-        registerNumber: "2013ME505",
-        programme: "B.E",
-        department: "Mechanical Engineering",
-        batch: "2013-2017",
-        location: "Hyderabad",
-        company: "Infosys",
-        designation: "Cloud Engineer",
-        industry: "Technology",
-        workExperience: "5-10 Years",
-        profilePhoto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
-        phone: "+91 9444444444",
-        linkedIn: "https://linkedin.com",
-        skills: ["AutoCAD", "SolidWorks", "ANSYS", "Product Design"],
-        verified: true,
-    },
-    {
-        id: "6",
-        name: "Harish Kumar",
-        email: "harish.amazon@alumni.vec.ac.in",
-        registerNumber: "2015IT606",
-        programme: "B.Tech",
-        department: "Information Technology",
-        batch: "2015-2019",
-        location: "Chennai",
-        company: "Amazon",
-        designation: "Full Stack Developer",
-        industry: "Information Technology",
-        workExperience: "5-10 Years",
-        profilePhoto: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80",
-        phone: "+91 9333333333",
-        linkedIn: "https://linkedin.com",
-        skills: ["React", "Node.js", "AWS", "Python"],
-        verified: true,
-    },
-];
-
 function Members() {
     const navigate = useNavigate();
     const [alumniList, setAlumniList] = useState([]);
@@ -168,13 +51,13 @@ function Members() {
                         ? res.data
                         : Array.isArray(res)
                         ? res
-                        : fallbackAlumniData;
-                    setAlumniList(list && list.length > 0 ? list : fallbackAlumniData);
+                        : [];
+                    setAlumniList(list || []);
                 }
             } catch (err) {
                 console.error("Failed to fetch alumni members:", err);
                 if (isMounted) {
-                    setAlumniList(fallbackAlumniData);
+                    setAlumniList([]);
                 }
             } finally {
                 if (isMounted) {

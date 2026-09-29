@@ -523,120 +523,6 @@ function DiscussionCard({ initials, name, time, message, replies, likes }) {
 }
 
 /* =========================================================
-   FALLBACK DATASETS (used if backend is slow/offline)
-========================================================= */
-
-const heroAlumniStack = [
-  {
-    id: "s1",
-    name: "Arun Kumar",
-    batch: "Batch of 2019",
-    role: "Software Engineer @ Zoho",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "s2",
-    name: "Priya S",
-    batch: "Batch of 2020",
-    role: "Data Analyst @ TCS",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "s3",
-    name: "Rahul V",
-    batch: "Batch of 2018",
-    role: "AI Engineer @ Presidio",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "s4",
-    name: "Keerthana R",
-    batch: "Batch of 2021",
-    role: "Product Designer @ Freshworks",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "s5",
-    name: "Vignesh M",
-    batch: "Batch of 2017",
-    role: "Cloud Engineer @ Infosys",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
-  },
-];
-
-const fallbackShowcaseAlumni = [
-  { id: "f1", name: "Arun Kumar", role: "Software Engineer @ Zoho", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" },
-  { id: "f2", name: "Priya S", role: "Data Analyst @ TCS", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80" },
-  { id: "f3", name: "Rahul V", role: "AI Engineer @ Presidio", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" },
-  { id: "f4", name: "Keerthana R", role: "Product Designer @ Freshworks", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" },
-  { id: "f5", name: "Vignesh M", role: "Cloud Engineer @ Infosys", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80" },
-  { id: "f6", name: "Harish Kumar", role: "Full Stack Developer @ Amazon", image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80" },
-  { id: "f7", name: "Divya S", role: "Business Analyst @ Deloitte", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" },
-  { id: "f8", name: "Sanjay Kumar", role: "DevOps Engineer @ Microsoft", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80" },
-  { id: "f9", name: "Nithya R", role: "HR Manager @ Google", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80" },
-  { id: "f10", name: "Karthik S", role: "Software Architect @ Cisco", image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80" },
-  { id: "f11", name: "Swetha P", role: "UX Designer", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" },
-  { id: "f12", name: "Adithya R", role: "Machine Learning Engineer", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" },
-];
-
-const fallbackEvents = [
-  {
-    id: "fe1",
-    day: "15",
-    month: "MAR",
-    category: "REUNION",
-    title: "VEC Alumni Meet 2026",
-    description: "Reconnect with classmates and revisit your college memories.",
-    venue: "Velammal Engineering College",
-  },
-  {
-    id: "fe2",
-    day: "22",
-    month: "APR",
-    category: "NETWORKING",
-    title: "Alumni Industry Connect",
-    description: "Meet professionals from different industries and build meaningful connections.",
-    venue: "Chennai Trade Centre",
-  },
-  {
-    id: "fe3",
-    day: "10",
-    month: "MAY",
-    category: "MENTORSHIP",
-    title: "Alumni Mentorship Session",
-    description: "Experienced alumni share career insights with the next generation.",
-    venue: "Online (Google Meet)",
-  },
-  {
-    id: "fe4",
-    day: "18",
-    month: "JUN",
-    category: "WORKSHOP",
-    title: "Tech Skills Bootcamp",
-    description: "Hands-on workshop covering the latest in AI, cloud and full-stack development.",
-    venue: "VEC Auditorium, Chennai",
-  },
-  {
-    id: "fe5",
-    day: "05",
-    month: "JUL",
-    category: "REUNION",
-    title: "Department Batch Meetup",
-    description: "Celebrate your department's legacy and reconnect with batch mates.",
-    venue: "Velammal Engineering College",
-  },
-  {
-    id: "fe6",
-    day: "20",
-    month: "AUG",
-    category: "NETWORKING",
-    title: "Startup & Innovation Summit",
-    description: "Alumni entrepreneurs pitch ideas and connect with investors and mentors.",
-    venue: "Taj Coromandel, Bengaluru",
-  },
-];
-
-/* =========================================================
    MAIN LANDING PAGE
 ========================================================= */
 
@@ -653,9 +539,9 @@ function LandingPage() {
     departmentsCount: 20,
     eventsCount: 50,
   });
-  const [heroAlumni, setHeroAlumni] = useState(heroAlumniStack);
-  const [showcaseAlumni, setShowcaseAlumni] = useState(fallbackShowcaseAlumni);
-  const [events, setEvents] = useState(fallbackEvents);
+  const [heroAlumni, setHeroAlumni] = useState([]);
+  const [showcaseAlumni, setShowcaseAlumni] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -668,13 +554,13 @@ function LandingPage() {
         if (data?.stats) {
           setStats(data.stats);
         }
-        if (data?.heroAlumni && data.heroAlumni.length > 0) {
+        if (Array.isArray(data?.heroAlumni)) {
           setHeroAlumni(data.heroAlumni);
         }
-        if (data?.showcaseAlumni && data.showcaseAlumni.length > 0) {
+        if (Array.isArray(data?.showcaseAlumni)) {
           setShowcaseAlumni(data.showcaseAlumni);
         }
-        if (data?.events && data.events.length > 0) {
+        if (Array.isArray(data?.events)) {
           setEvents(data.events);
         }
       })
@@ -684,7 +570,7 @@ function LandingPage() {
 
     const timer = setTimeout(() => {
       if (isMounted) setIsLoading(false);
-    }, 1200);
+    }, 800);
 
     return () => {
       isMounted = false;
@@ -693,7 +579,7 @@ function LandingPage() {
   }, []);
 
   // Split showcase alumni evenly across 3 marquee rows
-  const displayAlumni = showcaseAlumni && showcaseAlumni.length > 0 ? showcaseAlumni : fallbackShowcaseAlumni;
+  const displayAlumni = showcaseAlumni || [];
   const row1 = [];
   const row2 = [];
   const row3 = [];
@@ -704,9 +590,9 @@ function LandingPage() {
   });
 
   const fillRow = (row) => {
-    if (row.length === 0) return displayAlumni.slice(0, 6);
+    if (!row || row.length === 0) return [];
     let filled = [...row];
-    while (filled.length < 6) {
+    while (filled.length < 6 && filled.length > 0) {
       filled = filled.concat(row);
     }
     return filled;
@@ -717,10 +603,10 @@ function LandingPage() {
 
   // Prepare events for infinite marquee
   const fillEvents = (evList) => {
-    const list = evList && evList.length > 0 ? evList : fallbackEvents;
-    let filled = [...list];
-    while (filled.length < 6) {
-      filled = filled.concat(list);
+    if (!evList || evList.length === 0) return [];
+    let filled = [...evList];
+    while (filled.length < 6 && filled.length > 0) {
+      filled = filled.concat(evList);
     }
     return filled;
   };
@@ -974,7 +860,7 @@ function LandingPage() {
         </div>
 
         <div className="hero-visual" aria-hidden="true">
-          <HeroCardStack items={heroAlumni && heroAlumni.length > 0 ? heroAlumni : heroAlumniStack} />
+          <HeroCardStack items={heroAlumni} />
         </div>
         <div
           className="landing-container hero-content"
