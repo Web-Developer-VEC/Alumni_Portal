@@ -1,5 +1,10 @@
 import express from "express";
-import { approveUser, rejectUser } from "../../controllers/HOD/hodapproval.controller.js";
+import {
+  getPendingAlumni,
+  getPendingUserById,
+  approveUser,
+  rejectUser,
+} from "../../controllers/HOD/hodapproval.controller.js";
 import {
   getPendingPosts,
   getPendingPostById,
@@ -11,13 +16,26 @@ import {
 const router = express.Router();
 
 // =============================================
-// USER APPROVAL ROUTES
+// USER / ALUMNI APPROVAL ROUTES
 // =============================================
+// Get all pending alumni waiting for HOD approval
+router.get("/users/pending", getPendingAlumni);
+router.get("/alumni/pending", getPendingAlumni);
+router.get("/pending", getPendingAlumni);
+
+// Get single pending alumni by id
+router.get("/users/pending/:id", getPendingUserById);
+router.get("/alumni/pending/:id", getPendingUserById);
+
 // Approve user profile
 router.patch("/approve/:id", approveUser);
+router.patch("/users/approve/:id", approveUser);
+router.patch("/alumni/approve/:id", approveUser);
 
 // Reject user profile with reason in request body
 router.patch("/reject/:id", rejectUser);
+router.patch("/users/reject/:id", rejectUser);
+router.patch("/alumni/reject/:id", rejectUser);
 
 // =============================================
 // POST APPROVAL ROUTES (pre_post -> post)
