@@ -460,36 +460,7 @@ button { cursor: pointer; }
 /* ---------- academic (read-only) ---------- */
 .details-section.academic-section > .grid { align-content: start; }
 
-.details-section.academic-section::after {
-  content: 'Academic details are locked and cannot be edited here.';
-  display: block;
-  margin: 20px 18px 0;
-  padding: 11px 13px;
-  border: 1px solid #f1e3a9;
-  border-radius: 10px;
-  background: var(--yellow-soft);
-  color: #6f6440;
-  font-size: 12px;
-  line-height: 1.5;
-}
 
-.form .details-section input[readonly]:not([type="checkbox"]):not([type="file"]) {
-  background-color: var(--readonly) !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23720d25' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 14px center !important;
-  background-size: 15px !important;
-  border-color: #e4dee1 !important;
-  color: var(--maroon) !important;
-  font-weight: 600 !important;
-  padding-right: 40px !important;
-  cursor: default;
-}
-.form .details-section input[readonly]:not([type="checkbox"]):not([type="file"]):hover,
-.form .details-section input[readonly]:not([type="checkbox"]):not([type="file"]):focus {
-  border-color: #e4dee1 !important;
-  box-shadow: none !important;
-}
 
 /* ---------- profile photo (file input) ---------- */
 .profile-photo-field { margin-top: 16px; }

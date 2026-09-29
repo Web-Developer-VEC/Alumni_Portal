@@ -15,7 +15,8 @@ import AdminLayout from "../layouts/adminLayout";
 import AlumniLayout from "../layouts/AlumniLayout";
 import StudentLayout from "../layouts/StudentLayout";
 
-import Members from "../pages/alumni/Members"
+import Members from "../pages/common/Members"
+import Gallery from "../pages/common/Gallery"
 import Events from "../components/common/events";
 
 import NotFound from "../components/common/NotFound";
@@ -34,12 +35,17 @@ function AppRoute() {
             <Route path="/members" element={<Members />} />
             <Route path="/events" element={<Events />} />
             <Route path="/student" element={<StudentLayout />} />
+            <Route path="/student" element={<StudentLayout />} >
+                <Route path="gallery" element={<Gallery />}/>
+            </Route>
 
             <Route path="/admin" element={<AdminLayout />}>
+                <Route path="gallery" element={<Gallery />}/>
                 <Route path="alumni-approval" element={<AlumniApproval />} />
                 <Route path="post-approval" element={<PostApproval />} />
             </Route>
             <Route path="/alumni" element={<AlumniLayout/>}>
+                <Route path="gallery" element={<Gallery />}/>
             </Route>
             {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
             <Route path="*" element={<NotFound />} />

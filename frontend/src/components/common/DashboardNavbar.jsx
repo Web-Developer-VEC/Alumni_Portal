@@ -165,7 +165,7 @@ const Navbar = () => {
             <div className={styles.profileDropdown}>
               <div className={styles.dropdownHeader}>
                 <div className={styles.largeAvatar}>
-                  <img src={Profile} alt="Profile" />
+                  {/* <img src={Profile} alt="Profile" /> */}
                   <span className={styles.largeOnlineDot}></span>
                 </div>
 
