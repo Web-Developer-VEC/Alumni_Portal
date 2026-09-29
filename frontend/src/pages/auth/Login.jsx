@@ -259,7 +259,6 @@ function Login() {
 
             const token = data.token;
             const user = data.user;
-
             // Get role from backend response
             const role = (
                 data.role ||
@@ -374,8 +373,7 @@ function Login() {
                         </div>
 
                         <div className={styles["brand-text"]}>
-                            <h2>VELAMMAL</h2>
-                            <p>ENGINEERING COLLEGE</p>
+                            <h2>VEC CONNECT</h2>
                         </div>
 
                     </div>
@@ -629,7 +627,15 @@ function Login() {
                         {/* FORM */}
 
                         <form onSubmit={handleLogin}>
-
+                            <div className={styles["signup-reference"]}>
+                                <span>Don't have an account?</span>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/register")}
+                                >
+                                    Sign up
+                                </button>
+                            </div>
                             {/* GOOGLE SIGNUP */}
                             <button
                                 type="button"
@@ -719,9 +725,9 @@ function Login() {
                                         type="text"
                                         placeholder="Enter your username"
                                         value={username}
-                                        onChange={(event) =>{
+                                        onChange={(event) => {
                                             setUsername(event.target.value),
-                                            setLoginError("")
+                                                setLoginError("")
                                         }}
                                     />
                                 </div>
@@ -747,7 +753,7 @@ function Login() {
                                         value={password}
                                         onChange={(event) => {
                                             setPassword(event.target.value),
-                                            setLoginError("")
+                                                setLoginError("")
                                         }}
                                     />
 
