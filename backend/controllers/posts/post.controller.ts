@@ -43,9 +43,9 @@ export const createPost = async (
     // 1. User information
     // -----------------------------------------
 
-    const { userId, email } = req.body;
+    const { username, email } = req.body;
 
-    if (!userId || !email) {
+    if (!username || !email) {
       res.status(400).json({
         message: "User ID and email are required",
       });
@@ -102,7 +102,7 @@ export const createPost = async (
     // -----------------------------------------
 
     const user = await User.findOne({
-      _id: userId,
+      username: username,
       email: email,
     });
 
@@ -117,10 +117,7 @@ export const createPost = async (
     // 5. Create deterministic username hash
     // -----------------------------------------
 
-    const username =
-      user.name ||
-      user.email?.split("@")[0] ||
-      "user";
+  
 
     const usernameHash = crypto
       .createHash("sha256")
