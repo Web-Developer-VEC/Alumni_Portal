@@ -395,6 +395,7 @@ function Members() {
 
                         <input
                             type="text"
+                            className={styles["text-input-field"]}
                             placeholder="Search by name"
                             value={search}
                             onChange={(event) =>
@@ -549,10 +550,6 @@ function Members() {
                             className={styles["member-card"]}
                             onClick={() => setSelectedAlumni(alumni)}
                         >
-                            {/* =========================
-            TOP SECTION
-        ========================= */}
-
                             <div className={styles["member-top"]}>
 
                                 {/* PROFILE PHOTO */}
@@ -611,7 +608,7 @@ function Members() {
 
                                 </div>
 
-                                {/* PLUS BUTTON */}
+                                {/* Message BUTTON */}
 
                                 <button
                                     type="button"
@@ -626,10 +623,6 @@ function Members() {
                                 </button>
 
                             </div>
-
-                            {/* =========================
-            PROFESSIONAL DETAILS
-        ========================= */}
 
                             <div className={styles["member-profession"]}>
 
@@ -706,6 +699,7 @@ function Members() {
                                     alt={
                                         selectedAlumni.name
                                     }
+                                    className={styles["modal-profile-image"]}
                                 />
                             ) : (
                                 <div
@@ -834,47 +828,6 @@ function Members() {
                                     </strong>
                                 </div>
                             </div>
-
-                            <div
-                                className={
-                                    styles[
-                                    "modal-detail"
-                                    ]
-                                }
-                            >
-                                <Mail size={18} />
-
-                                <div>
-                                    <span>Email</span>
-
-                                    <strong>
-                                        {
-                                            selectedAlumni.email
-                                        }
-                                    </strong>
-                                </div>
-                            </div>
-
-                            <div
-                                className={
-                                    styles[
-                                    "modal-detail"
-                                    ]
-                                }
-                            >
-                                <Phone size={18} />
-
-                                <div>
-                                    <span>Phone</span>
-
-                                    <strong>
-                                        {
-                                            selectedAlumni.phone
-                                        }
-                                    </strong>
-                                </div>
-                            </div>
-
                             <div
                                 className={
                                     styles[
