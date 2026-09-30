@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import api from "../../api/api";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -18,8 +19,10 @@ import {
   MapPin,
   IndianRupee,
   GraduationCap,
-  Code2,
   Calendar,
+  CalendarDays,
+  Briefcase,
+  Paperclip,
   UploadCloud,
   Send,
   Save,
@@ -28,22 +31,34 @@ import {
   ChevronRight,
   Check,
   X,
+  AlertTriangle,
+  Info,
   File as FileIcon,
 } from "lucide-react";
 import styles from "./uploadpost.module.css";
 
-const DRAFT_KEY = "alumniPortal.createPost.draft.v1";
+const DRAFT_KEY = "alumniPortal.createPost.draft.v2";
 const AUTOSAVE_DELAY_MS = 800;
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_EXT = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".doc", ".docx"];
 
 const pad2 = (n) => String(n).padStart(2, "0");
+const hasAllowedExt = (name = "") => ALLOWED_EXT.some((ext) => name.toLowerCase().endsWith(ext));
 
-const formatDisplayDateTime = (value) => {
-  if (!value) return "";
+// "YYYY-MM-DD" -> local Date (new Date("YYYY-MM-DD") is parsed as UTC and can
+// show the previous day in timezones behind UTC).
+const parseLocalDate = (value) => {
+  if (!value) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString(undefined, {
-    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
-  });
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+const formatDisplayDate = (value) => {
+  const d = parseLocalDate(value);
+  if (!d) return "";
+  return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
 };
 
 const formatRelativeTime = (date) => {
@@ -58,25 +73,132 @@ const formatRelativeTime = (date) => {
   return date.toLocaleDateString();
 };
 
-/* -------------------------------------------------------------------------- */
-/*  CustomDateTimePicker — ported from Outpass.jsx                            */
-/* -------------------------------------------------------------------------- */
-function CustomDateTimePicker({ value, onChange, onClose, minDateTime }) {
-  const initial = value ? new Date(value) : new Date();
+// Strip an HTML string down to plain text — used for the character counter,
+// the "is this field actually empty" check, and the required-field validator.
+function htmlToText(html) {
+  if (!html) return "";
+  if (typeof document === "undefined") return html.replace(/<[^>]*>/g, "");
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  return tmp.innerText || tmp.textContent || "";
+}
 
-  const [pickerStep, setPickerStep] = useState("date");
+const isValidUrl = (v) => {
+  try {
+    const u = new URL(v);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+const escapeAttr = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/* -------------------------------------------------------------------------- */
+/*  Dialog — centered popup used for every alert / confirm / prompt           */
+/* -------------------------------------------------------------------------- */
+function Dialog({
+  kind = "alert", // "alert" | "confirm" | "prompt"
+  tone = "warning", // "warning" | "info"
+  title,
+  message,
+  inputLabel,
+  placeholder,
+  confirmLabel,
+  cancelLabel = "Cancel",
+  validate,
+  onConfirm,
+  onClose,
+}) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+  const inputRef = useRef(null);
+  const confirmRef = useRef(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose; // always call the latest onClose without re-running the effect
+
+  useEffect(() => {
+    (kind === "prompt" ? inputRef : confirmRef).current?.focus();
+    const onKey = (e) => { if (e.key === "Escape") closeRef.current?.(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [kind]);
+
+  const submit = (e) => {
+    e?.preventDefault();
+    // This dialog is portalled, but React still bubbles its events up the *component* tree.
+    // Without this, submitting a prompt inside the post form would also submit the post.
+    e?.stopPropagation();
+    if (kind === "prompt") {
+      const v = value.trim();
+      const err = validate ? validate(v) : "";
+      if (err) { setError(err); return; }
+      onClose();
+      onConfirm?.(v);
+      return;
+    }
+    onClose();
+    onConfirm?.();
+  };
+
+  const Icon = tone === "info" ? Info : AlertTriangle;
+  const okText = confirmLabel || (kind === "alert" ? "Got it" : "OK");
+
+  return createPortal(
+    <div className={styles.dialogBackdrop} onClick={onClose}>
+      <form className={styles.dialog} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+        <div className={`${styles.dialogIcon} ${tone === "info" ? styles.dialogIconInfo : styles.dialogIconWarning}`}>
+          <Icon size={26} />
+        </div>
+        <h3 className={styles.dialogTitle}>{title}</h3>
+        {message && <p className={styles.dialogMessage}>{message}</p>}
+
+        {kind === "prompt" && (
+          <div className={styles.dialogInputWrap}>
+            {inputLabel && <label className={styles.dialogInputLabel}>{inputLabel}</label>}
+            <input
+              ref={inputRef}
+              className={styles.dialogInput}
+              value={value}
+              placeholder={placeholder}
+              onChange={(e) => { setValue(e.target.value); setError(""); }}
+            />
+            {error && <span className={styles.dialogError}>{error}</span>}
+          </div>
+        )}
+
+        <div className={styles.dialogActions}>
+          {kind !== "alert" && (
+            <button type="button" className={styles.dialogBtn} onClick={onClose}>{cancelLabel}</button>
+          )}
+          <button ref={confirmRef} type="submit" className={`${styles.dialogBtn} ${styles.dialogBtnPrimary}`}>{okText}</button>
+        </div>
+      </form>
+    </div>,
+    document.body
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  CustomDatePicker — calendar only, no time-of-day step                     */
+/* -------------------------------------------------------------------------- */
+function CustomDatePicker({ value, onChange, onClose, minDateTime }) {
+  const initial = parseLocalDate(value) || new Date();
+
   const [selectedDate, setSelectedDate] = useState(initial);
   const [currentMonth, setCurrentMonth] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
-  const [hour, setHour] = useState(initial.getHours() % 12 || 12);
-  const [minute, setMinute] = useState(initial.getMinutes());
-  const [period, setPeriod] = useState(initial.getHours() >= 12 ? "PM" : "AM");
-  const [clockMode, setClockMode] = useState("hour");
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
   const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
   const monthName = currentMonth.toLocaleString("default", { month: "long" });
 
-  const floor = minDateTime ? new Date(minDateTime) : new Date();
+  const floor = (minDateTime && parseLocalDate(minDateTime)) || new Date();
   floor.setHours(0, 0, 0, 0);
 
   const isDateDisabled = (day) => {
@@ -87,29 +209,11 @@ function CustomDateTimePicker({ value, onChange, onClose, minDateTime }) {
 
   const selectDate = (day) => {
     if (isDateDisabled(day)) return;
-    setSelectedDate(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day));
-    setPickerStep("time");
-    setClockMode("hour");
-  };
-
-  const selectHour = (h) => { setHour(h); setClockMode("minute"); };
-  const selectMinute = (m) => setMinute(m);
-
-  const confirm = () => {
-    let h = hour % 12;
-    if (period === "PM") h += 12;
-    const finalDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), h, minute);
-    const formatted = `${finalDate.getFullYear()}-${pad2(finalDate.getMonth() + 1)}-${pad2(finalDate.getDate())}T${pad2(finalDate.getHours())}:${pad2(finalDate.getMinutes())}`;
+    const finalDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    setSelectedDate(finalDate);
+    const formatted = `${finalDate.getFullYear()}-${pad2(finalDate.getMonth() + 1)}-${pad2(finalDate.getDate())}`;
     onChange(formatted);
     onClose();
-  };
-
-  const getClockStyle = (index, total) => {
-    const angle = (index / total) * 360 - 90;
-    const radius = 40;
-    const x = 50 + radius * Math.cos((angle * Math.PI) / 180);
-    const y = 50 + radius * Math.sin((angle * Math.PI) / 180);
-    return { left: `${x}%`, top: `${y}%` };
   };
 
   return createPortal(
@@ -120,96 +224,47 @@ function CustomDateTimePicker({ value, onChange, onClose, minDateTime }) {
           <div className={styles.pickerMonth}>{selectedDate.toLocaleString("default", { month: "short" })}</div>
           <div className={styles.pickerDay}>{selectedDate.getDate()}</div>
           <div className={styles.pickerYear}>{selectedDate.getFullYear()}</div>
-          <div className={styles.pickerLeftTime}>
-            Time
-            <strong>{pad2(hour)}:{pad2(minute)} {period}</strong>
-          </div>
         </div>
 
         <div className={styles.pickerRight}>
-          {pickerStep === "date" && (
-            <>
-              <div className={styles.calendarHeader}>
-                <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}>
-                  <ChevronLeft size={18} />
+          <div className={styles.calendarHeader}>
+            <button type="button" aria-label="Previous month" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}>
+              <ChevronLeft size={18} />
+            </button>
+            <span>{monthName} {currentMonth.getFullYear()}</span>
+            <button type="button" aria-label="Next month" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}>
+              <ChevronRight size={18} />
+            </button>
+          </div>
+
+          <div className={styles.calendarWeekdays}>
+            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <span key={i}>{d}</span>)}
+          </div>
+
+          <div className={styles.calendarDays}>
+            {Array.from({ length: firstDay }).map((_, i) => <span key={`empty-${i}`} />)}
+            {Array.from({ length: daysInMonth }, (_, i) => {
+              const day = i + 1;
+              const disabled = isDateDisabled(day);
+              const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === currentMonth.getMonth() && selectedDate.getFullYear() === currentMonth.getFullYear();
+              const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
+              return (
+                <button
+                  type="button"
+                  key={day}
+                  disabled={disabled}
+                  className={`${styles.calendarDay} ${isSelected ? styles.calendarSelected : ""} ${isToday && !isSelected ? styles.calendarToday : ""}`}
+                  onClick={() => selectDate(day)}
+                >
+                  {day}
                 </button>
-                <span>{monthName} {currentMonth.getFullYear()}</span>
-                <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
+              );
+            })}
+          </div>
 
-              <div className={styles.calendarWeekdays}>
-                {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <span key={i}>{d}</span>)}
-              </div>
-
-              <div className={styles.calendarDays}>
-                {Array.from({ length: firstDay }).map((_, i) => <span key={`empty-${i}`} />)}
-                {Array.from({ length: daysInMonth }, (_, i) => {
-                  const day = i + 1;
-                  const disabled = isDateDisabled(day);
-                  const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === currentMonth.getMonth() && selectedDate.getFullYear() === currentMonth.getFullYear();
-                  const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
-                  return (
-                    <button
-                      type="button"
-                      key={day}
-                      disabled={disabled}
-                      className={`${styles.calendarDay} ${isSelected ? styles.calendarSelected : ""} ${isToday && !isSelected ? styles.calendarToday : ""}`}
-                      onClick={() => selectDate(day)}
-                    >
-                      {day}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {pickerStep === "time" && (
-            <div className={styles.clockContainer}>
-              <div className={styles.timeTitle}>Select Time</div>
-              <div className={styles.timeDisplay}>
-                <button type="button" className={clockMode === "hour" ? styles.timeActive : ""} onClick={() => setClockMode("hour")}>{pad2(hour)}</button>
-                <span className={styles.timeColon}>:</span>
-                <button type="button" className={clockMode === "minute" ? styles.timeActive : ""} onClick={() => setClockMode("minute")}>{pad2(minute)}</button>
-                <div className={styles.period}>
-                  <button type="button" className={period === "AM" ? styles.periodActive : ""} onClick={() => setPeriod("AM")}>AM</button>
-                  <button type="button" className={period === "PM" ? styles.periodActive : ""} onClick={() => setPeriod("PM")}>PM</button>
-                </div>
-              </div>
-
-              <div className={styles.clock}>
-                <div className={styles.clockCenter} />
-                {clockMode === "hour" && Array.from({ length: 12 }, (_, i) => {
-                  const number = i + 1;
-                  return (
-                    <button type="button" key={number} className={`${styles.clockNumber} ${hour === number ? styles.clockSelected : ""}`}
-                      style={getClockStyle(number, 12)} onClick={() => selectHour(number)}>
-                      {number}
-                    </button>
-                  );
-                })}
-                {clockMode === "minute" && Array.from({ length: 12 }, (_, i) => {
-                  const number = i * 5;
-                  return (
-                    <button type="button" key={number} className={`${styles.clockNumber} ${minute === number ? styles.clockSelected : ""}`}
-                      style={getClockStyle(i, 12)} onClick={() => selectMinute(number)}>
-                      {pad2(number)}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className={styles.timeActionsRow}>
-                <button type="button" className={styles.timeBack} onClick={() => setPickerStep("date")}>Back</button>
-                <div className={styles.timeActionsRight}>
-                  <button type="button" onClick={onClose}>Cancel</button>
-                  <button type="button" className={styles.timeOk} onClick={confirm}>OK</button>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className={styles.pickerActionsRow}>
+            <button type="button" onClick={onClose}>Cancel</button>
+          </div>
         </div>
       </div>
     </div>,
@@ -234,7 +289,7 @@ function IconInput({ icon: IconCmp, counter, ...props }) {
   return (
     <div>
       <div className={styles.inputWrap}>
-        <span className={styles.inputIcon}><IconCmp size={15} /></span>
+        <span className={styles.inputIcon}><IconCmp size={16} /></span>
         <input {...props} className={styles.input} />
       </div>
       {counter && <div className={styles.counterRow}><span className={styles.counter}>{counter}</span></div>}
@@ -245,24 +300,28 @@ function IconInput({ icon: IconCmp, counter, ...props }) {
 function IconSelect({ icon: IconCmp, children, ...props }) {
   return (
     <div className={styles.inputWrap}>
-      <span className={styles.inputIcon}><IconCmp size={15} /></span>
+      <span className={styles.inputIcon}><IconCmp size={16} /></span>
       <select {...props} className={styles.select}>{children}</select>
-      <span className={styles.selectChevron}><ChevronDown size={15} /></span>
+      <span className={styles.selectChevron}><ChevronDown size={16} /></span>
     </div>
   );
 }
 
 function Checkbox({ checked, onChange, label }) {
   return (
-    <label className={styles.checkboxItem}>
-      <span
-        className={`${styles.checkboxBox} ${checked ? styles.checkboxBoxChecked : ""}`}
-        onClick={() => onChange(!checked)}
-      >
+    <div
+      role="checkbox"
+      aria-checked={checked}
+      tabIndex={0}
+      className={`${styles.checkboxItem} ${checked ? styles.checkboxItemChecked : ""}`}
+      onClick={() => onChange(!checked)}
+      onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); onChange(!checked); } }}
+    >
+      <span className={`${styles.checkboxBox} ${checked ? styles.checkboxBoxChecked : ""}`}>
         {checked && <Check size={12} />}
       </span>
-      <span className={styles.checkboxLabel} onClick={() => onChange(!checked)}>{label}</span>
-    </label>
+      <span className={styles.checkboxLabel}>{label}</span>
+    </div>
   );
 }
 
@@ -280,7 +339,7 @@ function ChipInput({ values, onChange, placeholder, limit = 24, max = 10 }) {
           <span key={v} className={styles.chip}>
             {v}
             <button type="button" onClick={() => onChange(values.filter((x) => x !== v))} className={styles.chipRemove} aria-label={`Remove ${v}`}>
-              <X size={12} />
+              <X size={11} />
             </button>
           </span>
         ))}
@@ -294,61 +353,243 @@ function ChipInput({ values, onChange, placeholder, limit = 24, max = 10 }) {
   );
 }
 
-function DateTimeField({ label, value, onOpen }) {
+function DateField({ label, value, onOpen }) {
   return (
     <Field label={label}>
-      <div className={styles.datetimeDisplay} onClick={onOpen}>
-        <span className={styles.inputIcon}><Calendar size={15} /></span>
+      <div
+        className={styles.datetimeDisplay}
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
+      >
+        <span className={styles.inputIcon}><Calendar size={16} /></span>
         <span className={value ? styles.datetimeValue : styles.datetimePlaceholder}>
-          {value ? formatDisplayDateTime(value) : `Select ${label.toLowerCase()}`}
+          {value ? formatDisplayDate(value) : `Select ${label.toLowerCase()}`}
         </span>
       </div>
     </Field>
   );
 }
 
-function Section({ number, title, desc, children }) {
+function Section({ icon: IconCmp, title, desc, children }) {
   return (
-    <>
+    <section className={styles.section}>
       <div className={styles.sectionHead}>
-        <div className={styles.sectionNumber}>{number}</div>
+        <div className={styles.sectionIcon}><IconCmp size={18} /></div>
         <div>
           <h2 className={styles.sectionTitle}>{title}</h2>
           <p className={styles.sectionDesc}>{desc}</p>
         </div>
       </div>
       <div className={styles.sectionBody}>{children}</div>
-    </>
+    </section>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Rich-text-lite toolbar — wraps selection in the content textarea with     */
-/*  markdown-style markers. Not a full WYSIWYG editor.                        */
+/*  ContentEditor — a real (small) rich-text box.                             */
+/*  Bold/Italic/Underline/lists apply actual formatting via execCommand,      */
+/*  Link wraps the selection in a real <a>, Image embeds a real <img>.        */
 /* -------------------------------------------------------------------------- */
-function wrapSelection(textareaRef, before, after = before) {
-  const el = textareaRef.current;
-  if (!el) return null;
-  const { selectionStart: s, selectionEnd: e, value } = el;
-  const selected = value.slice(s, e) || "text";
-  const next = value.slice(0, s) + before + selected + after + value.slice(e);
-  requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + before.length, s + before.length + selected.length); });
-  return next;
-}
-function insertLinePrefix(textareaRef, prefix) {
-  const el = textareaRef.current;
-  if (!el) return null;
-  const { selectionStart: s, value } = el;
-  const lineStart = value.lastIndexOf("\n", s - 1) + 1;
-  const next = value.slice(0, lineStart) + prefix + value.slice(lineStart);
-  requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + prefix.length, s + prefix.length); });
-  return next;
+function ContentEditor({ contentRef, html, length, onChange, maxLength, placeholder }) {
+  const savedRange = useRef(null);
+  const [active, setActive] = useState({});
+  const [prompt, setPrompt] = useState(null); // null | "link" | "image"
+
+  // Push the `html` prop into the DOM only when it differs from what the editor
+  // already shows (draft restored, form reset). While the user types, the editor's
+  // own innerHTML is what we stored, so nothing is overwritten and the caret stays put.
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    if (el.innerHTML !== (html || "")) el.innerHTML = html || "";
+  }, [html, contentRef]);
+
+  // Highlight toolbar buttons (bold, italic, lists...) for the current selection.
+  useEffect(() => {
+    const update = () => {
+      const el = contentRef.current;
+      const sel = window.getSelection();
+      if (!el || !sel || !sel.anchorNode || !el.contains(sel.anchorNode)) return;
+      try {
+        setActive({
+          bold: document.queryCommandState("bold"),
+          italic: document.queryCommandState("italic"),
+          underline: document.queryCommandState("underline"),
+          ul: document.queryCommandState("insertUnorderedList"),
+          ol: document.queryCommandState("insertOrderedList"),
+        });
+      } catch { /* ignore */ }
+    };
+    document.addEventListener("selectionchange", update);
+    return () => document.removeEventListener("selectionchange", update);
+  }, [contentRef]);
+
+  const emit = () => {
+    const el = contentRef.current;
+    if (!el) return;
+    onChange(el.innerHTML, el.innerText || "");
+  };
+
+  const exec = (command, arg = null) => {
+    contentRef.current?.focus();
+    document.execCommand(command, false, arg);
+    emit();
+  };
+
+  // Keep focus/selection inside the editor when a toolbar button is pressed.
+  const preventBlur = (e) => e.preventDefault();
+
+  const handleBeforeInput = (e) => {
+    const el = contentRef.current;
+    if (!el) return;
+    const isDeletion = typeof e.inputType === "string" && e.inputType.startsWith("delete");
+    if (isDeletion) return;
+    if ((el.innerText || "").length >= maxLength) e.preventDefault();
+  };
+
+  // Paste as plain text so foreign styles/markup never leak into the post.
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const el = contentRef.current;
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    const room = maxLength - (el?.innerText || "").length;
+    if (room <= 0) return;
+    document.execCommand("insertText", false, text.slice(0, room));
+    emit();
+  };
+
+  // The dialog steals focus, so remember the selection and put it back afterwards.
+  const openPrompt = (kind) => {
+    const sel = window.getSelection();
+    const el = contentRef.current;
+    savedRange.current = sel && sel.rangeCount && el?.contains(sel.anchorNode) ? sel.getRangeAt(0).cloneRange() : null;
+    setPrompt(kind);
+  };
+
+  const restoreSelection = () => {
+    const el = contentRef.current;
+    el?.focus();
+    const sel = window.getSelection();
+    if (savedRange.current && sel) {
+      sel.removeAllRanges();
+      sel.addRange(savedRange.current);
+    }
+  };
+
+  const applyLink = (url) => {
+    restoreSelection();
+    const safe = new URL(url).href;
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) {
+      document.execCommand("insertHTML", false, `<a href="${escapeAttr(safe)}" target="_blank" rel="noopener noreferrer">${escapeAttr(safe)}</a>`);
+    } else {
+      document.execCommand("createLink", false, safe);
+    }
+    emit();
+  };
+
+  const applyImage = (url) => {
+    restoreSelection();
+    document.execCommand("insertImage", false, new URL(url).href);
+    emit();
+  };
+
+  const validateUrl = (v) => {
+    if (!v) return "Please enter a URL";
+    if (!isValidUrl(v)) return "Enter a valid link starting with http:// or https://";
+    return "";
+  };
+
+  const isEmpty = !html || (!/<(img|li)/i.test(html) && !htmlToText(html).trim());
+  const overLimit = length >= maxLength;
+
+  const btn = (title, Icon, onClick, isActive) => (
+    <button
+      type="button"
+      className={`${styles.toolbarBtn} ${isActive ? styles.toolbarBtnActive : ""}`}
+      title={title}
+      aria-label={title}
+      aria-pressed={isActive || false}
+      onMouseDown={preventBlur}
+      onClick={onClick}
+    >
+      <Icon size={15} />
+    </button>
+  );
+
+  return (
+    <div className={styles.editorBox}>
+      <div className={styles.toolbar}>
+        {btn("Bold", Bold, () => exec("bold"), active.bold)}
+        {btn("Italic", Italic, () => exec("italic"), active.italic)}
+        {btn("Underline", Underline, () => exec("underline"), active.underline)}
+        <div className={styles.toolbarDivider} />
+        {btn("Bullet list", List, () => exec("insertUnorderedList"), active.ul)}
+        {btn("Numbered list", ListOrdered, () => exec("insertOrderedList"), active.ol)}
+        <div className={styles.toolbarDivider} />
+        {/* {btn("Insert link", Link2, () => openPrompt("link"))}
+        {btn("Insert image", ImageIcon, () => openPrompt("image"))} */}
+      </div>
+
+      <div className={styles.editorContentWrap}>
+        <div
+          ref={contentRef}
+          className={styles.editorContentEditable}
+          contentEditable
+          suppressContentEditableWarning
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Post content"
+          onInput={emit}
+          onBlur={emit}
+          onBeforeInput={handleBeforeInput}
+          onPaste={handlePaste}
+        />
+        {isEmpty && <span className={styles.editorPlaceholder}>{placeholder}</span>}
+      </div>
+
+      <div className={styles.editorCounter}>
+        <span className={`${styles.counter} ${overLimit ? styles.counterOverLimit : ""}`}>{length}/{maxLength}</span>
+      </div>
+
+      {prompt === "link" && (
+        <Dialog
+          kind="prompt"
+          tone="info"
+          title="Insert link"
+          message="Select some text first to turn it into a link, or leave it unselected to add the URL itself."
+          inputLabel="Link URL"
+          placeholder="https://example.com"
+          confirmLabel="Insert link"
+          validate={validateUrl}
+          onConfirm={applyLink}
+          onClose={() => setPrompt(null)}
+        />
+      )}
+      {prompt === "image" && (
+        <Dialog
+          kind="prompt"
+          tone="info"
+          title="Insert image"
+          message="Paste the address of an image that is already online."
+          inputLabel="Image URL"
+          placeholder="https://example.com/photo.jpg"
+          confirmLabel="Insert image"
+          validate={validateUrl}
+          onConfirm={applyImage}
+          onClose={() => setPrompt(null)}
+        />
+      )}
+    </div>
+  );
 }
 
 /* -------------------------------------------------------------------------- */
 /*  Constraints & schema-shaped state                                         */
 /* -------------------------------------------------------------------------- */
-const LIMITS = { title: 25, content: 1000, chip: 24, maxChips: 10, maxFiles: 6 };
+const LIMITS = { title: 25, content: 500, chip: 24, maxChips: 10, maxFiles: 6 };
 
 const EMPTY_POST = {
   title: "", type: "Full-time", content: "", link: "",
@@ -372,9 +613,10 @@ function sanitizeDraft(raw) {
   return merged;
 }
 
-function isPostEmpty(post) {
+function isPostEmpty(post, contentText = "") {
   return Object.entries(post).every(([key, value]) => {
-    if (key === "type") return true; // default select value doesn't count as "content"
+    if (key === "type") return true;
+    if (key === "content") return !contentText.trim();
     if (Array.isArray(value)) return value.length === 0;
     if (typeof value === "boolean") return value === false;
     return !value;
@@ -383,13 +625,25 @@ function isPostEmpty(post) {
 
 export default function UploadPost({ onPublish, onCancel }) {
   const [post, setPost] = useState(EMPTY_POST);
-  const [files, setFiles] = useState([]); // becomes fileUrls after the server uploads them
+  const [contentText, setContentText] = useState("");
+  const [files, setFiles] = useState([]);
   const [activePicker, setActivePicker] = useState(null); // null | "start" | "end" | "deadline"
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dialog, setDialog] = useState(null); // centered popup config
   const contentRef = useRef(null);
   const fileInputRef = useRef(null);
+  const filesRef = useRef([]);
+  const toastTimer = useRef(null);
+
+  const closeDialog = useCallback(() => setDialog(null), []);
+  const closePicker = useCallback(() => setActivePicker(null), []);
+  const showAlert = (message, title = "Please check", tone = "warning") =>
+    setDialog({ kind: "alert", tone, title, message });
+  const showConfirm = ({ title, message, confirmLabel, cancelLabel, onConfirm }) =>
+    setDialog({ kind: "confirm", tone: "warning", title, message, confirmLabel, cancelLabel, onConfirm });
 
   // ---- Draft persistence (localStorage) ----------------------------------
   const [draftStatus, setDraftStatus] = useState("idle"); // idle | saving | saved | error
@@ -399,10 +653,10 @@ export default function UploadPost({ onPublish, onCancel }) {
   const justRestored = useRef(false);
   const autosaveTimer = useRef(null);
 
-  const writeDraft = useCallback((data) => {
+  const writeDraft = useCallback((data, text) => {
     try {
       if (typeof window === "undefined") return false;
-      if (isPostEmpty(data)) {
+      if (isPostEmpty(data, text)) {
         window.localStorage.removeItem(DRAFT_KEY);
         return true;
       }
@@ -421,12 +675,16 @@ export default function UploadPost({ onPublish, onCancel }) {
       if (raw) {
         const parsed = JSON.parse(raw);
         const restored = sanitizeDraft(parsed?.post);
-        if (restored && !isPostEmpty(restored)) {
-          justRestored.current = true;
-          setPost(restored);
-          const savedAt = parsed?.savedAt ? new Date(parsed.savedAt) : new Date();
-          setLastSavedAt(Number.isNaN(savedAt.getTime()) ? new Date() : savedAt);
-          setDraftStatus("saved");
+        if (restored) {
+          const restoredText = htmlToText(restored.content);
+          if (!isPostEmpty(restored, restoredText)) {
+            justRestored.current = true;
+            setPost(restored);
+            setContentText(restoredText);
+            const savedAt = parsed?.savedAt ? new Date(parsed.savedAt) : new Date();
+            setLastSavedAt(Number.isNaN(savedAt.getTime()) ? new Date() : savedAt);
+            setDraftStatus("saved");
+          }
         }
       }
     } catch {
@@ -444,8 +702,8 @@ export default function UploadPost({ onPublish, onCancel }) {
 
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
 
-    if (isPostEmpty(post)) {
-      writeDraft(post);
+    if (isPostEmpty(post, contentText)) {
+      writeDraft(post, contentText);
       setDraftStatus("idle");
       setLastSavedAt(null);
       return;
@@ -453,20 +711,19 @@ export default function UploadPost({ onPublish, onCancel }) {
 
     setDraftStatus("saving");
     autosaveTimer.current = setTimeout(() => {
-      const ok = writeDraft(post);
+      const ok = writeDraft(post, contentText);
       setDraftStatus(ok ? "saved" : "error");
       setLastSavedAt(ok ? new Date() : null);
     }, AUTOSAVE_DELAY_MS);
 
     return () => { if (autosaveTimer.current) clearTimeout(autosaveTimer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [post, writeDraft]);
+  }, [post, contentText, writeDraft]);
 
   const saveDraftNow = () => {
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     setDraftStatus("saving");
     autosaveTimer.current = setTimeout(() => {
-      const ok = writeDraft(post);
+      const ok = writeDraft(post, contentText);
       setDraftStatus(ok ? "saved" : "error");
       setLastSavedAt(ok ? new Date() : null);
     }, 250);
@@ -479,13 +736,16 @@ export default function UploadPost({ onPublish, onCancel }) {
   }, []);
 
   // ---- Form state helpers --------------------------------------------------
-  const set = (key, value) => setPost((p) => ({ ...p, [key]: value }));
-
-  const isValidUrl = (v) => { try { const u = new URL(v); return u.protocol === "http:" || u.protocol === "https:"; } catch { return false; } };
-
-  const applyToolbar = (fn) => {
-    const next = fn(contentRef);
-    if (next !== null) set("content", next.slice(0, LIMITS.content));
+  // Setting a field also clears that field's validation error right away.
+  const set = (key, value) => {
+    setPost((p) => ({ ...p, [key]: value }));
+    setErrors((prev) => {
+      const drop = key === "startTime" ? ["startTime", "endTime"] : [key];
+      if (!drop.some((k) => prev[k])) return prev;
+      const next = { ...prev };
+      drop.forEach((k) => delete next[k]);
+      return next;
+    });
   };
 
   const handleFilesSelected = (fileList) => {
@@ -494,12 +754,15 @@ export default function UploadPost({ onPublish, onCancel }) {
 
     const remainingSlots = LIMITS.maxFiles - files.length;
     if (remainingSlots <= 0) {
-      window.alert(`You can attach up to ${LIMITS.maxFiles} files. Remove one first.`);
+      showAlert(`You can attach up to ${LIMITS.maxFiles} files. Remove one first.`, "Attachment limit reached");
       return;
     }
 
-    const tooBig = incoming.filter((f) => f.size > 10 * 1024 * 1024);
-    const rightSized = incoming.filter((f) => f.size <= 10 * 1024 * 1024);
+    // Drag & drop bypasses the input's `accept`, so check the type here too.
+    const wrongType = incoming.filter((f) => !hasAllowedExt(f.name));
+    const typeOk = incoming.filter((f) => hasAllowedExt(f.name));
+    const tooBig = typeOk.filter((f) => f.size > MAX_FILE_BYTES);
+    const rightSized = typeOk.filter((f) => f.size <= MAX_FILE_BYTES);
     const accepted = rightSized.slice(0, remainingSlots);
     const skippedForLimit = rightSized.length - accepted.length;
 
@@ -511,12 +774,18 @@ export default function UploadPost({ onPublish, onCancel }) {
       setFiles((prev) => [...prev, ...withPreviews]);
     }
 
+    // One popup for everything that went wrong, instead of stacked alerts.
+    const notes = [];
+    if (wrongType.length > 0) {
+      notes.push(`Unsupported file type (allowed: PDF, JPG, PNG, WEBP, DOC, DOCX): ${wrongType.map((f) => f.name).join(", ")}`);
+    }
     if (tooBig.length > 0) {
-      window.alert(`${tooBig.length} file${tooBig.length === 1 ? "" : "s"} over the 10MB limit ${tooBig.length === 1 ? "wasn't" : "weren't"} added: ${tooBig.map((f) => f.name).join(", ")}`);
+      notes.push(`${tooBig.length} file${tooBig.length === 1 ? "" : "s"} over the 10MB limit ${tooBig.length === 1 ? "wasn't" : "weren't"} added: ${tooBig.map((f) => f.name).join(", ")}`);
     }
     if (skippedForLimit > 0) {
-      window.alert(`Only ${LIMITS.maxFiles} files are allowed in total. ${skippedForLimit} file${skippedForLimit === 1 ? "" : "s"} skipped.`);
+      notes.push(`Only ${LIMITS.maxFiles} files are allowed in total. ${skippedForLimit} file${skippedForLimit === 1 ? "" : "s"} skipped.`);
     }
+    if (notes.length > 0) showAlert(notes.join("\n\n"), "Some files weren't added");
   };
 
   const removeFile = (id) => {
@@ -527,23 +796,27 @@ export default function UploadPost({ onPublish, onCancel }) {
     });
   };
 
-  // Revoke every preview URL on unmount so navigating away doesn't leak them.
+  // Keep a live reference so the unmount cleanup sees the *current* files
+  // (a plain closure would only ever see the empty list from first render).
+  useEffect(() => { filesRef.current = files; }, [files]);
   useEffect(() => {
-    return () => { files.forEach((f) => { if (f.url) URL.revokeObjectURL(f.url); }); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      filesRef.current.forEach((f) => { if (f.url) URL.revokeObjectURL(f.url); });
+      clearTimeout(toastTimer.current);
+    };
   }, []);
 
   const handleStartChange = (val) => {
-    if (post.endTime && new Date(val) > new Date(post.endTime)) {
-      window.alert("Start time cannot be after the end time.");
+    if (post.endTime && val > post.endTime) {
+      showAlert("The start date is after your end date, so the end date has been cleared. Please pick it again.", "Start date changed");
       set("endTime", "");
     }
     set("startTime", val);
   };
 
   const handleEndChange = (val) => {
-    if (post.startTime && new Date(val) < new Date(post.startTime)) {
-      window.alert("End time cannot be before the start time.");
+    if (post.startTime && val < post.startTime) {
+      showAlert("End date cannot be before the start date.", "Invalid end date");
       return;
     }
     set("endTime", val);
@@ -552,9 +825,9 @@ export default function UploadPost({ onPublish, onCancel }) {
   const validate = () => {
     const e = {};
     if (!post.title.trim()) e.title = "Title is required";
-    if (!post.content.trim()) e.content = "Content is required";
+    if (!contentText.trim()) e.content = "Content is required";
     if (post.link.trim() && !isValidUrl(post.link.trim())) e.link = "Enter a valid link starting with http:// or https://";
-    if (post.startTime && post.endTime && new Date(post.endTime) < new Date(post.startTime)) e.endTime = "End time cannot be before start time";
+    if (post.startTime && post.endTime && post.endTime < post.startTime) e.endTime = "End date cannot be before start date";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -565,52 +838,73 @@ export default function UploadPost({ onPublish, onCancel }) {
     if (!validate()) return;
     setIsSubmitting(true);
 
+    // ---- Payload (multipart/form-data) -------------------------------------
+    // Text fields are trimmed and empty ones are left out.
+    // Dates go as plain "YYYY-MM-DD" so the server stores the same calendar day
+    // (a local-midnight ISO string shifts back a day when converted to UTC in India).
     const formData = new FormData();
-    formData.append("title", post.title.trim());
-    formData.append("content", post.content.trim());
-    if (post.link.trim()) formData.append("link", post.link.trim());
-    if (post.startTime) formData.append("startTime", new Date(post.startTime).toISOString());
-    if (post.endTime) formData.append("endTime", new Date(post.endTime).toISOString());
-    if (post.deadline) formData.append("deadline", new Date(post.deadline).toISOString());
-    if (post.company) formData.append("company", post.company);
-    if (post.role) formData.append("role", post.role);
-    if (post.eligibility) formData.append("eligibility", post.eligibility);
-    if (post.location) formData.append("location", post.location);
+    const put = (key, value) => {
+      const v = typeof value === "string" ? value.trim() : value;
+      if (v) formData.append(key, v);
+    };
+    put("title", post.title);
+    formData.append("content", post.content); // HTML from the rich-text box
+    put("link", post.link);
+    put("startTime", post.startTime);
+    put("endTime", post.endTime);
+    put("deadline", post.deadline);
+    put("company", post.company);
+    put("role", post.role);
+    put("eligibility", post.eligibility);
+    put("location", post.location);
+    put("package", post.package);
     formData.append("type", post.type);
-    formData.append("freshers", post.freshers);
-    formData.append("remote", post.remote);
-    formData.append("referralAvailable", post.referralAvailable);
-    if (post.package) formData.append("package", post.package);
+    formData.append("freshers", String(post.freshers));
+    formData.append("remote", String(post.remote));
+    formData.append("referralAvailable", String(post.referralAvailable));
     post.skills.forEach((s) => formData.append("skills", s));
     files.forEach((f) => formData.append("files", f.file)); // server converts these to fileUrls
 
     try {
-      await onPublish?.(formData);
-      setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 2600);
+      await api.post("/posts", formData);
+       setSubmitted(true);
+      clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setSubmitted(false), 2600);
       files.forEach((f) => { if (f.url) URL.revokeObjectURL(f.url); });
       setPost(EMPTY_POST);
+      setContentText("");
       setFiles([]);
+      setErrors({});
       clearDraft();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      showAlert(
+        err?.response?.data?.message || err?.message || "Something went wrong while publishing. Please try again.",
+        "Couldn't publish post"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Falls back to browser-back when no onCancel prop is passed.
+  const leavePage = () => (onCancel ? onCancel() : window.history.back());
+
   const handleCancel = () => {
-    const hasUnsavedWork = !isPostEmpty(post) || files.length > 0;
-    if (hasUnsavedWork) {
-      const ok = window.confirm(
-        draftStatus === "saved"
-          ? "Leave this post? Your draft is saved, so you can pick it up again later."
-          : "Leave this post? Any attached files will be lost, and unsaved text changes may not be kept."
-      );
-      if (!ok) return;
-    }
-    onCancel?.();
+    const hasUnsavedWork = !isPostEmpty(post, contentText) || files.length > 0;
+    if (!hasUnsavedWork) { leavePage(); return; }
+    showConfirm({
+      title: "Leave this post?",
+      message: draftStatus === "saved"
+        ? "Your draft is saved, so you can pick it up again later."
+        : "Any attached files will be lost, and unsaved text changes may not be kept.",
+      confirmLabel: "Leave",
+      cancelLabel: "Stay",
+      onConfirm: leavePage,
+    });
   };
 
-  const canSubmit = useMemo(() => post.title.trim() && post.content.trim(), [post]);
+  const canSubmit = useMemo(() => Boolean(post.title.trim() && contentText.trim()), [post.title, contentText]);
 
   const draftBadgeClass = draftStatus === "saving"
     ? `${styles.draftBadge} ${styles.draftBadgeSaving}`
@@ -620,177 +914,174 @@ export default function UploadPost({ onPublish, onCancel }) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.wrap}>
-        <div className={styles.topBar}>
-          <button type="button" className={styles.backLink} onClick={handleCancel}>
-            <ArrowLeft size={16} /> All Posts
-          </button>
+     
+      <main className={styles.main}>
+        <div className={styles.container}>
+          {/* 2) Title container */}
+          <div className={styles.titleCard}>
+            <div className={styles.titleContent}>
+              <div className={styles.titleLeft}>
+                <div className={styles.headerIconBox}><Pencil size={22} /></div>
+                <div>
+                  <h2 className={styles.headerTitle}>Create Post</h2>
+                  <p className={styles.headerSubtitle}>Share job opportunities, events, updates and more with the alumni community.</p>
+                </div>
+              </div>
 
-          {draftStatus !== "idle" && (
-            <div className={draftBadgeClass}>
-              {draftStatus === "saving" && <><span className={styles.draftSpinner} />Saving draft…</>}
-              {draftStatus === "saved" && <><CheckCircle2 size={13} /> Draft saved{lastSavedAt ? ` · ${formatRelativeTime(lastSavedAt)}` : ""}</>}
-              {draftStatus === "error" && <>Couldn't save draft</>}
-            </div>
-          )}
-        </div>
-
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <div className={styles.headerIconBox}><Pencil size={18} /></div>
-            <div>
-              <h1 className={styles.headerTitle}>Create a Post</h1>
-              <p className={styles.headerSubtitle}>Share job opportunities, events, updates and more with the alumni community.</p>
+              <div className={styles.titleActions}>
+                {draftStatus !== "idle" && (
+                  <div className={draftBadgeClass}>
+                    {draftStatus === "saving" && <><span className={styles.draftSpinner} />Saving draft…</>}
+                    {draftStatus === "saved" && <><CheckCircle2 size={13} /> Draft saved{lastSavedAt ? ` · ${formatRelativeTime(lastSavedAt)}` : ""}</>}
+                    {draftStatus === "error" && <>Couldn't save draft</>}
+                  </div>
+                )}
+                <button type="button" className={styles.backLink} onClick={handleCancel}>
+                  <ArrowLeft size={16} /> All Posts
+                </button>
+              </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <Section number="01" title="Post Information" desc="Add a catchy title and write the details.">
-              <div className={styles.grid2}>
-                <Field label="Title" required error={errors.title}>
-                  <IconInput icon={FileText} value={post.title} maxLength={LIMITS.title}
-                    onChange={(e) => set("title", e.target.value)} placeholder="Enter post title"
-                    counter={`${post.title.length}/${LIMITS.title}`} />
-                </Field>
-                <Field label="Post Type">
-                  <IconSelect icon={Tag} value={post.type} onChange={(e) => set("type", e.target.value)}>
-                    <option value="Full-time">Full-time</option>
-                    <option value="Internship">Internship</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                  </IconSelect>
-                </Field>
-              </div>
-
-              <Field label="Content" required error={errors.content}>
-                <div className={styles.editorBox}>
-                  <div className={styles.toolbar}>
-                    <button type="button" className={styles.toolbarBtn} title="Bold" onClick={() => applyToolbar((r) => wrapSelection(r, "**"))}><Bold size={14} /></button>
-                    <button type="button" className={styles.toolbarBtn} title="Italic" onClick={() => applyToolbar((r) => wrapSelection(r, "*"))}><Italic size={14} /></button>
-                    <button type="button" className={styles.toolbarBtn} title="Underline" onClick={() => applyToolbar((r) => wrapSelection(r, "__"))}><Underline size={14} /></button>
-                    <div className={styles.toolbarDivider} />
-                    <button type="button" className={styles.toolbarBtn} title="Bullet list" onClick={() => applyToolbar((r) => insertLinePrefix(r, "- "))}><List size={14} /></button>
-                    <button type="button" className={styles.toolbarBtn} title="Numbered list" onClick={() => applyToolbar((r) => insertLinePrefix(r, "1. "))}><ListOrdered size={14} /></button>
-                    <div className={styles.toolbarDivider} />
-                    <button type="button" className={styles.toolbarBtn} title="Insert link" onClick={() => {
-                      const url = window.prompt("Link URL:");
-                      if (url) applyToolbar((r) => wrapSelection(r, "[", `](${url})`));
-                    }}><Link2 size={14} /></button>
-                    <button type="button" className={styles.toolbarBtn} title="Insert image URL" onClick={() => {
-                      const url = window.prompt("Image URL:");
-                      if (url) applyToolbar((r) => wrapSelection(r, "![", `](${url})`));
-                    }}><ImageIcon size={14} /></button>
+          {/* 3) Form box */}
+          <div className={styles.formCard}>
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              // Enter inside a single-line input must not publish the post by accident.
+              onKeyDown={(e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") e.preventDefault(); }}
+            >
+              <div className={styles.formBody}>
+                <Section icon={FileText} title="Post information" desc="Add a clear title and write the details.">
+                  <div className={styles.grid2}>
+                    <Field label="Title" required error={errors.title}>
+                      <IconInput icon={FileText} value={post.title} maxLength={LIMITS.title}
+                        onChange={(e) => set("title", e.target.value)} placeholder="Enter post title"
+                        counter={`${post.title.length}/${LIMITS.title}`} />
+                    </Field>
+                    <Field label="Post type">
+                      <IconSelect icon={Tag} value={post.type} onChange={(e) => set("type", e.target.value)}>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Internship">Internship</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                      </IconSelect>
+                    </Field>
                   </div>
-                  <textarea
-                    ref={contentRef}
-                    className={styles.editorTextarea}
-                    rows={5}
-                    maxLength={LIMITS.content}
-                    value={post.content}
-                    onChange={(e) => set("content", e.target.value)}
-                    placeholder="Write your post content here..."
-                  />
-                  <div className={styles.editorCounter}><span className={styles.counter}>{post.content.length}/{LIMITS.content}</span></div>
-                </div>
-              </Field>
-            </Section>
 
-            <Section number="02" title="Job / Opportunity Details" desc="Fill in the job or opportunity related information.">
-              <div className={styles.grid3}>
-                <Field label="Company"><IconInput icon={Building2} value={post.company} onChange={(e) => set("company", e.target.value)} placeholder="Enter company name" /></Field>
-                <Field label="Role / Position"><IconInput icon={User} value={post.role} onChange={(e) => set("role", e.target.value)} placeholder="Enter role or position" /></Field>
-                <Field label="Location"><IconInput icon={MapPin} value={post.location} onChange={(e) => set("location", e.target.value)} placeholder="e.g., Chennai" /></Field>
-              </div>
-              <div className={styles.grid2}>
-                <Field label="Package"><IconInput icon={IndianRupee} value={post.package} onChange={(e) => set("package", e.target.value)} placeholder="e.g., 6.5 LPA" /></Field>
-                <Field label="Eligibility"><IconInput icon={GraduationCap} value={post.eligibility} onChange={(e) => set("eligibility", e.target.value)} placeholder="e.g., B.Tech, Any Graduate" /></Field>
-              </div>
-              <Field label="Skills">
-                <ChipInput values={post.skills} onChange={(v) => set("skills", v)} placeholder="e.g. React, SQL, System Design" limit={LIMITS.chip} max={LIMITS.maxChips} />
-              </Field>
-              <div className={styles.checkboxRow}>
-                <Checkbox checked={post.freshers} onChange={(v) => set("freshers", v)} label="Open for Freshers" />
-                <Checkbox checked={post.remote} onChange={(v) => set("remote", v)} label="Remote Work" />
-                <Checkbox checked={post.referralAvailable} onChange={(v) => set("referralAvailable", v)} label="Referral Available" />
-              </div>
-            </Section>
+                  <Field label="Content" required error={errors.content}>
+                    <ContentEditor
+                      contentRef={contentRef}
+                      html={post.content}
+                      length={contentText.length}
+                      maxLength={LIMITS.content}
+                      placeholder="Write your post content here..."
+                      onChange={(html, text) => { set("content", html); setContentText(text); }}
+                    />
+                  </Field>
+                </Section>
 
-            <Section number="03" title="Important Dates" desc="Set the relevant dates and deadlines.">
-              <div className={styles.grid3}>
-                <DateTimeField label="Start Date & Time" value={post.startTime} onOpen={() => setActivePicker("start")} />
-                <DateTimeField label="End Date & Time" value={post.endTime} onOpen={() => setActivePicker("end")} />
-                <DateTimeField label="Application Deadline" value={post.deadline} onOpen={() => setActivePicker("deadline")} />
-              </div>
-              {errors.endTime && <span className={styles.errorText}>{errors.endTime}</span>}
-            </Section>
-
-            <Section number="04" title="Links & Attachments" desc="Add relevant links or files (optional).">
-              <div className={styles.grid2}>
-                <Field label="Link (Optional)" error={errors.link}>
-                  <IconInput icon={Link2} type="url" value={post.link} onChange={(e) => set("link", e.target.value)} placeholder="Enter relevant link (e.g., apply link, website)" />
-                </Field>
-                <Field label="Attachments (Optional)">
-                  <div
-                    className={styles.uploadBox}
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => { e.preventDefault(); handleFilesSelected(e.dataTransfer.files); }}
-                  >
-                    <input ref={fileInputRef} type="file" multiple className={styles.fileInput}
-                      accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" onChange={(e) => handleFilesSelected(e.target.files)} />
-                    <UploadCloud className={styles.uploadIcon} size={24} />
-                    <p className={styles.uploadText}>Click to upload files or drag and drop</p>
-                    <p className={styles.uploadHint}>PDF, Images, Docs (Max 10MB each) — attachments aren't saved in drafts</p>
-
-                    {files.length > 0 && (
-                      <div className={styles.attachmentGrid} onClick={(e) => e.stopPropagation()}>
-                        {files.map((f) => (
-                          <div key={f.id} className={styles.attachmentItem}>
-                            <button type="button" className={styles.attachmentRemove} onClick={() => removeFile(f.id)} aria-label={`Remove ${f.file.name}`}>
-                              <X size={11} />
-                            </button>
-                            {f.url ? <img src={f.url} alt={f.file.name} className={styles.attachmentThumb} /> : (
-                              <div className={styles.attachmentFileIcon}><FileIcon size={20} /></div>
-                            )}
-                            <div className={styles.attachmentName}>{f.file.name}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                <Section icon={Briefcase} title="Job / opportunity details" desc="Fill in the job or opportunity related information.">
+                  <div className={styles.grid3}>
+                    <Field label="Company"><IconInput icon={Building2} value={post.company} onChange={(e) => set("company", e.target.value)} placeholder="Enter company name" /></Field>
+                    <Field label="Role / position"><IconInput icon={User} value={post.role} onChange={(e) => set("role", e.target.value)} placeholder="Enter role or position" /></Field>
+                    <Field label="Location"><IconInput icon={MapPin} value={post.location} onChange={(e) => set("location", e.target.value)} placeholder="e.g., Chennai" /></Field>
                   </div>
-                </Field>
-              </div>
-            </Section>
+                  <div className={styles.grid2}>
+                    <Field label="Package"><IconInput icon={IndianRupee} value={post.package} onChange={(e) => set("package", e.target.value)} placeholder="e.g., 6.5 LPA" /></Field>
+                    <Field label="Eligibility"><IconInput icon={GraduationCap} value={post.eligibility} onChange={(e) => set("eligibility", e.target.value)} placeholder="e.g., B.Tech, Any Graduate" /></Field>
+                  </div>
+                  <Field label="Skills">
+                    <ChipInput values={post.skills} onChange={(v) => set("skills", v)} placeholder="Type a skill and press Enter" limit={LIMITS.chip} max={LIMITS.maxChips} />
+                  </Field>
+                  <div className={styles.checkboxRow}>
+                    <Checkbox checked={post.freshers} onChange={(v) => set("freshers", v)} label="Open for freshers" />
+                    <Checkbox checked={post.remote} onChange={(v) => set("remote", v)} label="Remote work" />
+                    <Checkbox checked={post.referralAvailable} onChange={(v) => set("referralAvailable", v)} label="Referral available" />
+                  </div>
+                </Section>
 
-            <div className={styles.footer}>
-              <button
-                type="button"
-                className={styles.saveDraftBtn}
-                onClick={saveDraftNow}
-                disabled={isPostEmpty(post) || draftStatus === "saving"}
-                title="Save your progress locally so you can come back to it later"
-              >
-                <Save size={14} /> Save Draft
-              </button>
-              <button type="button" className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
-              <button type="submit" disabled={!canSubmit || isSubmitting} className={styles.submitBtn}>
-                <Send size={14} /> {isSubmitting ? "Posting..." : "Post to Alumni Community"}
-              </button>
-            </div>
-          </form>
+                <Section icon={CalendarDays} title="Important dates" desc="Set the relevant dates and deadlines.">
+                  <div className={styles.grid3}>
+                    <DateField label="Start Date" value={post.startTime} onOpen={() => setActivePicker("start")} />
+                    <DateField label="End Date" value={post.endTime} onOpen={() => setActivePicker("end")} />
+                    <DateField label="Application Deadline" value={post.deadline} onOpen={() => setActivePicker("deadline")} />
+                  </div>
+                  {errors.endTime && <span className={styles.errorText}>{errors.endTime}</span>}
+                </Section>
+
+                <Section icon={Paperclip} title="Links & attachments" desc="Add relevant links or files (optional).">
+                  <Field label="Link (optional)" error={errors.link}>
+                    <IconInput icon={Link2} type="url" value={post.link} onChange={(e) => set("link", e.target.value)} placeholder="Enter relevant link (e.g., apply link, website)" />
+                  </Field>
+
+                  <Field label="Attachments (optional)">
+                    <div
+                      className={`${styles.uploadBox} ${isDragging ? styles.uploadBoxActive : ""}`}
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFilesSelected(e.dataTransfer.files); }}
+                    >
+                      <input ref={fileInputRef} type="file" multiple className={styles.fileInput}
+                        accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+                        onChange={(e) => { handleFilesSelected(e.target.files); e.target.value = ""; }} />
+                      <div className={styles.uploadIconWrap}><UploadCloud size={24} /></div>
+                      <p className={styles.uploadText}>Click to upload files or drag and drop</p>
+                      <p className={styles.uploadHint}>PDF, images, docs (max 10MB each, up to {LIMITS.maxFiles} files). Attachments aren't saved in drafts.</p>
+
+                      {files.length > 0 && (
+                        <div className={styles.attachmentGrid} onClick={(e) => e.stopPropagation()}>
+                          {files.map((f) => (
+                            <div key={f.id} className={styles.attachmentItem}>
+                              <button type="button" className={styles.attachmentRemove} onClick={() => removeFile(f.id)} aria-label={`Remove ${f.file.name}`}>
+                                <X size={12} />
+                              </button>
+                              {f.url ? <img src={f.url} alt={f.file.name} className={styles.attachmentThumb} /> : (
+                                <div className={styles.attachmentFileIcon}><FileIcon size={24} /></div>
+                              )}
+                              <div className={styles.attachmentName}>{f.file.name}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Field>
+                </Section>
+              </div>
+
+              <div className={styles.footer}>
+                <button
+                  type="button"
+                  className={styles.saveDraftBtn}
+                  onClick={saveDraftNow}
+                  disabled={isPostEmpty(post, contentText) || draftStatus === "saving"}
+                  title="Save your progress locally so you can come back to it later"
+                >
+                  <Save size={15} /> Save draft
+                </button>
+                <button type="button" className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
+                <button type="submit" disabled={!canSubmit || isSubmitting} className={styles.submitBtn}>
+                  <Send size={15} /> {isSubmitting ? "Posting..." : "Post to alumni community"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      </main>
 
       {activePicker === "start" && (
-        <CustomDateTimePicker value={post.startTime} onChange={handleStartChange} onClose={() => setActivePicker(null)} />
+        <CustomDatePicker value={post.startTime} onChange={handleStartChange} onClose={closePicker} />
       )}
       {activePicker === "end" && (
-        <CustomDateTimePicker value={post.endTime || post.startTime} minDateTime={post.startTime || undefined}
-          onChange={handleEndChange} onClose={() => setActivePicker(null)} />
+        <CustomDatePicker value={post.endTime || post.startTime} minDateTime={post.startTime || undefined}
+          onChange={handleEndChange} onClose={closePicker} />
       )}
       {activePicker === "deadline" && (
-        <CustomDateTimePicker value={post.deadline} onChange={(v) => set("deadline", v)} onClose={() => setActivePicker(null)} />
+        <CustomDatePicker value={post.deadline} onChange={(v) => set("deadline", v)} onClose={closePicker} />
       )}
+
+      {dialog && <Dialog {...dialog} onClose={closeDialog} />}
 
       {submitted && (
         <div className={styles.toast}>
