@@ -4,7 +4,8 @@ import LandingPage from "../pages/Landing/LandingPage";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register"
 import AlumniJobFeed from "../pages/posts/PostDetails";
-import CreatePost from "../pages/posts/uploadpost";
+import UploadPost from "../pages/posts/uploadpost";
+import FeedbackForm from "../pages/feedback/FeedbackForm";
 
 
 import AlumniApproval from "../pages/admin/AlumniApproval";
@@ -29,8 +30,9 @@ function AppRoute() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
-            <Route path="/createpost" element={<CreatePost />} />
-            <Route path="/createpost" element={<CreatePost />} />
+            <Route path="/createpost" element={<UploadPost />} />
+      
+      
 
             <Route path="/members" element={<Members />} />
             <Route path="/events" element={<Events />} />
@@ -46,7 +48,7 @@ function AppRoute() {
             <Route path="/alumni" element={<AlumniLayout/>}>
                 <Route path="gallery" element={<Gallery />}/>
             </Route>
-            {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
+            <Route path="/feedback" element={<FeedbackForm />} /> 
             <Route path="*" element={<NotFound />} />
         </Routes>
     );

@@ -43,11 +43,11 @@ export const createPost = async (
     // 1. User information
     // -----------------------------------------
 
-    const { username, email } = req.body;
+    const { Userrole, email } = req.body;
 
-    if (!username || !email) {
+    if (!Userrole || !email) {
       res.status(400).json({
-        message: "User ID and email are required",
+        message: "User role and email are required",
       });
       return;
     }
@@ -102,7 +102,7 @@ export const createPost = async (
     // -----------------------------------------
 
     const user = await User.findOne({
-      username: username,
+      role: Userrole,
       email: email,
     });
 
@@ -121,7 +121,7 @@ export const createPost = async (
 
     const usernameHash = crypto
       .createHash("sha256")
-      .update(username)
+      .update(email)
       .digest("hex")
       .slice(0, 10);
 

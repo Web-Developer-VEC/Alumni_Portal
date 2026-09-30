@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 
 import VECLOGO from "../../assets/VEC_Logo.png";
-// import Profile from "../../assets/profile.jpg";
+// import Profile from "../../assets/profile.jpg"; 
+import Profile from "../../assets/VEC_Logo.png";
 import styles from "./DashboardNavbar.module.css";
 import { useNavigate } from "react-router-dom";
 
