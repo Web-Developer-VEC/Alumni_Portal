@@ -108,7 +108,7 @@ export const googleLogin = async (
     };
 
     // Successful login
-    res.redirect(`${clientUrl}/jobs`);
+    res.redirect(`${clientUrl}/`);
   } catch (error) {
     console.error("Error in googleLogin:", error);
 
