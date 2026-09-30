@@ -19,7 +19,7 @@ import {
     Users,
 } from "lucide-react";
 
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import styles from "./Login.module.css";
@@ -121,6 +121,7 @@ const alumni = [
 
 function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -166,78 +167,79 @@ function Login() {
         return () => clearInterval(timer);
     }, [isHovered]);
 
-useEffect(() => {
-    const error = searchParams.get("error");
-    const token = searchParams.get("token");
+    useEffect(() => {
+        const error = searchParams.get("error");
+        const token = searchParams.get("token");
 
-    // Google login failed
-    if (error) {
-        setGoogleError(error);
+        // Google login failed
+        if (error) {
+            setGoogleError(error);
 
-        const params = new URLSearchParams(searchParams);
-        params.delete("error");
-
-        setSearchParams(params, { replace: true });
-        return;
-    }
-
-    // Google login successful
-    if (token) {
-        try {
-            // Decode JWT payload
-            const payload = JSON.parse(atob(token.split(".")[1]));
-
-            const role = (payload.role || "").toUpperCase();
-
-            if (!role) {
-                console.error("Role missing from Google token");
-                setGoogleError("Unable to determine your account role.");
-                return;
-            }
-
-            // Store Google login session
-            setSession({
-                token,
-                role,
-                user: {
-                    id: payload.id,
-                    displayName: payload.displayName,
-                    email: payload.email,
-                    photo: payload.photo,
-                    role: payload.role,
-                },
-            });
-
-            // Remove token from URL
             const params = new URLSearchParams(searchParams);
-            params.delete("token");
+            params.delete("error");
 
             setSearchParams(params, { replace: true });
-
-            // Redirect based on role
-            switch (role) {
-                case "STUDENT":
-                    navigate("/student");
-                    break;
-
-                case "ADMIN":
-                    navigate("/admin");
-                    break;
-
-                case "ALUMNI":
-                    navigate("/alumni");
-                    break;
-
-                default:
-                    setGoogleError("Invalid user role.");
-                    break;
-            }
-        } catch (error) {
-            console.error("Google token processing failed:", error);
-            setGoogleError("Unable to complete Google login.");
+            return;
         }
-    }
-}, [searchParams, setSearchParams, navigate]);
+
+        // Google login successful
+        if (token) {
+            try {
+                // Decode JWT payload
+                const payload = JSON.parse(atob(token.split(".")[1]));
+
+                const role = (payload.role || "").toUpperCase();
+
+                if (!role) {
+                    console.error("Role missing from Google token");
+                    setGoogleError("Unable to determine your account role.");
+                    return;
+                }
+
+                // Store Google login session
+                setSession({
+                    token,
+                    role,
+                    user: {
+                        id: payload.id,
+                        displayName: payload.displayName,
+                        email: payload.email,
+                        photo: payload.photo,
+                        role: payload.role,
+                    },
+                });
+
+                // Remove token from URL
+                const params = new URLSearchParams(searchParams);
+                params.delete("token");
+
+                setSearchParams(params, { replace: true });
+
+                // Redirect based on role
+                switch (role) {
+                    case "STUDENT":
+                        navigate("/student");
+                        break;
+
+                    case "ADMIN":
+                        navigate("/admin");
+                        break;
+
+                    case "ALUMNI":
+                        navigate("/alumni");
+                        break;
+
+                    default:
+                        setGoogleError("Invalid user role.");
+                        break;
+                }
+            } catch (error) {
+                console.error("Google token processing failed:", error);
+                setGoogleError("Unable to complete Google login.");
+            }
+        }
+    }, [searchParams, setSearchParams, navigate]);
+
 
 
     /*
@@ -373,6 +375,16 @@ useEffect(() => {
                 "Login failed:",
                 error.response?.data || error
             );
+            // User is not registered
+            if (error.response?.status === 403) {
+                navigate("/register", {
+                    state: {
+                        username: username,
+                    },
+                });
+
+                return;
+            }
             const message =
                 error.response?.data?.message ||
                 error.response?.data?.detail ||
@@ -689,16 +701,7 @@ useEffect(() => {
                         {/* FORM */}
 
                         <form onSubmit={handleLogin}>
-                            <div className={styles["signup-reference"]}>
-                                <span>Don't have an account?</span>
-                                <button
-                                    type="button"
-                                    onClick={() => navigate("/register")}
-                                >
-                                    
-                                    Register
-                                </button>
-                            </div>
+
                             {/* GOOGLE SIGNUP */}
                             <button
                                 type="button"
