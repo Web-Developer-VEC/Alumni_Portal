@@ -1,34 +1,27 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, type Document, type Types } from "mongoose";
 
-const galleryPhotoSchema = new mongoose.Schema(
+export interface IGalleryImage {
+  _id?: Types.ObjectId;
+  imageUrl: string;
+}
+
+export interface IGallery extends Document {
+  caption: string;
+  images: Types.DocumentArray<IGalleryImage & Document>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const galleryImageSchema = new Schema<IGalleryImage>({
+  imageUrl: { type: String, required: true },
+});
+
+const gallerySchema = new Schema<IGallery>(
   {
-    imageUrl: {
-      type: String,
-      required: true,
-    },
-
-    caption: {
-      type: String,
-      default: "",
-    },
+    caption: { type: String, default: "", trim: true },
+    images: { type: [galleryImageSchema], default: [] },
   },
-  {
-    _id: true,
-  }
+  { timestamps: true }
 );
 
-const gallerySchema = new mongoose.Schema(
-  {
-    photos: {
-      type: [galleryPhotoSchema],
-      default: [],
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const Gallery = mongoose.model("Gallery", gallerySchema);
-
-export default Gallery;
+export default mongoose.model<IGallery>("Gallery", gallerySchema);
