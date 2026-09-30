@@ -45,6 +45,7 @@ if(!user){
 }
 console.log("User:", user);
 
+
 const DRAFT_KEY = "alumniPortal.createPost.draft.v2";
 const AUTOSAVE_DELAY_MS = 800;
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -1131,6 +1132,75 @@ const handleSubmit = async (e) => {
 };
 
 
+  put("title", post.title);
+  formData.append("content", post.content);
+  put("link", post.link);
+  put("startTime", post.startTime);
+  put("endTime", post.endTime);
+  put("deadline", post.deadline);
+  put("company", post.company);
+  put("role", post.role);
+  put("eligibility", post.eligibility);
+  put("location", post.location);
+  put("package", post.package);
+
+  formData.append("type", post.type);
+  formData.append("freshers", String(post.freshers));
+  formData.append("remote", String(post.remote));
+  formData.append("referralAvailable", String(post.referralAvailable));
+
+  post.skills.forEach((s) => {
+    formData.append("skills", s);
+  });
+
+  files.forEach((f) => {
+    formData.append("files", f.file);
+  });
+
+  try {
+  
+ console.log(formData);
+  await api.post("/posts", formData);
+ 
+
+  setSubmitted(true);
+
+  clearTimeout(toastTimer.current);
+  toastTimer.current = setTimeout(
+    () => setSubmitted(false),
+    2600
+  );
+
+  files.forEach((f) => {
+    if (f.url) {
+      URL.revokeObjectURL(f.url);
+    }
+  });
+
+  setPost(EMPTY_POST);
+  setContentText("");
+  setFiles([]);
+  setErrors({});
+  clearDraft();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+ catch (err) {
+    showAlert(
+      err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong while publishing. Please try again.",
+      "Couldn't publish post"
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
   // Falls back to browser-back when no onCancel prop is passed.
   const leavePage = () => (onCancel ? onCancel() : window.history.back());
 
@@ -1341,4 +1411,3 @@ const handleSubmit = async (e) => {
       )}
     </div>
   );
-}

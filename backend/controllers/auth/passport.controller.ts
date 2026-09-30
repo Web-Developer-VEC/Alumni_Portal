@@ -61,7 +61,7 @@ export const googleLogin = async (
     ) {
       res.redirect(
         `${clientUrl}/login?error=${encodeURIComponent(
-          "Your alumni registration is still pending approval.",
+          "Your alumni registration is still waiting for approval.",
         )}`,
       );
       return;
@@ -108,7 +108,7 @@ export const googleLogin = async (
     };
 
     // Successful login
-    res.redirect(`${clientUrl}/`);
+    res.redirect(`${clientUrl}/login`);
   } catch (error) {
     console.error("Error in googleLogin:", error);
 
