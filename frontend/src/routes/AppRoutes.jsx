@@ -10,10 +10,9 @@ import CreatePost from "../pages/posts/uploadpost";
 import AlumniApproval from "../pages/admin/AlumniApproval";
 import PostApproval from "../pages/admin/PostApproval";
 
-
-import AdminLayout from "../layouts/adminLayout";
-import AlumniLayout from "../layouts/AlumniLayout";
-import StudentLayout from "../layouts/StudentLayout";
+import AdminLayout from "../Layouts/AdminLayout";
+import AlumniLayout from "../Layouts/AlumniLayout";
+import StudentLayout from "../Layouts/StudentLayout";
 
 import Members from "../pages/common/Members"
 import Gallery from "../pages/common/Gallery"
@@ -28,23 +27,25 @@ function AppRoute() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/jobs" element={<AlumniJobFeed />} />
-            <Route path="/createpost" element={<CreatePost />} />
-            <Route path="/createpost" element={<CreatePost />} />
 
-            <Route path="/members" element={<Members />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/student" element={<StudentLayout />} >
+            <Route path="/student" element={<StudentLayout />}>
+                <Route index element={<AlumniJobFeed />} />
+                <Route path="members" element={<Members />} />
                 <Route path="gallery" element={<Gallery />}/>
-            </Route>
-
+                <Route path="events" element={<Events />} />
+            </Route >
             <Route path="/admin" element={<AdminLayout />}>
-                <Route path="gallery" element={<Gallery />}/>
+                <Route index element={<AlumniJobFeed />} />
+                <Route path="members" element={<Members />} />
                 <Route path="alumni-approval" element={<AlumniApproval />} />
                 <Route path="post-approval" element={<PostApproval />} />
+                 <Route path="events" element={<Events />} />
             </Route>
             <Route path="/alumni" element={<AlumniLayout/>}>
-                <Route path="gallery" element={<Gallery />}/>
+                <Route index element={<AlumniJobFeed />} /> 
+                <Route path="members" element={<Members />} />
+                <Route path="createpost" element={<CreatePost />} />
+                 <Route path="events" element={<Events />} />
             </Route>
             {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
             <Route path="*" element={<NotFound />} />
