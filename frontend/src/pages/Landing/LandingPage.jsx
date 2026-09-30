@@ -900,14 +900,6 @@ function LandingPage() {
                 <ArrowRight size={18} />
               </span>
             </button>
-
-            <button
-              className="hero-secondary"
-              type="button"
-              onClick={() => navigate("/register")}
-            >
-              EXPLORE NETWORK
-            </button>
           </div>
         </div>
       </section>
