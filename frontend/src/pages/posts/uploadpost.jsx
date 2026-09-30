@@ -45,6 +45,11 @@ if(!user){
 }
 console.log("User:", user);
 
+const user = getUser();
+if (!user) {
+  alert("Please login to create a post.");
+}
+console.log("User:", user);
 
 const DRAFT_KEY = "alumniPortal.createPost.draft.v2";
 const AUTOSAVE_DELAY_MS = 800;
@@ -1045,16 +1050,13 @@ export default function UploadPost({ onPublish, onCancel }) {
     return Object.keys(e).length === 0;
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (isSubmitting) return;
-  if (!validate()) return;
+    if (isSubmitting) return;
+    if (!validate()) return;
 
-  setIsSubmitting(true);
-
-  // ---- Payload (multipart/form-data) -------------------------------------
-  const formData = new FormData();
+    setIsSubmitting(true);
 
   const put = (key, value) => {
     const v = typeof value === "string" ? value.trim() : value;
@@ -1132,73 +1134,92 @@ const handleSubmit = async (e) => {
 };
 
 
-  put("title", post.title);
-  formData.append("content", post.content);
-  put("link", post.link);
-  put("startTime", post.startTime);
-  put("endTime", post.endTime);
-  put("deadline", post.deadline);
-  put("company", post.company);
-  put("role", post.role);
-  put("eligibility", post.eligibility);
-  put("location", post.location);
-  put("package", post.package);
+    const put = (key, value) => {
+      const v = typeof value === "string" ? value.trim() : value;
+      if (v) formData.append(key, v);
+    };
 
-  formData.append("type", post.type);
-  formData.append("freshers", String(post.freshers));
-  formData.append("remote", String(post.remote));
-  formData.append("referralAvailable", String(post.referralAvailable));
+    put("title", post.title);
+    formData.append("content", post.content);
+    put("link", post.link);
+    put("startTime", post.startTime);
+    put("endTime", post.endTime);
+    put("deadline", post.deadline);
+    put("company", post.company);
+    put("role", post.role);
+    put("eligibility", post.eligibility);
+    put("location", post.location);
+    put("package", post.package);
 
-  post.skills.forEach((s) => {
-    formData.append("skills", s);
-  });
+    formData.append("type", post.type);
+    formData.append("freshers", String(post.freshers));
+    formData.append("remote", String(post.remote));
+    formData.append("referralAvailable", String(post.referralAvailable));
+    formData.append("email", user.email);
+    formData.append("Userrole", user.role);
 
-  files.forEach((f) => {
-    formData.append("files", f.file);
-  });
+    post.skills.forEach((s) => {
+      formData.append("skills", s);
+    });
 
-  try {
-  
- console.log(formData);
-  await api.post("/posts", formData);
- 
+    files.forEach((f) => {
+      formData.append("files", f.file);
+    });
 
-  setSubmitted(true);
+    try {
+      console.log("📦 POST PAYLOAD:");
 
-  clearTimeout(toastTimer.current);
-  toastTimer.current = setTimeout(
-    () => setSubmitted(false),
-    2600
-  );
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}:`, {
+            name: value.name,
+            type: value.type,
+            size: value.size,
+          });
+        } else {
+          console.log(`${key}:`, value);
+        }
+      }
 
-  files.forEach((f) => {
-    if (f.url) {
-      URL.revokeObjectURL(f.url);
+      await api.post("/posts", formData);
+
+
+      setSubmitted(true);
+
+      clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(
+        () => setSubmitted(false),
+        2600
+      );
+
+      files.forEach((f) => {
+        if (f.url) {
+          URL.revokeObjectURL(f.url);
+        }
+      });
+
+      setPost(EMPTY_POST);
+      setContentText("");
+      setFiles([]);
+      setErrors({});
+      clearDraft();
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
-  });
-
-  setPost(EMPTY_POST);
-  setContentText("");
-  setFiles([]);
-  setErrors({});
-  clearDraft();
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
-}
- catch (err) {
-    showAlert(
-      err?.response?.data?.message ||
+    catch (err) {
+      showAlert(
+        err?.response?.data?.message ||
         err?.message ||
         "Something went wrong while publishing. Please try again.",
-      "Couldn't publish post"
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+        "Couldn't publish post"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   // Falls back to browser-back when no onCancel prop is passed.
