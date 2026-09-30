@@ -21,9 +21,9 @@ import {
 } from "lucide-react";
 
 import VECLOGO from "../../assets/VEC_Logo.png";
-// import Profile from "../../assets/profile.jpg"; 
+// import Profile from "../../assets/profile.jpg";
 import styles from "./DashboardNavbar.module.css";
-import { useNavigate  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [profileOpen, setProfileOpen] = useState(false);
@@ -52,8 +52,6 @@ const Navbar = () => {
     };
   }, []);
 
- 
-
   return (
     <>
       <header className={styles.navbar}>
@@ -75,8 +73,9 @@ const Navbar = () => {
 
         {/* ================= SEARCH ================= */}
         <div
-          className={`${styles.searchWrapper} ${searchFocused ? styles.searchFocused : ""
-            }`}
+          className={`${styles.searchWrapper} ${
+            searchFocused ? styles.searchFocused : ""
+          }`}
         >
           <Search size={19} strokeWidth={2} className={styles.searchIcon} />
 
@@ -101,13 +100,16 @@ const Navbar = () => {
             <Users size={20} strokeWidth={1.9} />
             <span>Alumni</span>
           </button>
-          <button className={styles.navItem}>
+          <button
+            className={styles.navItem}
+            onClick={() => navigate("/events")}
+          >
             <Calendar size={20} strokeWidth={1.9} />
             <span>Events</span>
           </button>
           <button
             className={`${styles.navItem} ${styles.addPostItem}`}
-            onClick={()=>navigate("/createpost")}
+            onClick={() => navigate("/createpost")}
           >
             <div className={styles.addIcon}>
               <Plus size={21} strokeWidth={2.3} />
@@ -127,14 +129,14 @@ const Navbar = () => {
             <Bell size={20} strokeWidth={1.9} />
             <span>Notification</span>
           </button>{" "}
-
         </nav>
 
         {/* ================= PROFILE ================= */}
         <div className={styles.profileWrapper} ref={profileRef}>
           <button
-            className={`${styles.profileButton} ${profileOpen ? styles.profileActive : ""
-              }`}
+            className={`${styles.profileButton} ${
+              profileOpen ? styles.profileActive : ""
+            }`}
             onClick={() => {
               setProfileOpen(!profileOpen);
               setUploadOpen(false);
@@ -152,8 +154,9 @@ const Navbar = () => {
 
             <ChevronDown
               size={16}
-              className={`${styles.chevron} ${profileOpen ? styles.chevronRotate : ""
-                }`}
+              className={`${styles.chevron} ${
+                profileOpen ? styles.chevronRotate : ""
+              }`}
             />
           </button>
 
@@ -162,7 +165,7 @@ const Navbar = () => {
             <div className={styles.profileDropdown}>
               <div className={styles.dropdownHeader}>
                 <div className={styles.largeAvatar}>
-                  <img src={Profile} alt="Profile" />
+                  {/* <img src={Profile} alt="Profile" /> */}
                   <span className={styles.largeOnlineDot}></span>
                 </div>
 

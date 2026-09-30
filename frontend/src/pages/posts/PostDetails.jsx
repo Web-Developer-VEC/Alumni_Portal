@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal, flushSync } from "react-dom";
-import * as pdfjsLib from "pdfjs-dist";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+// import * as pdfjsLib from "pdfjs-dist";
+// import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import styles from "./post.module.css";
 import Navbar from "../../components/common/DashboardNavbar";
 import api from "../../api/api";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 function FontStyles() {
   return (

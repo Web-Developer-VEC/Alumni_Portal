@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import VecLogo from "../../assets/VEC_Logo.png";
 import {
     loginUser,
     googleSignup,
 } from "../../api/auth";
+import { setSession } from "../../api/session";
 import {
     User,
     Lock,
@@ -17,7 +19,7 @@ import {
     Users,
 } from "lucide-react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import styles from "./Login.module.css";
@@ -122,6 +124,9 @@ function Login() {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [loginError, setLoginError] = useState("");
+    const [googleError, setGoogleError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
 
     // This represents the ACTIVE / CENTER card.
@@ -160,6 +165,17 @@ function Login() {
 
         return () => clearInterval(timer);
     }, [isHovered]);
+
+    useEffect(() => {
+        const error = searchParams.get("error");
+
+        if (error) {
+            setGoogleError(error);
+
+            // Remove error from URL
+            setSearchParams({}, { replace: true });
+        }
+    }, [searchParams, setSearchParams]);
 
 
     /*
@@ -224,12 +240,12 @@ function Login() {
         event.preventDefault();
 
         if (!username.trim()) {
-            toast.error("Please enter your username");
+            setLoginError("Please enter your username");
             return;
         }
 
         if (!password.trim()) {
-            toast.error("Please enter your password");
+            setLoginError("Please enter your password");
             return;
         }
 
@@ -241,16 +257,67 @@ function Login() {
 
             console.log("Login response:", data);
 
+            const token = data.token;
+            const user = data.user;
+
+            // Get role from backend response
+            const role = (
+                data.role ||
+                data.user?.role ||
+                ""
+            ).toUpperCase();
+
+            if (!token) {
+                toast.error("Login successful, but authentication token is missing.");
+                return;
+            }
+
+            if (!role) {
+                toast.error("Login successful, but user role is missing.");
+                console.error("Role missing from login response:", data);
+                return;
+            }
+
+            // Store login session
+            setSession({
+                token,
+                role,
+                user,
+            });
+
             toast.success("Login successful");
 
-            // navigate("/dashboard");
-        } catch (error) {
-            console.error("Login failed:", error);
+            // Redirect according to role
+            switch (role) {
+                case "STUDENT":
+                    navigate("/student");
+                    break;
 
-            toast.error(
-                error.response?.data?.detail ||
-                "Login failed"
+                case "ADMIN":
+                    navigate("/admin");
+                    break;
+
+                case "ALUMNI":
+                    navigate("/alumni");
+                    break;
+
+                default:
+                    toast.error("Invalid user role.");
+                    console.error("Unknown role:", role);
+                    break;
+            }
+
+        } catch (error) {
+            console.error(
+                "Login failed:",
+                error.response?.data || error
             );
+            const message =
+                error.response?.data?.message ||
+                error.response?.data?.detail ||
+                "Invalid username or password.";
+
+            setLoginError(message);
         }
     };
     const handleGoogleSignup = async () => {
@@ -261,7 +328,8 @@ function Login() {
         } catch (error) {
             console.error("Google signup failed:", error);
 
-            toast.error(
+            setGoogleError(
+                error.response?.data?.message ||
                 error.response?.data?.detail ||
                 "Google signup failed"
             );
@@ -302,7 +370,7 @@ function Login() {
                     <div className={styles["college-brand"]}>
 
                         <div className={styles["brand-symbol"]}>
-                            <span>✦</span>
+                            <img src={VecLogo} alt="VEC" />
                         </div>
 
                         <div className={styles["brand-text"]}>
@@ -599,6 +667,11 @@ function Login() {
 
                                 <span>Continue with Google</span>
                             </button>
+                            {googleError && (
+                                <p className={styles["google-error"]}>
+                                    {googleError}
+                                </p>
+                            )}
                             <br />
                             <button
                                 type="button"
@@ -646,9 +719,10 @@ function Login() {
                                         type="text"
                                         placeholder="Enter your username"
                                         value={username}
-                                        onChange={(event) =>
-                                            setUsername(event.target.value)
-                                        }
+                                        onChange={(event) =>{
+                                            setUsername(event.target.value),
+                                            setLoginError("")
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -671,9 +745,10 @@ function Login() {
                                         type={showPassword ? "text" : "password"}
                                         placeholder="Enter your password"
                                         value={password}
-                                        onChange={(event) =>
-                                            setPassword(event.target.value)
-                                        }
+                                        onChange={(event) => {
+                                            setPassword(event.target.value),
+                                            setLoginError("")
+                                        }}
                                     />
 
                                     <button
@@ -696,7 +771,11 @@ function Login() {
                                     </button>
                                 </div>
                             </div>
-
+                            {loginError && (
+                                <p className={styles["login-error"]}>
+                                    {loginError}
+                                </p>
+                            )}
 
                             {/* LOGIN BUTTON */}
                             <button
