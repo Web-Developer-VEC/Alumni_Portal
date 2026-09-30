@@ -28,8 +28,7 @@ function AppRoute() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/jobs" element={<AlumniJobFeed />} />
-            <Route path="/createpost" element={<UploadPost />} />
+            <Route path="/feedback" element={<FeedbackForm />} /> 
       
       
 
@@ -39,6 +38,7 @@ function AppRoute() {
                 <Route path="gallery" element={<Gallery />}/>
                 <Route path="events" element={<Events />} />
             </Route >
+
             <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AlumniJobFeed />} />
                 <Route path="gallery" element={<Gallery />}/>
@@ -47,15 +47,15 @@ function AppRoute() {
                 <Route path="post-approval" element={<PostApproval />} />
                  <Route path="events" element={<Events />} />
             </Route>
+
             <Route path="/alumni" element={<AlumniLayout/>}>
                 <Route index element={<AlumniJobFeed />} />
+                <Route path="createpost" element={<UploadPost />} />
                 <Route path="gallery" element={<Gallery />}/>
-                <Route index element={<AlumniJobFeed />} /> 
                 <Route path="members" element={<Members />} />
-                <Route path="createpost" element={<CreatePost />} />
-                 <Route path="events" element={<Events />} />
+                <Route path="events" element={<Events />} />
             </Route>
-            <Route path="/feedback" element={<FeedbackForm />} /> 
+            
             <Route path="*" element={<NotFound />} />
         </Routes>
     );
