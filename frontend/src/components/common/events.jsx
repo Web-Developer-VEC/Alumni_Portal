@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./Events.css";
+import Navbar from "./DashboardNavbar";
+import { getAllEvents } from "../../api/event";
 import {
   Calendar,
   Clock,
@@ -13,160 +15,8 @@ import {
   Search,
   Filter,
   X,
+  RefreshCw,
 } from "lucide-react";
-
-/* =========================================================
-   CONFIG
-========================================================= */
-
-const EVENTS_API_URL = "/api/events";
-const USE_DUMMY_DATA = true;
-
-const DUMMY_EVENTS = [
-  {
-    _id: "evt-001",
-    title: "VEC Alumni Meet 2026",
-    description:
-      "An evening of reconnecting with classmates, revisiting old memories and celebrating the VEC spirit together on campus.",
-    date: "2026-11-15",
-    startTime: "10:00 AM",
-    endTime: "2:00 PM",
-    venue: "Main Auditorium, Velammal Engineering College",
-    locationType: "physical",
-    imageUrl:
-      "https://images.unsplash.com/photo-1511578314322-379afb476865?w=900&q=80",
-    registrationLink: "https://forms.gle/example-alumni-meet",
-    organizer: "Alumni Cell",
-    category: "alumni-meet",
-    capacity: 300,
-    guestSpeakers: ["Arun Kumar", "Priya S", "Rahul V"],
-  },
-  {
-    _id: "evt-002",
-    title: "Alumni Industry Connect",
-    description:
-      "Meet professionals across product, engineering and design, and build meaningful connections for your next career move.",
-    date: "2026-12-05",
-    startTime: "5:00 PM",
-    endTime: "8:00 PM",
-    venue: "ITC Grand Chola, Chennai",
-    locationType: "physical",
-    imageUrl:
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=900&q=80",
-    registrationLink: "https://forms.gle/example-industry-connect",
-    organizer: "Career & Mentorship Committee",
-    category: "networking",
-    capacity: 150,
-    guestSpeakers: ["Keerthana R", "Vignesh M"],
-  },
-  {
-    _id: "evt-003",
-    title: "Alumni Mentorship Session",
-    description:
-      "Experienced alumni share career insights, interview tips and guidance for students entering the tech industry.",
-    date: "2026-10-20",
-    startTime: "6:30 PM",
-    endTime: "8:00 PM",
-    venue: "Online via Google Meet",
-    locationType: "online",
-    imageUrl: "",
-    registrationLink: "https://forms.gle/example-mentorship",
-    organizer: "Alumni Cell",
-    category: "career",
-    capacity: 100,
-    guestSpeakers: ["Harish Kumar"],
-  },
-  {
-    _id: "evt-004",
-    title: "Tech Skills Bootcamp",
-    description:
-      "A hands-on workshop covering the latest in AI, cloud computing and full-stack development, led by alumni engineers.",
-    date: "2026-11-28",
-    startTime: "9:00 AM",
-    endTime: "4:00 PM",
-    venue: "CSE Block, Velammal Engineering College",
-    locationType: "hybrid",
-    imageUrl:
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=900&q=80",
-    registrationLink: "",
-    organizer: "Department of AI & DS",
-    category: "workshop",
-    capacity: 80,
-    guestSpeakers: ["Divya S", "Sanjay Kumar", "Nithya R", "Karthik S"],
-  },
-  {
-    _id: "evt-005",
-    title: "Department Batch Meetup",
-    description:
-      "Celebrate your department's legacy and reconnect with batchmates over dinner and nostalgia.",
-    date: "2026-09-12",
-    startTime: "7:00 PM",
-    endTime: "10:00 PM",
-    venue: "Velammal Engineering College Grounds",
-    locationType: "physical",
-    imageUrl:
-      "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=900&q=80",
-    registrationLink: "https://forms.gle/example-batch-meetup",
-    organizer: "Department Alumni Committee",
-    category: "reunion",
-    capacity: null,
-    guestSpeakers: [],
-  },
-  {
-    _id: "evt-006",
-    title: "Startup & Innovation Summit",
-    description:
-      "Alumni entrepreneurs pitch their ideas and connect with investors and mentors from across the industry.",
-    date: "2027-01-18",
-    startTime: "11:00 AM",
-    endTime: "3:00 PM",
-    venue: "WeWork Prestige Central, Bengaluru",
-    locationType: "physical",
-    imageUrl:
-      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=900&q=80",
-    registrationLink: "https://forms.gle/example-startup-summit",
-    organizer: "Entrepreneurship Cell",
-    category: "networking",
-    capacity: 200,
-    guestSpeakers: ["Swetha P", "Adithya R"],
-  },
-  {
-    _id: "evt-007",
-    title: "AI in Industry Webinar",
-    description:
-      "A webinar exploring how alumni are applying AI and machine learning to solve real business problems.",
-    date: "2026-10-02",
-    startTime: "4:00 PM",
-    endTime: "5:30 PM",
-    venue: "Online via Zoom",
-    locationType: "online",
-    imageUrl:
-      "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=900&q=80",
-    registrationLink: "https://forms.gle/example-ai-webinar",
-    organizer: "Department of AI & DS",
-    category: "webinar",
-    capacity: 500,
-    guestSpeakers: ["Rohit K", "Ananya M"],
-  },
-  {
-    _id: "evt-008",
-    title: "Research & Innovation Seminar",
-    description:
-      "A look back at last year's seminar on emerging research areas, industry-academic collaboration and publishing.",
-    date: "2025-08-14",
-    startTime: "10:00 AM",
-    endTime: "1:00 PM",
-    venue: "Seminar Hall, Velammal Engineering College",
-    locationType: "physical",
-    imageUrl:
-      "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=900&q=80",
-    registrationLink: "",
-    organizer: "Research Cell",
-    category: "seminar",
-    capacity: 120,
-    guestSpeakers: ["Gokul R"],
-  },
-];
 
 const CATEGORY_LABELS = {
   "alumni-meet": "Alumni Meet",
@@ -543,54 +393,33 @@ function Events() {
   const [showPast, setShowPast] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    let timer;
+  const loadEvents = async () => {
+    setStatus("loading");
+    setErrorMessage("");
 
-    async function loadEvents() {
-      setStatus("loading");
+    try {
+      const data = await getAllEvents();
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.events)
+        ? data.events
+        : [];
 
-      if (USE_DUMMY_DATA) {
-        timer = setTimeout(() => {
-          if (!cancelled) {
-            setEvents(DUMMY_EVENTS);
-            setStatus("ready");
-          }
-        }, 500);
-
-        return;
-      }
-
-      try {
-        const res = await fetch(EVENTS_API_URL, {
-          headers: { Accept: "application/json" },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
-        }
-
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : data.events || [];
-
-        if (!cancelled) {
-          setEvents(list);
-          setStatus("ready");
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setErrorMessage(err.message || "Something went wrong.");
-          setStatus("error");
-        }
-      }
+      setEvents(list);
+      setStatus("ready");
+    } catch (err) {
+      console.error("Error loading events:", err);
+      setErrorMessage(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to load events from the server."
+      );
+      setStatus("error");
     }
+  };
 
+  useEffect(() => {
     loadEvents();
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
   }, []);
 
   const filteredEvents = useMemo(() => {
@@ -612,15 +441,18 @@ function Events() {
   }, [events, activeCategory, query, showPast]);
 
   const categoryCounts = useMemo(() => {
-    const base = { all: events.length };
-    events.forEach((ev) => {
+    const list = events.filter((ev) => (showPast ? true : isUpcoming(ev.date)));
+    const base = { all: list.length };
+    list.forEach((ev) => {
       base[ev.category] = (base[ev.category] || 0) + 1;
     });
     return base;
-  }, [events]);
+  }, [events, showPast]);
 
   return (
     <main className="ev-page">
+      <Navbar />
+
       {/* ---------- FILTER BAR (top of page, scrolls with page) ---------- */}
       <section className="ev-filter-bar">
         <div className="ev-container ev-filter-inner">
@@ -686,16 +518,48 @@ function Events() {
 
           {status === "error" && (
             <div className="ev-state ev-state--error">
+              <Calendar size={36} />
               <h3>Couldn't load events</h3>
               <p>{errorMessage}</p>
+              <button
+                type="button"
+                className="ev-retry-btn"
+                onClick={loadEvents}
+                style={{
+                  marginTop: "12px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "9px 22px",
+                  borderRadius: "20px",
+                  border: "none",
+                  background: "var(--maroon)",
+                  color: "#ffffff",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                <RefreshCw size={15} />
+                Try Again
+              </button>
             </div>
           )}
 
           {status === "ready" && filteredEvents.length === 0 && (
             <div className="ev-state">
               <Calendar size={34} />
-              <h3>No events match your filters</h3>
-              <p>Try a different category or clear your search.</p>
+              {events.length === 0 ? (
+                <>
+                  <h3>No events scheduled yet</h3>
+                  <p>Check back later for upcoming alumni meets and college events.</p>
+                </>
+              ) : (
+                <>
+                  <h3>No events match your filters</h3>
+                  <p>Try a different category or clear your search.</p>
+                </>
+              )}
             </div>
           )}
 

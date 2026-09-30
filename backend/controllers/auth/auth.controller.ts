@@ -253,6 +253,7 @@ export const login = async (
         email: payload.email,
         role: payload.role,
       },
+      token
     });
   } catch (error) {
     console.error("Login error:", error);

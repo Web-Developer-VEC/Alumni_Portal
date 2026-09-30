@@ -1,18 +1,34 @@
 import express from "express";
 import multer from "multer";
-import { authenticate } from "../../middleware/authenticate.js";
-import { createPost, getPosts } from "../../controllers/posts/post.controller.js";
+
+import {
+  createPost,
+  getPosts,
+} from "../../controllers/posts/post.controller.js";
 
 const router = express.Router();
 
-// Configure multer to store files in memory before uploading to S3
+// Store files in memory before uploading to S3
 const storage = multer.memoryStorage();
+
 const upload = multer({
   storage,
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit per file
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100 MB per file
+  },
 });
 
-router.post("/", authenticate, upload.array("files"), createPost);
-router.get("/", getPosts);
+// Create post
+router.post(
+  "/",
+  upload.array("files"),
+  createPost
+);
+
+// Get posts
+router.get(
+  "/",
+  getPosts
+);
 
 export default router;

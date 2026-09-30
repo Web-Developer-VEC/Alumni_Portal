@@ -40,6 +40,12 @@ import Navbar from "../../components/common/DashboardNavbar";
 import { getUser } from "../../api/session";
 
 const user = getUser();
+if(!user){
+  alert("Please login to create a post.");
+}
+console.log("User:", user);
+
+const user = getUser();
 if (!user) {
   alert("Please login to create a post.");
 }
@@ -779,225 +785,226 @@ export default function UploadPost({ onPublish, onCancel }) {
   };
 
   const handleFilesSelected = (fileList) => {
-    const incoming = Array.from(fileList || []);
+  const incoming = Array.from(fileList || []);
 
-    if (incoming.length === 0) return;
+  if (incoming.length === 0) return;
 
-    /*
-     * ---------------------------------------------------------
-     * 1. Check file types
-     * ---------------------------------------------------------
-     */
+  /*
+   * ---------------------------------------------------------
+   * 1. Check file types
+   * ---------------------------------------------------------
+   */
 
-    const invalidFiles = incoming.filter(
-      (file) => getFileCategory(file) === null
-    );
+  const invalidFiles = incoming.filter(
+    (file) => getFileCategory(file) === null
+  );
 
-    if (invalidFiles.length > 0) {
-      showAlert(
-        `Unsupported file type. Allowed files are:\n\n` +
+  if (invalidFiles.length > 0) {
+    showAlert(
+      `Unsupported file type. Allowed files are:\n\n` +
         `Images: JPG, JPEG, PNG, WEBP\n` +
         `Document: PDF, DOC, DOCX\n\n` +
         `Invalid files:\n${invalidFiles
           .map((file) => file.name)
           .join("\n")}`,
-        "Invalid file type"
-      );
-
-      return;
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * 2. Check file size
-     * ---------------------------------------------------------
-     */
-
-    const tooBig = incoming.filter(
-      (file) => file.size > MAX_FILE_BYTES
+      "Invalid file type"
     );
 
-    if (tooBig.length > 0) {
-      showAlert(
-        `Each file must be 10MB or smaller.\n\n` +
+    return;
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * 2. Check file size
+   * ---------------------------------------------------------
+   */
+
+  const tooBig = incoming.filter(
+    (file) => file.size > MAX_FILE_BYTES
+  );
+
+  if (tooBig.length > 0) {
+    showAlert(
+      `Each file must be 10MB or smaller.\n\n` +
         `These files are too large:\n${tooBig
           .map((file) => file.name)
           .join("\n")}`,
-        "File too large"
-      );
+      "File too large"
+    );
 
-      return;
-    }
+    return;
+  }
 
-    /*
-     * ---------------------------------------------------------
-     * 3. Determine incoming categories
-     * ---------------------------------------------------------
-     */
+  /*
+   * ---------------------------------------------------------
+   * 3. Determine incoming categories
+   * ---------------------------------------------------------
+   */
 
-    const incomingCategories = incoming.map(getFileCategory);
+  const incomingCategories = incoming.map(getFileCategory);
 
-    const incomingHasDocument = incomingCategories.includes("document");
-    const incomingHasImage = incomingCategories.includes("image");
+  const incomingHasDocument = incomingCategories.includes("document");
+  const incomingHasImage = incomingCategories.includes("image");
 
-    /*
-     * ---------------------------------------------------------
-     * 4. Prevent mixing document + image
-     * ---------------------------------------------------------
-     */
+  /*
+   * ---------------------------------------------------------
+   * 4. Prevent mixing document + image
+   * ---------------------------------------------------------
+   */
 
-    if (incomingHasDocument && incomingHasImage) {
-      showAlert(
-        "You cannot upload documents and images together.\n\n" +
+  if (incomingHasDocument && incomingHasImage) {
+    showAlert(
+      "You cannot upload documents and images together.\n\n" +
         "Please choose either:\n" +
         "• One document\n" +
         "OR\n" +
         "• Multiple images",
-        "Mixed file types"
-      );
-
-      return;
-    }
-
-    /*
-     * ---------------------------------------------------------
-     * 5. Check existing uploaded files
-     * ---------------------------------------------------------
-     */
-
-    const existingCategories = files.map((item) =>
-      getFileCategory(item.file)
+      "Mixed file types"
     );
 
-    const existingHasDocument = existingCategories.includes("document");
-    const existingHasImage = existingCategories.includes("image");
+    return;
+  }
 
-    /*
-     * ---------------------------------------------------------
-     * 6. Prevent adding images when a document exists
-     * ---------------------------------------------------------
-     */
+  /*
+   * ---------------------------------------------------------
+   * 5. Check existing uploaded files
+   * ---------------------------------------------------------
+   */
 
-    if (incomingHasImage && existingHasDocument) {
-      showAlert(
-        "A document is already attached.\n\n" +
+  const existingCategories = files.map((item) =>
+    getFileCategory(item.file)
+  );
+
+  const existingHasDocument = existingCategories.includes("document");
+  const existingHasImage = existingCategories.includes("image");
+
+  /*
+   * ---------------------------------------------------------
+   * 6. Prevent adding images when a document exists
+   * ---------------------------------------------------------
+   */
+
+  if (incomingHasImage && existingHasDocument) {
+    showAlert(
+      "A document is already attached.\n\n" +
         "You cannot add images while a document is attached.\n\n" +
         "Remove the document first if you want to upload images.",
-        "Cannot add images"
-      );
+      "Cannot add images"
+    );
 
-      return;
-    }
+    return;
+  }
 
-    /*
-     * ---------------------------------------------------------
-     * 7. Prevent adding documents when images exist
-     * ---------------------------------------------------------
-     */
+  /*
+   * ---------------------------------------------------------
+   * 7. Prevent adding documents when images exist
+   * ---------------------------------------------------------
+   */
 
-    if (incomingHasDocument && existingHasImage) {
-      showAlert(
-        "Images are already attached.\n\n" +
+  if (incomingHasDocument && existingHasImage) {
+    showAlert(
+      "Images are already attached.\n\n" +
         "You cannot add a document while images are attached.\n\n" +
         "Remove the images first if you want to upload a document.",
-        "Cannot add document"
+      "Cannot add document"
+    );
+
+    return;
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * 8. DOCUMENT RULE
+   *
+   * Only ONE document can be uploaded.
+   * ---------------------------------------------------------
+   */
+
+  if (incomingHasDocument) {
+    // A document is already present
+    if (existingHasDocument) {
+      showAlert(
+        "Only one document can be uploaded.",
+        "Document limit reached"
       );
 
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 8. DOCUMENT RULE
-     *
-     * Only ONE document can be uploaded.
-     * ---------------------------------------------------------
-     */
-
-    if (incomingHasDocument) {
-      // A document is already present
-      if (existingHasDocument) {
-        showAlert(
-          "Only one document can be uploaded.",
-          "Document limit reached"
-        );
-
-        return;
-      }
-
-      // User selected multiple documents at once
-      if (incoming.length > 1) {
-        showAlert(
-          "You can upload only one document.\n\n" +
+    // User selected multiple documents at once
+    if (incoming.length > 1) {
+      showAlert(
+        "You can upload only one document.\n\n" +
           "Please select a single PDF, DOC or DOCX file.",
-          "Document limit"
-        );
-
-        return;
-      }
-
-      const file = incoming[0];
-
-      const newFile = {
-        file,
-        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2)}`,
-        url: null,
-      };
-
-      setFiles([newFile]);
+        "Document limit"
+      );
 
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 9. IMAGE RULE
-     *
-     * Multiple images are allowed.
-     * ---------------------------------------------------------
-     */
+    const file = incoming[0];
 
-    if (incomingHasImage) {
-      const remainingSlots = LIMITS.maxFiles - files.length;
+    const newFile = {
+      file,
+      id: `${file.name}-${file.size}-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}`,
+      url: null,
+    };
 
-      if (remainingSlots <= 0) {
-        showAlert(
-          `You can attach up to ${LIMITS.maxFiles} images.`,
-          "Image limit reached"
-        );
+    setFiles([newFile]);
 
-        return;
-      }
+    return;
+  }
 
-      const accepted = incoming.slice(0, remainingSlots);
+  /*
+   * ---------------------------------------------------------
+   * 9. IMAGE RULE
+   *
+   * Multiple images are allowed.
+   * ---------------------------------------------------------
+   */
 
-      const skippedForLimit =
-        incoming.length - accepted.length;
+  if (incomingHasImage) {
+    const remainingSlots = LIMITS.maxFiles - files.length;
 
-      const withPreviews = accepted.map((file) => ({
-        file,
-        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2)}`,
-        url: URL.createObjectURL(file),
-      }));
+    if (remainingSlots <= 0) {
+      showAlert(
+        `You can attach up to ${LIMITS.maxFiles} images.`,
+        "Image limit reached"
+      );
 
-      setFiles((prev) => [...prev, ...withPreviews]);
+      return;
+    }
 
-      if (skippedForLimit > 0) {
-        showAlert(
-          `Only ${LIMITS.maxFiles} images are allowed in total.\n\n` +
-          `${skippedForLimit} image${skippedForLimit === 1 ? "" : "s"
+    const accepted = incoming.slice(0, remainingSlots);
+
+    const skippedForLimit =
+      incoming.length - accepted.length;
+
+    const withPreviews = accepted.map((file) => ({
+      file,
+      id: `${file.name}-${file.size}-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}`,
+      url: URL.createObjectURL(file),
+    }));
+
+    setFiles((prev) => [...prev, ...withPreviews]);
+
+    if (skippedForLimit > 0) {
+      showAlert(
+        `Only ${LIMITS.maxFiles} images are allowed in total.\n\n` +
+          `${skippedForLimit} image${
+            skippedForLimit === 1 ? "" : "s"
           } was not added.`,
-          "Image limit reached"
-        );
-      }
-
-      return;
+        "Image limit reached"
+      );
     }
-  };
+
+    return;
+  }
+};
 
   const removeFile = (id) => {
     setFiles((prev) => {
@@ -1051,8 +1058,81 @@ export default function UploadPost({ onPublish, onCancel }) {
 
     setIsSubmitting(true);
 
-    // ---- Payload (multipart/form-data) -------------------------------------
-    const formData = new FormData();
+  const put = (key, value) => {
+    const v = typeof value === "string" ? value.trim() : value;
+    if (v) formData.append(key, v);
+  };
+   
+  put("title", post.title);
+  formData.append("content", post.content);
+  put("link", post.link);
+  put("startTime", post.startTime);
+  put("endTime", post.endTime);
+  put("deadline", post.deadline);
+  put("company", post.company);
+  put("role", post.role);
+  put("eligibility", post.eligibility);
+  put("location", post.location);
+  put("package", post.package);
+
+  formData.append("type", post.type);
+  formData.append("freshers", String(post.freshers));
+  formData.append("remote", String(post.remote));
+  formData.append("referralAvailable", String(post.referralAvailable));
+  formData.append("email",user.email);
+  formData.append("Userrole",user.role);
+
+  post.skills.forEach((s) => {
+    formData.append("skills", s);
+  });
+
+  files.forEach((f) => {
+    formData.append("files", f.file);
+  });
+
+  try {
+  
+ console.log(formData);
+  await api.post("/posts", formData);
+ 
+
+  setSubmitted(true);
+
+  clearTimeout(toastTimer.current);
+  toastTimer.current = setTimeout(
+    () => setSubmitted(false),
+    2600
+  );
+
+  files.forEach((f) => {
+    if (f.url) {
+      URL.revokeObjectURL(f.url);
+    }
+  });
+
+  setPost(EMPTY_POST);
+  setContentText("");
+  setFiles([]);
+  setErrors({});
+  clearDraft();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+ catch (err) {
+    showAlert(
+      err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong while publishing. Please try again.",
+      "Couldn't publish post"
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
     const put = (key, value) => {
       const v = typeof value === "string" ? value.trim() : value;
@@ -1285,11 +1365,11 @@ export default function UploadPost({ onPublish, onCancel }) {
                         onChange={(e) => { handleFilesSelected(e.target.files); e.target.value = ""; }} />
                       <div className={styles.uploadIconWrap}><UploadCloud size={24} /></div>
                       <p className={styles.uploadText}>Click to upload files or drag and drop</p>
-                      <p className={styles.uploadHint}>
-                        Upload either one document or multiple images.
-                        Documents and images cannot be combined.
-                        Max 10MB per file, up to {LIMITS.maxFiles} images.
-                      </p>
+                     <p className={styles.uploadHint}>
+  Upload either one document or multiple images.
+  Documents and images cannot be combined.
+  Max 10MB per file, up to {LIMITS.maxFiles} images.
+</p>
 
                       {files.length > 0 && (
                         <div className={styles.attachmentGrid} onClick={(e) => e.stopPropagation()}>
@@ -1352,4 +1432,3 @@ export default function UploadPost({ onPublish, onCancel }) {
       )}
     </div>
   );
-}

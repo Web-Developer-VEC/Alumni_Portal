@@ -670,6 +670,7 @@
 .reject-button {
     border: 1px solid #e6bfc0;
     background: #ffffff;
+    min-height: 34px;
     color: #ba1a1a;
 }
 
@@ -681,6 +682,7 @@
 .approve-button {
     border: 1px solid #800000;
     background: #800000;
+    min-height: 34px;
     color: #ffffff;
 }
 

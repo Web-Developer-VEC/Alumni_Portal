@@ -89,4 +89,4 @@ export const postSchema = new Schema<IPost>(
   { timestamps: true }
 );
 
-export default model<IPost>("Post", postSchema);
+export default model<IPost>("Post", postSchema);

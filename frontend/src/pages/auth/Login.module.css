@@ -256,6 +256,34 @@ body {
 
     color: #7f1d30;
 }
+.signup-reference {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 12px;
+    font-family: "Poppins", sans-serif;
+    font-size: 12px;
+}
+
+.signup-reference span {
+    color: #777;
+}
+
+.signup-reference button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: #7a1f2b;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.signup-reference button:hover {
+    text-decoration: underline;
+}
 
 .brand-text h2 {
     font-family: Georgia, serif;
@@ -266,6 +294,9 @@ body {
     font-weight: 700;
 
     letter-spacing: 0.3px;
+}
+.brand-text h2 span {
+    color: #f5b000;
 }
 
 .brand-text p {
@@ -1474,7 +1505,7 @@ body {
     }
 
     .login-button {
-        height: 55px;
+        height: 45px;
     }
 }
 
