@@ -10,6 +10,7 @@ import eventRoutes from "./event/event.route.js";
 import landingRoutes from "./landing/landing.routes.js";
 
 router.use("/event", eventRoutes);
+router.use("/events", eventRoutes);
 router.use("/posts", postRoutes);
 router.use("/auth", authRoutes);
 router.use("/upload", uploadRoutes);
