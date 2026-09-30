@@ -171,13 +171,75 @@ function Login() {
         const error = searchParams.get("error");
         const token = searchParams.get("token");
 
+        // Google login failed
         if (error) {
             setGoogleError(error);
 
-            // Remove error from URL
-            setSearchParams({}, { replace: true });
+            const params = new URLSearchParams(searchParams);
+            params.delete("error");
+
+            setSearchParams(params, { replace: true });
+            return;
         }
-    }, [searchParams, setSearchParams]);
+
+        // Google login successful
+        if (token) {
+            try {
+                // Decode JWT payload
+                const payload = JSON.parse(atob(token.split(".")[1]));
+
+                const role = (payload.role || "").toUpperCase();
+
+                if (!role) {
+                    console.error("Role missing from Google token");
+                    setGoogleError("Unable to determine your account role.");
+                    return;
+                }
+
+                // Store Google login session
+                setSession({
+                    token,
+                    role,
+                    user: {
+                        id: payload.id,
+                        displayName: payload.displayName,
+                        email: payload.email,
+                        photo: payload.photo,
+                        role: payload.role,
+                    },
+                });
+
+                // Remove token from URL
+                const params = new URLSearchParams(searchParams);
+                params.delete("token");
+
+                setSearchParams(params, { replace: true });
+
+                // Redirect based on role
+                switch (role) {
+                    case "STUDENT":
+                        navigate("/student");
+                        break;
+
+                    case "ADMIN":
+                        navigate("/admin");
+                        break;
+
+                    case "ALUMNI":
+                        navigate("/alumni");
+                        break;
+
+                    default:
+                        setGoogleError("Invalid user role.");
+                        break;
+                }
+            } catch (error) {
+                console.error("Google token processing failed:", error);
+                setGoogleError("Unable to complete Google login.");
+            }
+        }
+    }, [searchParams, setSearchParams, navigate]);
+
 
 
     /*
