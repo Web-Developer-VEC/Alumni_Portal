@@ -166,16 +166,78 @@ function Login() {
         return () => clearInterval(timer);
     }, [isHovered]);
 
-    useEffect(() => {
-        const error = searchParams.get("error");
+useEffect(() => {
+    const error = searchParams.get("error");
+    const token = searchParams.get("token");
 
-        if (error) {
-            setGoogleError(error);
+    // Google login failed
+    if (error) {
+        setGoogleError(error);
 
-            // Remove error from URL
-            setSearchParams({}, { replace: true });
+        const params = new URLSearchParams(searchParams);
+        params.delete("error");
+
+        setSearchParams(params, { replace: true });
+        return;
+    }
+
+    // Google login successful
+    if (token) {
+        try {
+            // Decode JWT payload
+            const payload = JSON.parse(atob(token.split(".")[1]));
+
+            const role = (payload.role || "").toUpperCase();
+
+            if (!role) {
+                console.error("Role missing from Google token");
+                setGoogleError("Unable to determine your account role.");
+                return;
+            }
+
+            // Store Google login session
+            setSession({
+                token,
+                role,
+                user: {
+                    id: payload.id,
+                    displayName: payload.displayName,
+                    email: payload.email,
+                    photo: payload.photo,
+                    role: payload.role,
+                },
+            });
+
+            // Remove token from URL
+            const params = new URLSearchParams(searchParams);
+            params.delete("token");
+
+            setSearchParams(params, { replace: true });
+
+            // Redirect based on role
+            switch (role) {
+                case "STUDENT":
+                    navigate("/student");
+                    break;
+
+                case "ADMIN":
+                    navigate("/admin");
+                    break;
+
+                case "ALUMNI":
+                    navigate("/alumni");
+                    break;
+
+                default:
+                    setGoogleError("Invalid user role.");
+                    break;
+            }
+        } catch (error) {
+            console.error("Google token processing failed:", error);
+            setGoogleError("Unable to complete Google login.");
         }
-    }, [searchParams, setSearchParams]);
+    }
+}, [searchParams, setSearchParams, navigate]);
 
 
     /*
@@ -259,7 +321,6 @@ function Login() {
 
             const token = data.token;
             const user = data.user;
-
             // Get role from backend response
             const role = (
                 data.role ||
@@ -374,8 +435,7 @@ function Login() {
                         </div>
 
                         <div className={styles["brand-text"]}>
-                            <h2>VELAMMAL</h2>
-                            <p>ENGINEERING COLLEGE</p>
+                            <h2>VEC <span>CONNECT</span></h2>
                         </div>
 
                     </div>
@@ -629,7 +689,16 @@ function Login() {
                         {/* FORM */}
 
                         <form onSubmit={handleLogin}>
-
+                            <div className={styles["signup-reference"]}>
+                                <span>Don't have an account?</span>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/register")}
+                                >
+                                    
+                                    Register
+                                </button>
+                            </div>
                             {/* GOOGLE SIGNUP */}
                             <button
                                 type="button"
@@ -719,9 +788,9 @@ function Login() {
                                         type="text"
                                         placeholder="Enter your username"
                                         value={username}
-                                        onChange={(event) =>{
+                                        onChange={(event) => {
                                             setUsername(event.target.value),
-                                            setLoginError("")
+                                                setLoginError("")
                                         }}
                                     />
                                 </div>
@@ -747,7 +816,7 @@ function Login() {
                                         value={password}
                                         onChange={(event) => {
                                             setPassword(event.target.value),
-                                            setLoginError("")
+                                                setLoginError("")
                                         }}
                                     />
 

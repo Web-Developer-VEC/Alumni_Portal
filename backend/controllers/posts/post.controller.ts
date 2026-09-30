@@ -7,19 +7,6 @@ import Post from "../../models/post.js";
 import PrePost from "../../models/prePost.js";
 import User from "../../models/User.js";
 
-interface AuthenticatedUser {
-  id?: string;
-  displayName?: string;
-  email?: string;
-  photo?: string;
-}
-
-declare module "express-serve-static-core" {
-  interface Request {
-    user?: AuthenticatedUser;
-  }
-}
-
 const JOB_FIELDS = [
   "company",
   "role",
@@ -40,7 +27,12 @@ const JOB_FIELDS = [
   "tags",
   "applyLink",
   "applyLabel",
+  "author",
 ] as const;
+
+// =============================================
+// CREATE POST
+// =============================================
 
 export const createPost = async (
   req: Request,
@@ -48,12 +40,14 @@ export const createPost = async (
 ): Promise<void> => {
   try {
     // -----------------------------------------
-    // 1. Authentication
+    // 1. User information
     // -----------------------------------------
 
-   if (!req.user?.id || !req.user?.email) {
-      res.status(401).json({
-        message: "Unauthorized",
+    const { Userrole, email } = req.body;
+
+    if (!Userrole || !email) {
+      res.status(400).json({
+        message: "User role and email are required",
       });
       return;
     }
@@ -81,15 +75,26 @@ export const createPost = async (
     // 3. Validate dates
     // -----------------------------------------
 
-    if (
-      startTime &&
-      endTime &&
-      new Date(endTime) <= new Date(startTime)
-    ) {
-      res.status(400).json({
-        message: "End time must be after start time",
-      });
-      return;
+    if (startTime && endTime) {
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+
+      if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(end.getTime())
+      ) {
+        res.status(400).json({
+          message: "Invalid start or end time",
+        });
+        return;
+      }
+
+      if (end <= start) {
+        res.status(400).json({
+          message: "End time must be after start time",
+        });
+        return;
+      }
     }
 
     // -----------------------------------------
@@ -97,7 +102,8 @@ export const createPost = async (
     // -----------------------------------------
 
     const user = await User.findOne({
-      email: req.user.email,
+      role: Userrole,
+      email: email,
     });
 
     if (!user) {
@@ -110,30 +116,17 @@ export const createPost = async (
     // -----------------------------------------
     // 5. Create deterministic username hash
     // -----------------------------------------
-    //
-    // Username/email:
-    // Nithy Anantham
-    //
-    // SHA-256:
-    // 8f3a91c2d4...
-    //
-    // Only first 10 characters are used.
-    //
 
-    const username =
-      user.name ||
-      req.user.displayName ||
-      user.email?.split("@")[0] ||
-      "user";
+  
 
     const usernameHash = crypto
       .createHash("sha256")
-      .update(username)
+      .update(email)
       .digest("hex")
       .slice(0, 10);
 
     // -----------------------------------------
-    // 6. Upload files
+    // 6. Upload files to S3
     // -----------------------------------------
 
     let fileUrls: string[] = [];
@@ -145,51 +138,26 @@ export const createPost = async (
     if (files && files.length > 0) {
       fileUrls = await Promise.all(
         files.map(async (file) => {
-
-          // -----------------------------------
           // Generate random 5-character string
-          // -----------------------------------
-
           const randomString = crypto
             .randomBytes(4)
             .toString("base64url")
             .slice(0, 5);
 
-          // -----------------------------------
-          // Get file extension
-          // -----------------------------------
-
+          // Get extension
           const extension = path.extname(
             file.originalname
           );
 
-          // -----------------------------------
           // Final filename
-          // -----------------------------------
-          //
-          // Example:
-          // 8f3a91c2d4_a7K2q.pdf
-          //
-
           const fileName =
             `${usernameHash}_${randomString}${extension}`;
 
-          // -----------------------------------
           // S3 path
-          // -----------------------------------
-          //
-          // posts/
-          //   8f3a91c2d4/
-          //       8f3a91c2d4_a7K2q.pdf
-          //
-
           const s3Key =
             `posts/${usernameHash}/${fileName}`;
 
-          // -----------------------------------
           // Upload to S3
-          // -----------------------------------
-
           return uploadFileToS3(
             file.buffer,
             s3Key,
@@ -230,7 +198,8 @@ export const createPost = async (
           jobData.skills as string
         )
           .split(",")
-          .map((s) => s.trim());
+          .map((skill) => skill.trim())
+          .filter(Boolean);
       }
     }
 
@@ -248,12 +217,13 @@ export const createPost = async (
           jobData.tags as string
         )
           .split(",")
-          .map((s) => s.trim());
+          .map((tag) => tag.trim())
+          .filter(Boolean);
       }
     }
 
     // -----------------------------------------
-    // 10. Create MongoDB post in pre_post collection
+    // 10. Create PrePost
     // -----------------------------------------
 
     const post = await PrePost.create({
@@ -270,15 +240,15 @@ export const createPost = async (
       }),
 
       // MongoDB User _id
-      // NOT Google ID
       author: user._id,
 
-      // S3 URLs
+      // S3 file URLs
       fileUrls,
 
-      // Job data
+      // Job information
       ...jobData,
 
+      // Waiting for HOD approval
       status: "PENDING",
     });
 
@@ -288,7 +258,8 @@ export const createPost = async (
 
     res.status(201).json({
       success: true,
-      message: "Post submitted successfully and pending HOD approval",
+      message:
+        "Post submitted successfully and pending HOD approval",
       post,
     });
 
@@ -324,6 +295,7 @@ export const getPosts = async (
       });
 
     res.status(200).json({
+      success: true,
       posts,
     });
 
