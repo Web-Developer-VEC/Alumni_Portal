@@ -89,7 +89,7 @@ const Navbar = () => {
 
         {/* ================= DESKTOP NAV ================= */}
         <nav className={styles.desktopNavigation}>
-          <button className={styles.navItem}>
+          <button className={styles.navItem} onClick={() => navigate("/")}>
             <Home size={20} strokeWidth={1.9} />
             <span>Home</span>
           </button>
