@@ -446,6 +446,31 @@ const Navbar = () => {
         </div>
 
         <nav className={styles.desktopNavigation}>
+          <button className={styles.navItem} onClick={() => navigate("/")}>
+            <Home size={20} strokeWidth={1.9} />
+            <span>Home</span>
+          </button>
+          <button
+            className={styles.navItem}
+            onClick={() => navigate("/members")}
+          >
+            <Users size={20} strokeWidth={1.9} />
+            <span>Alumni</span>
+          </button>
+          <button
+            className={styles.navItem}
+            onClick={() => navigate("/events")}
+          >
+            <Calendar size={20} strokeWidth={1.9} />
+            <span>Events</span>
+          </button>
+          <button
+            className={`${styles.navItem} ${styles.addPostItem}`}
+            onClick={() => navigate("/createpost")}
+          >
+            <div className={styles.addIcon}>
+              <Plus size={21} strokeWidth={2.3} />
+            </div>
 
           {visibleNavigationItems.map(
             (item) => {
