@@ -1,0 +1,874 @@
+/* =====================================================
+   FOOTER WRAPPER
+===================================================== */
+
+.footer {
+  position: fixed;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 9999;
+
+  display: none;
+
+  justify-content: center;
+
+  padding: 0 20px 20px;
+
+  pointer-events: none;
+}
+
+
+/* =====================================================
+   MAIN NAVIGATION
+===================================================== */
+
+.navigation {
+  position: relative;
+
+  width: min(570px, calc(100vw - 40px));
+
+  height: 76px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding:
+    0 13px;
+
+  border-radius: 27px;
+
+  pointer-events: auto;
+
+  /* Main glass maroon */
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(70, 18, 28, 0.90),
+      rgba(102, 27, 42, 0.82),
+      rgba(72, 19, 30, 0.91)
+    );
+
+  backdrop-filter:
+    blur(25px)
+    saturate(160%);
+
+  -webkit-backdrop-filter:
+    blur(25px)
+    saturate(160%);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.16);
+
+  box-shadow:
+
+    0 25px 60px
+    rgba(50, 9, 17, 0.35),
+
+    0 8px 20px
+    rgba(50, 9, 17, 0.18),
+
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.17),
+
+    inset 0 -1px 0
+    rgba(0, 0, 0, 0.15);
+
+  overflow: visible;
+
+  animation:
+    navigationAppear
+    0.8s
+    cubic-bezier(.2,.8,.2,1)
+    forwards;
+}
+
+
+/* =====================================================
+   GLASS REFLECTION
+===================================================== */
+
+.navigation::before {
+  content: "";
+
+  position: absolute;
+
+  left: 10%;
+
+  top: 0;
+
+  width: 80%;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.5),
+      transparent
+    );
+
+  opacity: 0.7;
+}
+
+
+.navigation::after {
+  content: "";
+
+  position: absolute;
+
+  width: 180px;
+  height: 180px;
+
+  left: 50%;
+  top: -150px;
+
+  transform: translateX(-50%);
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 184, 194, 0.08);
+
+  filter: blur(35px);
+
+  pointer-events: none;
+}
+
+
+/* =====================================================
+   NAV GROUP
+===================================================== */
+
+.navGroup {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-around;
+
+  width: 42%;
+
+  height: 100%;
+}
+
+
+/* =====================================================
+   NAV ITEM
+===================================================== */
+
+.navItem {
+  position: relative;
+
+  width: 82px;
+  height: 62px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 5px;
+
+  border: none;
+
+  background: transparent;
+
+  color:
+    rgba(255, 255, 255, 0.52);
+
+  cursor: pointer;
+
+  border-radius: 17px;
+
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+
+
+/* =====================================================
+   ICON
+===================================================== */
+
+.iconWrapper {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  transition:
+    transform 0.35s
+    cubic-bezier(.2,.8,.2,1);
+}
+
+
+.navItem:hover {
+  color:
+    rgba(255,255,255,0.95);
+
+  background:
+    rgba(255,255,255,0.06);
+
+  transform:
+    translateY(-2px);
+}
+
+
+.navItem:hover .iconWrapper {
+  transform:
+    translateY(-2px)
+    scale(1.06);
+}
+
+
+/* =====================================================
+   ACTIVE ITEM
+===================================================== */
+
+.navItem.active {
+  color: white;
+
+  background:
+    rgba(255,255,255,0.07);
+}
+
+
+.navItem.active .iconWrapper {
+  animation:
+    activeIcon
+    0.45s
+    cubic-bezier(.2,.8,.2,1);
+}
+
+
+/* =====================================================
+   ACTIVE DOT
+===================================================== */
+
+.activeDot {
+  position: absolute;
+
+  width: 4px;
+  height: 4px;
+
+  left: 50%;
+  bottom: -7px;
+
+  transform:
+    translateX(-50%);
+
+  border-radius: 50%;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 0 10px
+    rgba(255,255,255,0.9),
+
+    0 0 18px
+    rgba(255,175,186,0.7);
+
+  animation:
+    dotAppear
+    0.35s
+    ease;
+}
+
+
+/* =====================================================
+   LABEL
+===================================================== */
+
+.label {
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 0.2px;
+
+  white-space: nowrap;
+
+  transition:
+    transform 0.3s ease;
+}
+
+
+.navItem.active .label {
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   CENTER ACTION
+===================================================== */
+
+.centerAction {
+  position: relative;
+
+  width: 94px;
+  height: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  z-index: 5;
+}
+
+
+/* =====================================================
+   PLUS BUTTON
+===================================================== */
+
+.plusButton {
+  position: absolute;
+
+  top: -32px;
+
+  width: 67px;
+  height: 67px;
+
+  padding: 4px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.95);
+
+  background:
+    rgba(255,255,255,0.94);
+
+  box-shadow:
+
+    0 10px 30px
+    rgba(60, 13, 23, 0.35),
+
+    0 3px 8px
+    rgba(60, 13, 23, 0.18),
+
+    0 0 0 6px
+    rgba(255,255,255,0.12);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.4s
+    cubic-bezier(.2,.8,.2,1),
+
+    box-shadow 0.4s ease,
+
+    background 0.3s ease;
+}
+
+
+/* =====================================================
+   PLUS INNER
+===================================================== */
+
+.plusInner {
+  width: 53px;
+  height: 53px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      145deg,
+      #671b2a,
+      #8e2c3e
+    );
+
+  box-shadow:
+
+    inset 0 1px 1px
+    rgba(255,255,255,0.25),
+
+    0 5px 14px
+    rgba(83,20,32,0.3);
+
+  transition:
+    transform 0.35s ease;
+}
+
+
+/* =====================================================
+   PLUS HOVER
+===================================================== */
+
+.plusButton:hover {
+  transform:
+    translateY(-5px)
+    scale(1.05);
+
+  box-shadow:
+
+    0 18px 35px
+    rgba(57, 10, 20, 0.38),
+
+    0 0 0 8px
+    rgba(255,255,255,0.14);
+}
+
+
+.plusButton:hover .plusInner {
+  transform:
+    rotate(90deg);
+}
+
+
+/* =====================================================
+   PLUS OPEN
+===================================================== */
+
+.plusOpen {
+  transform:
+    translateY(-5px);
+}
+
+
+.plusOpen .plusInner {
+  transform:
+    rotate(0deg);
+
+  background:
+    linear-gradient(
+      145deg,
+      #49121e,
+      #6d1b2b
+    );
+}
+
+
+/* =====================================================
+   PLUS LABEL
+===================================================== */
+
+.plusLabel {
+  position: absolute;
+
+  bottom: 8px;
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  color:
+    rgba(255,255,255,0.55);
+
+  opacity: 0;
+
+  transform:
+    translateY(4px);
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+
+.centerAction:hover .plusLabel,
+.plusOpen + .plusLabel {
+  opacity: 1;
+
+  transform:
+    translateY(0);
+}
+
+
+/* =====================================================
+   UPLOAD MENU
+===================================================== */
+
+.uploadMenu {
+  position: absolute;
+
+  bottom: 108px;
+
+  left: 50%;
+
+  transform:
+    translateX(-50%)
+    translateY(15px)
+    scale(0.94);
+
+  width: 220px;
+
+  padding: 10px;
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.88),
+      rgba(255,255,255,0.72)
+    );
+
+  backdrop-filter:
+    blur(25px)
+    saturate(160%);
+
+  -webkit-backdrop-filter:
+    blur(25px)
+    saturate(160%);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.9);
+
+  box-shadow:
+    0 25px 55px
+    rgba(59, 15, 25, 0.22),
+
+    inset 0 1px 0
+    rgba(255,255,255,0.9);
+
+  opacity: 0;
+
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s
+    cubic-bezier(.2,.8,.2,1),
+    visibility 0.3s;
+}
+
+
+.uploadMenuOpen {
+  opacity: 1;
+
+  visibility: visible;
+
+  pointer-events: auto;
+
+  transform:
+    translateX(-50%)
+    translateY(0)
+    scale(1);
+}
+
+
+/* =====================================================
+   UPLOAD ITEM
+===================================================== */
+
+.uploadItem {
+  width: 100%;
+
+  height: 48px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding:
+    0 10px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background: transparent;
+
+  color: #551c28;
+
+  font-size: 11px;
+
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease;
+}
+
+
+.uploadItem:hover {
+  background:
+    rgba(104, 29, 43, 0.07);
+
+  transform:
+    translateX(3px);
+}
+
+
+.uploadIcon {
+  width: 33px;
+  height: 33px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  color: #762435;
+
+  background:
+    rgba(112, 31, 45, 0.08);
+}
+
+
+/* =====================================================
+   ANIMATIONS
+===================================================== */
+
+@keyframes navigationAppear {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(35px)
+      scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+@keyframes activeIcon {
+
+  0% {
+    transform:
+      scale(0.8)
+      translateY(4px);
+  }
+
+  60% {
+    transform:
+      scale(1.12)
+      translateY(-2px);
+  }
+
+  100% {
+    transform:
+      scale(1)
+      translateY(0);
+  }
+
+}
+
+
+@keyframes dotAppear {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateX(-50%)
+      scale(0);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      scale(1);
+  }
+
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 700px) {
+
+  .footer {
+    padding:
+      0 12px 13px;
+  }
+
+  .navigation {
+    width:
+      calc(100vw - 24px);
+
+    height: 70px;
+
+    border-radius: 23px;
+
+    padding:
+      0 7px;
+  }
+
+  .navGroup {
+    width: 42%;
+  }
+
+  .navItem {
+    width: 70px;
+
+    height: 58px;
+  }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 500px) {
+
+  .footer {
+    padding:
+      0 8px 10px;
+  }
+
+  .navigation {
+    width:
+      calc(100vw - 16px);
+
+    height: 66px;
+
+    border-radius: 21px;
+
+    padding:
+      0 4px;
+  }
+
+  .navGroup {
+    width: 42%;
+  }
+
+  .navItem {
+    width: 58px;
+
+    height: 55px;
+
+    gap: 4px;
+  }
+
+  .navItem svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .label {
+    font-size: 8px;
+  }
+
+  .centerAction {
+    width: 72px;
+  }
+
+  .plusButton {
+    width: 61px;
+    height: 61px;
+
+    top: -29px;
+  }
+
+  .plusInner {
+    width: 49px;
+    height: 49px;
+  }
+
+  .plusInner svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .uploadMenu {
+    bottom: 97px;
+
+    width: 205px;
+  }
+
+}
+
+
+/* =====================================================
+   VERY SMALL MOBILE
+===================================================== */
+
+@media (max-width: 360px) {
+
+  .navItem {
+    width: 50px;
+  }
+
+  .navItem svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .label {
+    font-size: 7px;
+  }
+
+  .centerAction {
+    width: 65px;
+  }
+
+}
+@media (max-width: 1000px) {
+
+  .footer {
+    display: flex;
+
+    padding: 0 12px 13px;
+  }
+
+  .navigation {
+    width: calc(100vw - 24px);
+
+    height: 70px;
+
+    border-radius: 23px;
+
+    padding: 0 7px;
+  }
+
+}

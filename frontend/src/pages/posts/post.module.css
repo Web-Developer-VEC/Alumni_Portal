@@ -84,28 +84,47 @@
 
 /* ==========================================================================
    Toast
+   Fixed to always render bottom-center on mobile and bottom-right on
+   desktop, so it never appears to "jump" between positions.
    ========================================================================== */
 .toast {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: 1.5rem;
+  left: 50%;
+  right: auto;
   z-index: 50;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
+  width: calc(100% - 2rem);
+  max-width: 22rem;
   border-radius: var(--radius-xl);
   background: var(--color-ink-soft);
   padding: 0.875rem 1.25rem;
   color: #eef0ff;
   box-shadow: var(--shadow-2xl);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   pointer-events: none;
-  transform: translateY(6rem);
+  transform: translateX(-50%) translateY(6rem);
   opacity: 0;
 }
 .toastVisible {
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   opacity: 1;
+}
+@media (min-width: 640px) {
+  .toast {
+    left: auto;
+    right: 2rem;
+    width: auto;
+    max-width: none;
+    justify-content: flex-start;
+    transform: translateY(6rem);
+  }
+  .toastVisible {
+    transform: translateY(0);
+  }
 }
 .toastIcon {
   height: 1.25rem;
@@ -120,21 +139,35 @@
 
 /* ==========================================================================
    Report modal
+   Anchored near the top of the viewport with a fixed offset instead of
+   `align-items: center`, so it no longer shifts when mobile browser chrome
+   or the on-screen keyboard resizes the viewport. Scrolls internally if
+   content is taller than the available space.
    ========================================================================== */
 .reportOverlay {
   position: fixed;
   inset: 0;
   z-index: 50;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
   background: rgba(19, 27, 46, 0.4);
   backdrop-filter: blur(4px);
   padding: 1rem;
+  padding-top: max(1.5rem, env(safe-area-inset-top, 0px));
+}
+@media (min-width: 640px) {
+  .reportOverlay {
+    align-items: center;
+    padding-top: 1rem;
+  }
 }
 .reportModal {
   width: 100%;
   max-width: 32rem;
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
   border-radius: var(--radius-2xl);
   background: var(--color-white);
   padding: 1.5rem;
@@ -848,6 +881,7 @@
   height: 100%;
   width: 100%;
   object-fit: cover;
+  cursor: zoom-in;
   transition: transform 0.5s ease;
 }
 .jobCard:hover .heroImg {
@@ -929,23 +963,19 @@
   background: linear-gradient(to top, rgba(19, 27, 46, 0.75), transparent 60%);
 }
 .heroBadges {
-  position: absolute;
-  left: 1rem;
-  top: 1rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 .badge {
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-surface);
   padding: 0.25rem 0.75rem;
   font-family: var(--font-head);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  backdrop-filter: blur(8px);
   color: var(--color-maroon);
 }
 .badgeFreshers {
@@ -966,6 +996,7 @@
   left: 1rem;
   right: 1rem;
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.75rem;
@@ -992,8 +1023,9 @@
   }
 }
 .heroReferralPill {
-  display: none;
-  flex-shrink: 0;
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 0.375rem;
   border-radius: var(--radius-xl);
@@ -1004,16 +1036,115 @@
   font-weight: 600;
   color: var(--color-ink);
   backdrop-filter: blur(8px);
-}
-@media (min-width: 640px) {
-  .heroReferralPill {
-    display: flex;
-  }
+  overflow-wrap: anywhere; /* long emails wrap instead of overflowing */
 }
 .heroReferralIcon {
   height: 1rem;
   width: 1rem;
+  flex-shrink: 0;
   color: var(--color-green);
+}
+
+/* -- image carousel controls (hero banner + fullscreen viewer) -- */
+.imgNav {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: rgba(19, 27, 46, 0.72);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.imgNav:hover {
+  background: rgba(19, 27, 46, 0.9);
+}
+.imgNavPrev {
+  left: 0.75rem;
+}
+.imgNavNext {
+  right: 0.75rem;
+}
+.imgCount {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  border-radius: var(--radius-full);
+  background: rgba(19, 27, 46, 0.72);
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+/* -- fullscreen image viewer -- */
+.imgLightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.imgLightboxBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  pointer-events: none;
+}
+.imgLightboxCount {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+.imgLightboxClose {
+  pointer-events: auto;
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+}
+.imgLightboxStage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.imgLightboxImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  will-change: transform;
+  -webkit-user-drag: none;
 }
 
 /* -- PDF document viewer (LinkedIn style) -- */
@@ -1445,10 +1576,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0;
 }
 .commentItem {
   display: flex;
   gap: 0.75rem;
+  min-width: 0;
   border-radius: var(--radius-xl);
   background: var(--color-white);
   padding: 0.875rem;
@@ -1470,6 +1603,8 @@
 .commentContent {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .commentTop {
   display: flex;
@@ -1492,6 +1627,31 @@
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--color-text);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.commentTextClamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+.commentMoreBtn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-green-accent);
+}
+.commentMoreBtn:hover {
+  text-decoration: underline;
 }
 .commentForm {
   display: flex;
@@ -2152,12 +2312,12 @@
 .emptyResetBtn {
   margin-top: 1.25rem;
   border-radius: var(--radius-xl);
-  background: var(--color-green-accent);
+  background: var(--color-yellow);
   padding: 0.625rem 1.5rem;
   font-family: var(--font-head);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-black);
   border: none;
   cursor: pointer;
   transition: opacity 0.15s ease;
