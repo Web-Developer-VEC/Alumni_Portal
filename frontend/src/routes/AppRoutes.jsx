@@ -35,15 +35,18 @@ function AppRoute() {
             <Route path="/members" element={<Members />} />
             <Route path="/events" element={<Events />} />
             <Route path="/student" element={<StudentLayout />} >
+                <Route index element={<AlumniJobFeed />} />
                 <Route path="gallery" element={<Gallery />}/>
             </Route>
 
             <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AlumniJobFeed />} />
                 <Route path="gallery" element={<Gallery />}/>
                 <Route path="alumni-approval" element={<AlumniApproval />} />
                 <Route path="post-approval" element={<PostApproval />} />
             </Route>
             <Route path="/alumni" element={<AlumniLayout/>}>
+                <Route index element={<AlumniJobFeed />} />
                 <Route path="gallery" element={<Gallery />}/>
             </Route>
             {/* <Route path="/feedback" element={<FeedbackForm />} /> */}
