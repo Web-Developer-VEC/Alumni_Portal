@@ -28,93 +28,93 @@ import styles from "./Login.module.css";
 const alumni = [
     {
         id: 1,
-        name: "Sanjay P.",
+        name: "SAMUEL STEPHEN DEVA PAUL L",
         role: "Product Designer",
         company: "Adobe",
         batch: "2019",
         image:
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Sam.webp",
     },
     {
         id: 2,
-        name: "Arjun K.",
+        name: "SIDDHARTH MAGESH",
         role: "Software Engineer",
         company: "Google",
         batch: "2020",
         image:
-            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Sid.webp",
     },
     {
         id: 3,
-        name: "Priya S.",
+        name: "PRANESH KUMAR V",
         role: "Data Scientist",
         company: "Microsoft",
         batch: "2018",
         image:
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Pranesh.webp",
     },
     {
         id: 4,
-        name: "Karthik R.",
+        name: "LEROY JESLYN",
         role: "Product Manager",
         company: "Amazon",
         batch: "2017",
         image:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Leroy.webp",
     },
     {
         id: 5,
-        name: "Meera V.",
+        name: "SRI HARI M",
         role: "UX Researcher",
         company: "Deloitte",
         batch: "2021",
         image:
-            "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Srihari.webp",
     },
     {
         id: 6,
-        name: "Rahul M.",
+        name: "RAGESHWARAN HR",
         role: "Cloud Engineer",
         company: "AWS",
         batch: "2018",
         image:
-            "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Rageshwaran.webp",
     },
     {
         id: 7,
-        name: "Divya R.",
+        name: "MOHAMED YASIR A",
         role: "Software Developer",
         company: "Infosys",
         batch: "2020",
         image:
-            "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Yasir.webp",
     },
     {
         id: 8,
-        name: "Vishal S.",
+        name: "VASANTHA RAJA S",
         role: "Tech Lead",
         company: "Zoho",
         batch: "2016",
         image:
-            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Vasanth.webp",
     },
     {
         id: 9,
-        name: "Ananya K.",
+        name: "GOKULRAMANAN V",
         role: "AI Engineer",
         company: "NVIDIA",
         batch: "2022",
         image:
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Gokul.webp",
     },
     {
         id: 10,
-        name: "Aditya N.",
+        name: "WAATSON J",
         role: "Backend Engineer",
         company: "Flipkart",
         batch: "2019",
         image:
-            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=700&q=85",
+            "https://adminvec.s3.ap-south-1.amazonaws.com/static/images/web_team/pilot_batch/Watson.webp",
     },
 ];
 
@@ -429,16 +429,6 @@ function Login() {
 
                 <section className={styles["alumni-section"]}>
 
-                    {/* VEC QUOTE */}
-                    <div className={styles["vec-quote"]} aria-hidden="true">
-                        <p>
-                            <span>Once a VECian</span>
-                            <span>Always a VECian</span>
-                        </p>
-
-                        <div className={styles["vec-quote-line"]}></div>
-                    </div>
-
                     {/* BRAND */}
                     <div className={styles["college-brand"]}>
 
@@ -537,11 +527,6 @@ function Login() {
                                             />
 
                                             <div className={styles["image-overlay"]}></div>
-
-                                            <div className={styles["batch-badge"]}>
-                                                '{person.batch.slice(-2)}
-                                            </div>
-
                                         </div>
 
 
@@ -613,37 +598,20 @@ function Login() {
                             <Users size={25} />
 
                             <div>
-                                <strong>25,000+</strong>
+                                <strong>250+</strong>
                                 <span>Alumni Network</span>
                             </div>
 
                         </div>
 
-
                         <div className={styles["stat-divider"]}></div>
-
-
-                        <div className={styles["stat-item"]}>
-
-                            <Globe2 size={25} />
-
-                            <div>
-                                <strong>30+</strong>
-                                <span>Countries</span>
-                            </div>
-
-                        </div>
-
-
-                        <div className={styles["stat-divider"]}></div>
-
 
                         <div className={styles["stat-item"]}>
 
                             <BriefcaseBusiness size={25} />
 
                             <div>
-                                <strong>500+</strong>
+                                <strong>50+</strong>
                                 <span>Leading Companies</span>
                             </div>
 
