@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import {
     ArrowRight,
     CalendarCheck,
@@ -16,98 +17,7 @@ import {
     X,
 } from "lucide-react";
 import styles from "./PostApproval.module.css";
-
-const INITIAL_POSTS = [
-    {
-        id: 1,
-        alumni: {
-            name: "Priyadharsan T",
-            batch: "AI & DS '26",
-            designation: "Software Engineer",
-            avatar: null,
-            verified: true,
-        },
-        postedAgo: "3m ago",
-        company: "ABC Technologies",
-        role: "Software Engineer Intern",
-        eligibility:
-            "B.E / B.Tech (CSE, IT, AI&DS) · 2026 batch · CGPA 7.0+",
-        location: "Chennai, Tamil Nadu",
-        type: "Internship",
-        freshers: true,
-        referralAvailable: true,
-        package: "₹25,000 / month",
-        deadline: "30 Sep 2026",
-        skills: ["Python", "React", "Node.js", "Machine Learning"],
-        description:
-            "ABC Technologies is looking for enthusiastic students and recent graduates to join their engineering team as Software Engineer Interns. Candidates will get an opportunity to work on real-world applications and collaborate with experienced developers.",
-        tags: ["Hiring", "Internship", "Freshers"],
-        directReferral: "Direct Team Referral",
-        image:
-            "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=70",
-        applyLink: "https://example.com/careers",
-        views: 0,
-        likes: 0,
-        comments: 0,
-    },
-    {
-        id: 2,
-        alumni: {
-            name: "Rahul Raj",
-            batch: "AI & DS '23",
-            designation: "Data Scientist",
-            avatar: null,
-            verified: true,
-        },
-        postedAgo: "2h ago",
-        company: "Freshworks",
-        role: "Introduction to Generative AI",
-        eligibility: "Students from all departments · Open to all batches",
-        location: "College Auditorium",
-        type: "Full-time",
-        package: null,
-        deadline: null,
-        skills: ["Generative AI", "LLMs", "Prompt Engineering"],
-        description:
-            "An interactive guest lecture covering the fundamentals, applications and future of Generative AI.",
-        tags: ["Guest Lecture", "AI"],
-        image:
-            "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=70",
-        applyLink: "",
-        views: 0,
-        likes: 0,
-        comments: 0,
-    },
-    {
-        id: 3,
-        alumni: {
-            name: "Kadhirvelavan M",
-            batch: "EEE '25",
-            designation: "Frontend Developer",
-            avatar: null,
-            verified: true,
-        },
-        postedAgo: "1d ago",
-        company: "Tech Studio",
-        role: "Frontend Developer - Part Time",
-        eligibility: "Students with React and JavaScript experience",
-        location: "Bangalore, Karnataka",
-        type: "Part-time",
-        freshers: true,
-        package: "₹18,000 / month",
-        deadline: "15 Oct 2026",
-        skills: ["React", "JavaScript", "CSS"],
-        description:
-            "Looking for a part-time frontend developer to help build and maintain responsive web applications.",
-        tags: ["Hiring", "Frontend"],
-        image:
-            "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=70",
-        applyLink: "",
-        views: 0,
-        likes: 0,
-        comments: 0,
-    },
-];
+import api from "../../api/api";
 
 const initials = (name = "") =>
     name
@@ -127,12 +37,119 @@ const formatCount = (count = 0) => {
 };
 
 const PostApproval = () => {
-    const [posts, setPosts] = useState(INITIAL_POSTS);
+    const [posts, setPosts] = useState([]);
     const [popup, setPopup] = useState({
         type: null,
         post: null,
     });
     const [rejectionReason, setRejectionReason] = useState("");
+
+    // ============================================================
+    // FETCH PENDING POSTS
+    // ============================================================
+
+    const fetchPendingPosts = async () => {
+        try {
+            const response = await api.get("/hod/posts/pending");
+
+            if (!response.data?.success) {
+                throw new Error(
+                    response.data?.message ||
+                        "Failed to fetch pending posts"
+                );
+            }
+
+            /*
+             * Backend returns:
+             *
+             * {
+             *   _id,
+             *   author: {
+             *      name,
+             *      email,
+             *      photo,
+             *      displayName
+             *   },
+             *   ...
+             * }
+             *
+             * The existing UI expects:
+             *
+             * alumni: {
+             *    name,
+             *    avatar,
+             *    ...
+             * }
+             *
+             * So we only transform the API data here.
+             * UI is untouched.
+             */
+
+            const formattedPosts = (response.data.posts || []).map(
+                (post) => ({
+                    ...post,
+
+                    // Keep MongoDB ID separately for API operations
+                    id: post._id,
+
+                    // Adapt backend author to existing UI structure
+                    alumni: {
+                        ...(post.alumni || {}),
+                        ...(post.author || {}),
+
+                        name:
+                            post.author?.name ||
+                            post.author?.displayName ||
+                            post.alumni?.name ||
+                            "Unknown Alumni",
+
+                        avatar:
+                            post.author?.photo ||
+                            post.alumni?.avatar ||
+                            null,
+
+                        batch:
+                            post.author?.batch ||
+                            post.alumni?.batch ||
+                            post.batch ||
+                            "",
+
+                        designation:
+                            post.author?.designation ||
+                            post.alumni?.designation ||
+                            post.designation ||
+                            "",
+
+                        verified:
+                            post.author?.verified ??
+                            post.alumni?.verified ??
+                            post.verified ??
+                            false,
+                    },
+                })
+            );
+
+            setPosts(formattedPosts);
+        } catch (error) {
+            console.error(
+                "Failed to fetch pending posts:",
+                error
+            );
+
+            console.error(
+                "Backend response:",
+                error.response?.data
+            );
+        }
+    };
+
+    useEffect(() => {
+        fetchPendingPosts();
+    }, []);
+
+    // ============================================================
+    // OPEN APPROVE POPUP
+    // ============================================================
 
     const openApprove = (post) => {
         setPopup({
@@ -140,6 +157,10 @@ const PostApproval = () => {
             post,
         });
     };
+
+    // ============================================================
+    // OPEN REJECT POPUP
+    // ============================================================
 
     const openReject = (post) => {
         setRejectionReason("");
@@ -149,39 +170,100 @@ const PostApproval = () => {
         });
     };
 
+    // ============================================================
+    // CLOSE POPUP
+    // ============================================================
+
     const closePopup = () => {
         setPopup({
             type: null,
             post: null,
         });
+
         setRejectionReason("");
     };
 
-    const approvePost = () => {
+    // ============================================================
+    // APPROVE POST
+    // ============================================================
+
+    const approvePost = async () => {
         if (!popup.post) return;
 
-        console.log("Approved post:", popup.post);
+        try {
+            const postId = popup.post._id || popup.post.id;
 
-        setPosts((current) =>
-            current.filter((post) => post.id !== popup.post.id)
-        );
+            const response = await api.patch(
+                `/hod/posts/approve/${postId}`
+            );
 
-        closePopup();
+            if (!response.data?.success) {
+                throw new Error(
+                    response.data?.message ||
+                        "Failed to approve post"
+                );
+            }
+
+            // Remove from existing UI after successful backend action
+            setPosts((current) =>
+                current.filter(
+                    (post) =>
+                        (post._id || post.id) !== postId
+                )
+            );
+
+            closePopup();
+        } catch (error) {
+            console.error("Approve post error:", error);
+
+            console.error(
+                "Backend response:",
+                error.response?.data
+            );
+        }
     };
 
-    const rejectPost = () => {
+    // ============================================================
+    // REJECT POST
+    // ============================================================
+
+    const rejectPost = async () => {
         if (!popup.post || !rejectionReason.trim()) return;
 
-        console.log("Rejected post:", {
-            post: popup.post,
-            reason: rejectionReason.trim(),
-        });
+        try {
+            const postId = popup.post._id || popup.post.id;
 
-        setPosts((current) =>
-            current.filter((post) => post.id !== popup.post.id)
-        );
+            const response = await api.patch(
+                `/hod/posts/reject/${postId}`,
+                {
+                    reason: rejectionReason.trim(),
+                }
+            );
 
-        closePopup();
+            if (!response.data?.success) {
+                throw new Error(
+                    response.data?.message ||
+                        "Failed to reject post"
+                );
+            }
+
+            // Remove from existing UI after successful backend action
+            setPosts((current) =>
+                current.filter(
+                    (post) =>
+                        (post._id || post.id) !== postId
+                )
+            );
+
+            closePopup();
+        } catch (error) {
+            console.error("Reject post error:", error);
+
+            console.error(
+                "Backend response:",
+                error.response?.data
+            );
+        }
     };
 
     return (
@@ -227,7 +309,6 @@ const PostApproval = () => {
                                 onApprove={openApprove}
                                 onReject={openReject}
                             />
-
                         </section>
                     ))}
                 </div>
@@ -401,7 +482,9 @@ const AdminPostCard = ({ post, onApprove, onReject }) => {
 
                 <div className={styles["hero-badges"]}>
                     {post.type && (
-                        <span className={styles["badge"]}>{post.type}</span>
+                        <span className={styles["badge"]}>
+                            {post.type}
+                        </span>
                     )}
 
                     {post.freshers && (
@@ -456,7 +539,11 @@ const AdminPostCard = ({ post, onApprove, onReject }) => {
                 <div className={styles["meta-grid"]}>
                     <MetaPill
                         icon={<WalletCards />}
-                        label={post.type === "Internship" ? "Stipend" : "Package"}
+                        label={
+                            post.type === "Internship"
+                                ? "Stipend"
+                                : "Package"
+                        }
                         value={post.package}
                     />
 
