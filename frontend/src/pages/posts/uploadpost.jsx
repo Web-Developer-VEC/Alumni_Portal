@@ -36,6 +36,8 @@ import {
   File as FileIcon,
 } from "lucide-react";
 import styles from "./uploadpost.module.css";
+import Navbar from "../../components/common/DashboardNavbar";
+
 
 const DRAFT_KEY = "alumniPortal.createPost.draft.v2";
 const AUTOSAVE_DELAY_MS = 800;
@@ -832,60 +834,90 @@ export default function UploadPost({ onPublish, onCancel }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    if (!validate()) return;
-    setIsSubmitting(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // ---- Payload (multipart/form-data) -------------------------------------
-    // Text fields are trimmed and empty ones are left out.
-    // Dates go as plain "YYYY-MM-DD" so the server stores the same calendar day
-    // (a local-midnight ISO string shifts back a day when converted to UTC in India).
-    const formData = new FormData();
-    const put = (key, value) => {
-      const v = typeof value === "string" ? value.trim() : value;
-      if (v) formData.append(key, v);
-    };
-    put("title", post.title);
-    formData.append("content", post.content); // HTML from the rich-text box
-    put("link", post.link);
-    put("startTime", post.startTime);
-    put("endTime", post.endTime);
-    put("deadline", post.deadline);
-    put("company", post.company);
-    put("role", post.role);
-    put("eligibility", post.eligibility);
-    put("location", post.location);
-    put("package", post.package);
-    formData.append("type", post.type);
-    formData.append("freshers", String(post.freshers));
-    formData.append("remote", String(post.remote));
-    formData.append("referralAvailable", String(post.referralAvailable));
-    post.skills.forEach((s) => formData.append("skills", s));
-    files.forEach((f) => formData.append("files", f.file)); // server converts these to fileUrls
+  if (isSubmitting) return;
+  if (!validate()) return;
 
-    try {
-      await api.post("/posts", formData);
-       setSubmitted(true);
-      clearTimeout(toastTimer.current);
-      toastTimer.current = setTimeout(() => setSubmitted(false), 2600);
-      files.forEach((f) => { if (f.url) URL.revokeObjectURL(f.url); });
-      setPost(EMPTY_POST);
-      setContentText("");
-      setFiles([]);
-      setErrors({});
-      clearDraft();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) {
-      showAlert(
-        err?.response?.data?.message || err?.message || "Something went wrong while publishing. Please try again.",
-        "Couldn't publish post"
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+  setIsSubmitting(true);
+
+  // ---- Payload (multipart/form-data) -------------------------------------
+  const formData = new FormData();
+
+  const put = (key, value) => {
+    const v = typeof value === "string" ? value.trim() : value;
+    if (v) formData.append(key, v);
   };
+
+  put("title", post.title);
+  formData.append("content", post.content);
+  put("link", post.link);
+  put("startTime", post.startTime);
+  put("endTime", post.endTime);
+  put("deadline", post.deadline);
+  put("company", post.company);
+  put("role", post.role);
+  put("eligibility", post.eligibility);
+  put("location", post.location);
+  put("package", post.package);
+
+  formData.append("type", post.type);
+  formData.append("freshers", String(post.freshers));
+  formData.append("remote", String(post.remote));
+  formData.append("referralAvailable", String(post.referralAvailable));
+
+  post.skills.forEach((s) => {
+    formData.append("skills", s);
+  });
+
+  files.forEach((f) => {
+    formData.append("files", f.file);
+  });
+
+  try {
+  
+ console.log(formData);
+  await api.post("/posts", formData);
+ 
+
+  setSubmitted(true);
+
+  clearTimeout(toastTimer.current);
+  toastTimer.current = setTimeout(
+    () => setSubmitted(false),
+    2600
+  );
+
+  files.forEach((f) => {
+    if (f.url) {
+      URL.revokeObjectURL(f.url);
+    }
+  });
+
+  setPost(EMPTY_POST);
+  setContentText("");
+  setFiles([]);
+  setErrors({});
+  clearDraft();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+ catch (err) {
+    showAlert(
+      err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong while publishing. Please try again.",
+      "Couldn't publish post"
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   // Falls back to browser-back when no onCancel prop is passed.
   const leavePage = () => (onCancel ? onCancel() : window.history.back());
@@ -914,7 +946,9 @@ export default function UploadPost({ onPublish, onCancel }) {
 
   return (
     <div className={styles.page}>
-     
+      {/* <TopHeader /> */}
+      <Navbar />
+
       <main className={styles.main}>
         <div className={styles.container}>
           {/* 2) Title container */}

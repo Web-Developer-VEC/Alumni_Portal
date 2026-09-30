@@ -3,7 +3,7 @@ import { createPortal, flushSync } from "react-dom";
 // import * as pdfjsLib from "pdfjs-dist";
 // import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import styles from "./post.module.css";
-import Navbar from "../../components/common/DashboardNavbar";
+
 import api from "../../api/api";
 
 // pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -2131,8 +2131,7 @@ export default function AlumniJobFeed({ onReport, conversations = [] }) {
   return (
     <div className={styles.page}>
       <FontStyles />
-      <Navbar />
-
+      {/* <TopHeader /> */}
       <main className={styles.main}>
         <div className={styles.container}>
           <StatsBanner jobs={jobs} />

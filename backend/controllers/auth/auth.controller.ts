@@ -245,6 +245,7 @@ export const login = async (
     res.status(200).json({
       success: true,
       message: "Login successful.",
+      token,
       user: {
         id: payload.id,
         displayName: payload.displayName,
@@ -252,6 +253,7 @@ export const login = async (
         email: payload.email,
         role: payload.role,
       },
+      token
     });
   } catch (error) {
     console.error("Login error:", error);
