@@ -166,16 +166,78 @@ function Login() {
         return () => clearInterval(timer);
     }, [isHovered]);
 
-    useEffect(() => {
-        const error = searchParams.get("error");
+useEffect(() => {
+    const error = searchParams.get("error");
+    const token = searchParams.get("token");
 
-        if (error) {
-            setGoogleError(error);
+    // Google login failed
+    if (error) {
+        setGoogleError(error);
 
-            // Remove error from URL
-            setSearchParams({}, { replace: true });
+        const params = new URLSearchParams(searchParams);
+        params.delete("error");
+
+        setSearchParams(params, { replace: true });
+        return;
+    }
+
+    // Google login successful
+    if (token) {
+        try {
+            // Decode JWT payload
+            const payload = JSON.parse(atob(token.split(".")[1]));
+
+            const role = (payload.role || "").toUpperCase();
+
+            if (!role) {
+                console.error("Role missing from Google token");
+                setGoogleError("Unable to determine your account role.");
+                return;
+            }
+
+            // Store Google login session
+            setSession({
+                token,
+                role,
+                user: {
+                    id: payload.id,
+                    displayName: payload.displayName,
+                    email: payload.email,
+                    photo: payload.photo,
+                    role: payload.role,
+                },
+            });
+
+            // Remove token from URL
+            const params = new URLSearchParams(searchParams);
+            params.delete("token");
+
+            setSearchParams(params, { replace: true });
+
+            // Redirect based on role
+            switch (role) {
+                case "STUDENT":
+                    navigate("/student");
+                    break;
+
+                case "ADMIN":
+                    navigate("/admin");
+                    break;
+
+                case "ALUMNI":
+                    navigate("/alumni");
+                    break;
+
+                default:
+                    setGoogleError("Invalid user role.");
+                    break;
+            }
+        } catch (error) {
+            console.error("Google token processing failed:", error);
+            setGoogleError("Unable to complete Google login.");
         }
-    }, [searchParams, setSearchParams]);
+    }
+}, [searchParams, setSearchParams, navigate]);
 
 
     /*
@@ -373,7 +435,7 @@ function Login() {
                         </div>
 
                         <div className={styles["brand-text"]}>
-                            <h2>VEC CONNECT</h2>
+                            <h2>VEC <span>CONNECT</span></h2>
                         </div>
 
                     </div>
@@ -633,7 +695,8 @@ function Login() {
                                     type="button"
                                     onClick={() => navigate("/register")}
                                 >
-                                    Sign up
+                                    
+                                    Register
                                 </button>
                             </div>
                             {/* GOOGLE SIGNUP */}

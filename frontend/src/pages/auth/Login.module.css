@@ -295,6 +295,9 @@ body {
 
     letter-spacing: 0.3px;
 }
+.brand-text h2 span {
+    color: #f5b000;
+}
 
 .brand-text p {
     margin-top: 2px;
