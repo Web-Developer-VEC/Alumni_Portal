@@ -20,10 +20,15 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists (return all stored details except password)
+    const existingUser = await User.findOne({ email }).select("-password").lean();
+
     if (existingUser) {
-      res.status(400).json({ message: "User already exists with this email" });
+      res.status(400).json({
+        success: false,
+        message: "User already exists with this email",
+        user: existingUser,
+      });
       return;
     }
 
@@ -73,14 +78,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check again if user exists
-    const existingUser = await User.findOne({ email });
+    // Check again if user exists (return all stored details except password)
+    const existingUser = await User.findOne({ email }).select("-password").lean();
+
     if (existingUser) {
-      res.status(400).json({ message: "User already exists with this email" });
+      res.status(400).json({
+        success: false,
+        message: "User already exists with this email",
+        user: existingUser,
+      });
       return;
     }
-
-
 
     res.status(200).json({ message: "OTP verified successfully" });
   } catch (error) {
@@ -91,20 +99,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const setPassword = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email,password } = req.body;
+    const { email, password } = req.body;
 
-    if (!email ||!password) {
+    if (!email || !password) {
       res.status(400).json({ message: "Email and password are required" });
       return;
     }
 
     // Verify OTP again for security before setting password
-    
-
-  
-
-    
-    
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
@@ -114,8 +116,7 @@ export const setPassword = async (req: Request, res: Response): Promise<void> =>
     const newUser = new User({
       email,
       password: hashedPassword,
-      role: "ALUMNI"
-
+      role: "ALUMNI",
     });
     await newUser.save();
 
