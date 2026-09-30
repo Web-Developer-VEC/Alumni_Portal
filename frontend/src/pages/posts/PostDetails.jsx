@@ -3,17 +3,11 @@ import { createPortal, flushSync } from "react-dom";
 // import * as pdfjsLib from "pdfjs-dist";
 // import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import styles from "./post.module.css";
-import Navbar from "../../components/common/DashboardNavbar";
+
+import api from "../../api/api";
 
 // pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-/* -------------------------------------------------------------------------- */
-/*  Self-contained: no index.html edits needed.                              */
-/*  - Icons are inline SVG (no icon font to fail to load).                   */
-/*  - Fonts (Plus Jakarta Sans / Inter) are pulled in via post.module.css,   */
-/*    which falls back to your system sans-serif if the network request is  */
-/*    ever blocked, so it never reverts to a serif font.                    */
-/* -------------------------------------------------------------------------- */
 function FontStyles() {
   return (
     <style>{`
@@ -23,186 +17,140 @@ function FontStyles() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Sample data – replace with your API response                              */
-/*  Only `company`, `role`, `eligibility` and `applyLink` are required.       */
-/*  Every other field is optional; the card hides what is missing.            */
-/*  Media: use either `image: "url"` (portrait or landscape) or              */
-/*  `pdf: { url, title }`. If both exist, the PDF wins.                       */
+/*  API layer: GET /api/posts/  →  job objects used by the UI                 */
 /* -------------------------------------------------------------------------- */
-const SAMPLE_JOBS = [
-  {
-    id: 1,
-    alumni: {
-      name: "Dwayne F. White",
-      batch: "AI & DS '21",
-      designation: "Software Engineer",
-      avatar: null,
-      verified: true,
-    },
-    postedAgo: "3m ago",
-    company: "Zoho Corporation",
-    role: "Frontend Developer",
-    eligibility:
-      "B.E / B.Tech (CSE, IT, AI&DS) · 2025 & 2026 batch · CGPA 7.0+",
-    location: "Chennai, Tamil Nadu",
-    type: "Full-time",
-    freshers: true,
-    package: "₹6 – 8 LPA",
-    deadline: "30 Sep 2026",
-    skills: ["React", "JavaScript (ES6+)", "Tailwind CSS", "REST APIs"],
-    description:
-      "Our Core Platform team is expanding to support next-generation enterprise workflows. Looking for ambitious engineering graduates skilled in component-driven UI architecture, predictable client state, and responsive web performance standards.",
-    tags: ["Hiring", "Frontend", "Freshers"],
-    directReferral: "Direct Team Referral",
-    image:
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=70",
-    applyLink: "https://www.zoho.com/careers/",
-    applyLabel: "Apply on Zoho Careers Portal",
-    views: 5874,
-    likes: 215,
-    comments: [
-      {
-        id: 1,
-        user: "Varun Kumar",
-        tag: "Batch '25",
-        text: "Applied Dwayne! Sent you my referral ID via Alumni Connect direct message. Thank you so much!",
-      },
-      {
-        id: 2,
-        user: "Dwayne F. White",
-        tag: "OP",
-        text: "Noted Varun! Reviewing profiles and forwarding to the engineering hiring manager this evening.",
-      },
-    ],
-  },
-  {
-    id: 2,
-    alumni: {
-      name: "Ananya Krishnan",
-      batch: "AI & DS '19",
-      designation: "Data Scientist",
-      avatar: null,
-      verified: true,
-    },
-    postedAgo: "2h ago",
-    company: "Freshworks",
-    role: "Data Analyst Intern",
-    eligibility: "Pre-final year students · Basic SQL & Python",
-    location: "Hybrid (Bengaluru)",
-    type: "Internship",
-    remote: true,
-    referralAvailable: true,
-    package: "₹25,000 / month",
-    deadline: "15 Oct 2026",
-    ppo: "Performance Based",
-    skills: ["Python", "PostgreSQL", "Power BI", "ETL Pipelines"],
-    description:
-      "Excited to mentor a motivated junior engineer or data enthusiast! You will work closely with customer lifecycle datasets, configure executive dashboards, and translate behavioral funnels into actionable feature recommendations.",
-    tags: [],
-    image: null, // no image → gradient monogram banner
-    applyLink: "https://www.freshworks.com/company/careers/",
-    applyLabel: "Apply on Freshworks Internship Hub",
-    views: 1320,
-    likes: 84,
-    comments: [],
-  },
-  {
-    id: 3,
-    alumni: {
-      name: "Rahul Menon",
-      batch: "AI & DS '18",
-      designation: "Engineering Manager",
-      avatar: null,
-      verified: true,
-    },
-    postedAgo: "1d ago",
-    company: "Amazon Web Services (AWS)",
-    role: "Software Development Engineer (SDE – I)",
-    eligibility: "2026 graduates · No active backlogs · Strong DSA",
-    location: "Hyderabad / Bengaluru",
-    type: "Full-time",
-    highVolumeReferrals: true,
-    package: "Competitive Industry Tier",
-    deadline: "10 Oct 2026",
-    hiringLoop: "OA + 3 Tech Interviews",
-    skills: ["DSA", "Java / C++", "System Design", "Distributed Systems"],
-    description:
-      "AWS Cloud Storage & Fleet Orchestration is hiring talented engineers to architect planetary-scale distributed microservices. Requires high problem-solving velocity, clean modular coding practices, and concurrency rigor.",
-    pledge:
-      "Active internal referrals open specifically for Velammal Engineering College students with a strong foundation in core algorithms and object-oriented architectures. I will review and endorse the top candidates directly to the AWS hiring committee.",
-    tags: [],
-    image:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=70",
-    applyLink: "https://www.amazon.jobs/",
-    applyLabel: "Apply on Amazon Jobs Hub",
-    views: 9410,
-    likes: 502,
-    comments: [
-      {
-        id: 1,
-        user: "Sanjay Kumar",
-        tag: "Batch '24",
-        text: "Sir, does the internal referral require LeetCode contest rating verification or university project repositories?",
-      },
-    ],
-  },
-  {
-    id: 4,
-    alumni: {
-      name: "Meera Iyer",
-      batch: "AI & DS '20",
-      designation: "Product Analyst",
-      avatar: null,
-      verified: true,
-    },
-    postedAgo: "2d ago",
-    company: "Razorpay",
-    role: "Product Analyst",
-    eligibility: "2026 graduates · Strong SQL",
-    location: "Bengaluru",
-    type: "Full-time",
-    package: "₹8 – 10 LPA",
-    deadline: "20 Oct 2026",
-    skills: ["SQL", "Excel", "Product Thinking"],
-    description:
-      "Full job description attached as a document. Swipe through the pages.",
-    tags: [],
-    // Put a PDF in your project's /public folder, e.g. public/sample-jd.pdf
-    pdf: { url: "/sample-jd.pdf", title: "Product Analyst · Job Description" },
-    applyLink: "https://razorpay.com/jobs/",
-    applyLabel: "Apply on Razorpay Careers",
-    views: 640,
-    likes: 41,
-    comments: [],
-  },
-  {
-    id: 5,
-    alumni: {
-      name: "Karthik R",
-      batch: "AI & DS '23",
-      designation: "Software Engineer",
-      avatar: null,
-      verified: true,
-    },
-    postedAgo: "3d ago",
-    company: "Postman",
-    role: "Backend Intern",
-    eligibility: "Pre-final year students",
-    location: "Bengaluru",
-    type: "Internship",
-    package: "₹30,000 / month",
-    deadline: "12 Oct 2026",
-    skills: ["Node.js", "REST APIs"],
-    description: "Hiring poster shared by our team, in portrait format.",
-    tags: [],
-    image: "https://picsum.photos/seed/hiring/800/1000",
-    applyLink: "https://www.postman.com/company/careers/",
-    applyLabel: "Apply on Postman Careers",
-    views: 320,
-    likes: 19,
-    comments: [],
-  },
-];
+const FILE_BASE = (api.defaults.baseURL || "").replace(/\/api\/?$/, "");
+
+// Normalises stored paths: Windows backslashes (multer on Windows), leading
+// slashes, spaces, and prefixes relative paths with the API host.
+const absUrl = (u) => {
+  if (!u) return null;
+  const clean = String(u).replace(/\\/g, "/");
+  if (/^https?:\/\//i.test(clean)) return clean;
+  return encodeURI(`${FILE_BASE}/${clean.replace(/^\/+/, "")}`);
+};
+
+const isPdfUrl = (u) => /\.pdf(\?.*)?$/i.test(u || "");
+
+const formatDate = (d) => {
+  if (!d) return null;
+  const date = new Date(d);
+  if (isNaN(date)) return null;
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+function timeAgo(ts) {
+  if (!ts) return "";
+  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return formatDate(ts);
+}
+
+/* Works whether `author` is a populated user object or a bare ObjectId. */
+const mapAuthor = (author) => {
+  const a = author && typeof author === "object" ? author : {};
+  return {
+    id: a._id || (typeof author === "string" ? author : undefined),
+    name: a.name || a.fullName || a.username || "Alumni",
+    batch:
+      a.batch ||
+      (a.graduationYear ? `Batch '${String(a.graduationYear).slice(-2)}` : ""),
+    designation: a.designation || a.role || "Alumni",
+    avatar: absUrl(a.avatar || a.profilePic || a.profileImage),
+    verified: a.verified ?? true,
+  };
+};
+
+function mapPostToJob(p) {
+  const files = (p.fileUrls || []).map(absUrl).filter(Boolean);
+  const pdf = files.find(isPdfUrl);
+  const images = files.filter((f) => !isPdfUrl(f)); // all images, not just the first
+  const role = p.role || p.title;
+  const company = p.company || p.title;
+
+  return {
+    id: p._id,
+    alumni: mapAuthor(p.author),
+    postedAgo: timeAgo(p.createdAt),
+    createdTs: p.createdAt ? new Date(p.createdAt).getTime() : 0,
+    company,
+    role,
+    eligibility: p.eligibility,
+    location: p.location,
+    type: p.type,
+    freshers: p.freshers,
+    remote: p.remote,
+    referralAvailable: p.referralAvailable,
+    highVolumeReferrals: p.highVolumeReferrals,
+    directReferral: p.directReferral,
+    package: p.package,
+    deadline: formatDate(p.deadline),
+    deadlineTs: p.deadline ? new Date(p.deadline).getTime() : Infinity,
+    ppo: p.ppo,
+    hiringLoop: p.hiringLoop,
+    skills: p.skills || [],
+    description: p.content,
+    pledge: p.pledge,
+    tags: p.tags || [],
+    images,
+    pdf: pdf ? { url: pdf, title: `${role} · ${company}` } : undefined,
+    applyLink: p.applyLink || p.link,
+    applyLabel: p.applyLabel,
+    views: p.views || 0,
+    likes: p.likes || 0,
+    comments: (p.comments || []).map((c) => {
+      const u = c.user && typeof c.user === "object" ? c.user : {};
+      return {
+        id: c._id,
+        user: u.name || u.fullName || u.username || "User",
+        tag: u.batch || "",
+        text: c.text,
+      };
+    }),
+  };
+}
+
+function usePosts() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await api.get("/posts/", { signal: controller.signal });
+        const data = res.data;
+        const list = Array.isArray(data)
+          ? data
+          : data?.posts || data?.data || [];
+        setJobs(list.map(mapPostToJob));
+      } catch (err) {
+        if (err.code === "ERR_CANCELED" || err.name === "CanceledError") return;
+        setError(
+          err.response?.data?.message || err.message || "Something went wrong",
+        );
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [reloadKey]);
+
+  return { jobs, loading, error, reload: () => setReloadKey((k) => k + 1) };
+}
 
 const REPORT_REASONS = [
   "Spam or misleading",
@@ -244,20 +192,6 @@ function Icon({ name, className = "", filled = false }) {
         <svg {...base} {...stroke}>
           <circle cx="11" cy="11" r="7" />
           <path d="m21 21-4.3-4.3" />
-        </svg>
-      );
-    case "notifications":
-      return (
-        <svg {...base} {...stroke}>
-          <path d="M6 8a6 6 0 0 1 12 0c0 5.5 2 7.5 2 7.5H4S6 13.5 6 8Z" />
-          <path d="M10.3 19a1.9 1.9 0 0 0 3.4 0" />
-        </svg>
-      );
-    case "person":
-      return (
-        <svg {...base} {...stroke}>
-          <circle cx="12" cy="8" r="4" />
-          <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
         </svg>
       );
     case "verified":
@@ -540,7 +474,12 @@ function ReportModal({ onClose, onSubmit }) {
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 10);
-    return () => clearTimeout(t);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = prevOverflow;
+    };
   }, []);
 
   const close = () => {
@@ -548,13 +487,10 @@ function ReportModal({ onClose, onSubmit }) {
     setTimeout(onClose, 180);
   };
 
-  return (
+  return createPortal(
     <div
       className={styles.reportOverlay}
       onPointerDown={(e) => {
-        // Only arm the close if the press itself started on the backdrop,
-        // not inside the modal (prevents a mobile "ghost click" landing on
-        // the backdrop from closing the sheet after a scroll/tap inside it).
         e.currentTarget.dataset.pressedBackdrop = e.target === e.currentTarget;
       }}
       onClick={(e) => {
@@ -638,83 +574,19 @@ function ReportModal({ onClose, onSubmit }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Share modal — Instagram-style: recently-messaged people first, then a    */
-/*  "More" tile that falls back to the OS share sheet (navigator.share).     */
-/*                                                                            */
-/*  MOCK_CONVERSATIONS stands in for your real chat/DM data. Wire it up by   */
-/*  replacing it with your actual conversation list, each with a             */
-/*  `lastMessageAt` (timestamp, ms) — the list below is already sorted       */
-/*  newest-first by that field, which is what makes "recent" people surface  */
-/*  at the top, exactly like Instagram's share sheet.                        */
+/*  Share modal                                                               */
+/*  `conversations` should come from your chat/DM API:                        */
+/*  [{ id, name, tag, avatar, isGroup, lastMessageAt (ms timestamp) }]        */
+/*  Until that is wired up, the list is empty and "More" (native share /      */
+/*  copy link) still works.                                                   */
 /* -------------------------------------------------------------------------- */
-const now = Date.now();
-const MOCK_CONVERSATIONS = [
-  {
-    id: 1,
-    name: "Varun Kumar",
-    tag: "Batch '25",
-    avatar: null,
-    lastMessageAt: now - 2 * 60 * 1000,
-  },
-  {
-    id: 2,
-    name: "Priya Raghavan",
-    tag: "Batch '26",
-    avatar: null,
-    lastMessageAt: now - 18 * 60 * 1000,
-  },
-  {
-    id: 3,
-    name: "Sanjay Kumar",
-    tag: "Batch '24",
-    avatar: null,
-    lastMessageAt: now - 60 * 60 * 1000,
-  },
-  {
-    id: 4,
-    name: "AI & DS Placement Group",
-    tag: "Group · 42 members",
-    avatar: null,
-    isGroup: true,
-    lastMessageAt: now - 3 * 60 * 60 * 1000,
-  },
-  {
-    id: 5,
-    name: "Meera Iyer",
-    tag: "Batch '25",
-    avatar: null,
-    lastMessageAt: now - 22 * 60 * 60 * 1000,
-  },
-  {
-    id: 6,
-    name: "Karthik R",
-    tag: "Batch '23",
-    avatar: null,
-    lastMessageAt: now - 2 * 24 * 60 * 60 * 1000,
-  },
-];
-
-function timeAgo(ts) {
-  const mins = Math.round((Date.now() - ts) / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.round(hrs / 24)}d ago`;
-}
-
-function ShareModal({
-  job,
-  conversations = MOCK_CONVERSATIONS,
-  onClose,
-  onSend,
-  showToast,
-}) {
+function ShareModal({ job, conversations = [], onClose, onSend, showToast }) {
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
@@ -722,13 +594,8 @@ function ShareModal({
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 10);
-    // Lock the page behind the sheet from scrolling while it's open — matters
-    // most on mobile, where a scrollable body under a bottom sheet fights the
-    // sheet's own scroll for touch events.
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    // Don't autofocus the search field on touch devices — it pops the
-    // keyboard immediately and eats most of the sheet's height on mobile.
     if (window.matchMedia?.("(pointer: fine)").matches) {
       inputRef.current?.focus();
     }
@@ -743,10 +610,11 @@ function ShareModal({
     setTimeout(onClose, 180);
   };
 
-  // Recently-messaged people first — this is just a sort by lastMessageAt,
-  // so hooking this up to a real inbox is a matter of swapping the data source.
   const sorted = useMemo(
-    () => [...conversations].sort((a, b) => b.lastMessageAt - a.lastMessageAt),
+    () =>
+      [...conversations].sort(
+        (a, b) => (b.lastMessageAt || 0) - (a.lastMessageAt || 0),
+      ),
     [conversations],
   );
   const filtered = sorted.filter((c) =>
@@ -756,7 +624,6 @@ function ShareModal({
   const shareUrl = `${window.location.origin}${window.location.pathname}#job-${job.id}`;
   const shareText = `${job.alumni.name} shared a job opening: ${job.role} at ${job.company}`;
 
-  // Tapping a person only selects/deselects them — nothing sends until Share is pressed.
   const toggleSelect = (contact) => {
     setSelectedIds((ids) =>
       ids.includes(contact.id)
@@ -777,9 +644,6 @@ function ShareModal({
     close();
   };
 
-  // "More" — opens the OS share sheet (WhatsApp, Gmail, etc. on Android).
-  // Falls back to copying the link when the browser has no share support
-  // (navigator.share only exists on HTTPS or localhost).
   const openMore = async () => {
     if (navigator.share) {
       try {
@@ -790,7 +654,6 @@ function ShareModal({
         });
         close();
       } catch (err) {
-        // AbortError just means the user dismissed the sheet; keep ours open.
         if (err?.name !== "AbortError") {
           console.error("Share failed:", err);
           showToast("Couldn't open the share sheet");
@@ -799,7 +662,6 @@ function ShareModal({
       return;
     }
 
-    // Fallback: no navigator.share (e.g. page is not on HTTPS)
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(shareUrl);
@@ -836,12 +698,10 @@ function ShareModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drag handle — mobile-only affordance that this is a sheet, not a dialog */}
         <div className={styles.shareDragHandle}>
           <span className={styles.shareDragHandleBar} />
         </div>
 
-        {/* Header */}
         <div className={styles.shareHeader}>
           <div className={styles.shareHeaderInfo}>
             <h3 className={styles.shareTitle}>Share</h3>
@@ -858,7 +718,6 @@ function ShareModal({
           </button>
         </div>
 
-        {/* Search */}
         <div className={styles.shareSearchWrap}>
           <div className={styles.shareSearchBox}>
             <Icon name="search" className={styles.shareSearchIcon} />
@@ -872,12 +731,16 @@ function ShareModal({
           </div>
         </div>
 
-        {/* Contacts — fluid auto-fill grid, so it self-adjusts to any screen
-            width instead of jumping between fixed 3/4-column breakpoints. */}
         <div className={styles.shareContactsWrap}>
-          {!query && <p className={styles.shareRecentLabel}>Recent</p>}
+          {!query && filtered.length > 0 && (
+            <p className={styles.shareRecentLabel}>Recent</p>
+          )}
           {filtered.length === 0 ? (
-            <p className={styles.shareEmptyText}>No one found.</p>
+            <p className={styles.shareEmptyText}>
+              {conversations.length === 0
+                ? "No recent chats. Use More to share elsewhere."
+                : "No one found."}
+            </p>
           ) : (
             <div className={styles.shareGrid}>
               {filtered.map((c) => {
@@ -919,7 +782,6 @@ function ShareModal({
           )}
         </div>
 
-        {/* Footer actions */}
         <div className={styles.shareFooter}>
           <button
             onClick={handleShareSelected}
@@ -956,7 +818,7 @@ function MetaPill({ icon, label, value }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  PDF document viewer (LinkedIn style)                                      */
+/*  PDF document viewer                                                       */
 /* -------------------------------------------------------------------------- */
 function PdfPage({ pdf, pageNumber }) {
   const canvasRef = useRef(null);
@@ -977,7 +839,6 @@ function PdfPage({ pdf, pageNumber }) {
       const scale = Math.min(cssWidth * dpr, 1600) / base.width;
       const viewport = page.getViewport({ scale });
 
-      // Draw off-screen first, then copy: no flicker when changing pages.
       const off = document.createElement("canvas");
       off.width = viewport.width;
       off.height = viewport.height;
@@ -988,7 +849,7 @@ function PdfPage({ pdf, pageNumber }) {
       try {
         await task.promise;
       } catch {
-        return; // cancelled
+        return;
       }
       if (cancelled) return;
       canvas.width = off.width;
@@ -1130,29 +991,55 @@ function PdfViewer({ src, title }) {
   const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  // useEffect(() => {
-  //   let cancelled = false;
-  //   const task = pdfjsLib.getDocument(src);
-  //   task.promise
-  //     .then(async (doc) => {
-  //       const first = await doc.getPage(1);
-  //       if (cancelled) return;
-  //       const vp = first.getViewport({ scale: 1 });
-  //       setRatio(vp.width / vp.height);
-  //       setNumPages(doc.numPages);
-  //       setPdf(doc);
-  //     })
-  //     .catch(() => {
-  //       if (!cancelled) setError(true);
-  //     });
-  //   return () => {
-  //     cancelled = true;
-  //     task.destroy();
-  //   };
-  // }, [src]);
+  useEffect(() => {
+    let cancelled = false;
+    let task = null;
+    const controller = new AbortController();
 
-  const go = (d) =>
-    setPage((p) => Math.min(numPages || 1, Math.max(1, p + d)));
+    (async () => {
+      try {
+        setError(false);
+        // Plain cross-origin GET: no cookies, no Authorization header (the
+        // axios instance adds a Bearer token, which S3 rejects and which also
+        // forces a CORS preflight).
+        const res = await fetch(src, {
+          mode: "cors",
+          credentials: "omit",
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const buffer = await res.arrayBuffer();
+        if (cancelled) return;
+
+        task = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
+        const doc = await task.promise;
+        const first = await doc.getPage(1);
+        if (cancelled) return;
+
+        const vp = first.getViewport({ scale: 1 });
+        setRatio(vp.width / vp.height);
+        setNumPages(doc.numPages);
+        setPdf(doc);
+      } catch (err) {
+        if (cancelled || err?.name === "AbortError") return;
+        console.error(
+          "PDF load failed:",
+          src,
+          err,
+          "\nIf this says 'Failed to fetch', the S3 bucket is missing a CORS rule for this origin.",
+        );
+        setError(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      task?.destroy();
+    };
+  }, [src]);
+
+  const go = (d) => setPage((p) => Math.min(numPages || 1, Math.max(1, p + d)));
 
   return (
     <div className={styles.pdfWrap}>
@@ -1205,9 +1092,256 @@ function PdfViewer({ src, title }) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Image lightbox: fullscreen image, X at top, pinch / double-tap to zoom    */
+/* -------------------------------------------------------------------------- */
+function ImageLightbox({ images, index, onChange, onClose, alt }) {
+  const [view, setView] = useState({ s: 1, x: 0, y: 0 });
+  const [animate, setAnimate] = useState(false);
+  const stageRef = useRef(null);
+  const g = useRef({});
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const multiple = images.length > 1;
+
+  const go = (d) => onChange((index + d + images.length) % images.length);
+
+  // reset zoom whenever the image changes
+  useEffect(() => {
+    setView({ s: 1, x: 0, y: 0 });
+    g.current = {};
+  }, [index]);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (multiple && e.key === "ArrowRight")
+        onChange((index + 1) % images.length);
+      if (multiple && e.key === "ArrowLeft")
+        onChange((index - 1 + images.length) % images.length);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [index, images.length, multiple, onChange, onClose]);
+
+  // keep the zoomed image from being dragged fully out of view
+  const clamp = (s, x, y) => {
+    const el = stageRef.current;
+    const w = el?.clientWidth || 0;
+    const h = el?.clientHeight || 0;
+    const mx = (w * (s - 1)) / 2;
+    const my = (h * (s - 1)) / 2;
+    return {
+      s,
+      x: Math.max(-mx, Math.min(mx, x)),
+      y: Math.max(-my, Math.min(my, y)),
+    };
+  };
+
+  const dist = (t) =>
+    Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+
+  const onTouchStart = (e) => {
+    setAnimate(false);
+    const t = e.touches;
+    const v = viewRef.current;
+    if (t.length === 2) {
+      g.current = { mode: "pinch", d0: dist(t), s0: v.s, x0: v.x, y0: v.y };
+    } else if (t.length === 1) {
+      g.current = {
+        lastTap: g.current.lastTap,
+        mode: v.s > 1 ? "pan" : "swipe",
+        sx: t[0].clientX,
+        sy: t[0].clientY,
+        x0: v.x,
+        y0: v.y,
+        moved: false,
+      };
+    }
+  };
+
+  const onTouchMove = (e) => {
+    const t = e.touches;
+    const c = g.current;
+    if (c.mode === "pinch" && t.length === 2) {
+      const s = Math.min(5, Math.max(1, (c.s0 * dist(t)) / c.d0));
+      setView(clamp(s, c.x0, c.y0));
+    } else if (t.length === 1 && c.sx != null) {
+      const dx = t[0].clientX - c.sx;
+      const dy = t[0].clientY - c.sy;
+      if (Math.abs(dx) + Math.abs(dy) > 8) c.moved = true;
+      if (c.mode === "pan") {
+        setView(clamp(viewRef.current.s, c.x0 + dx, c.y0 + dy));
+      }
+    }
+  };
+
+  const onTouchEnd = (e) => {
+    const c = g.current;
+
+    // one finger left after a pinch: carry on as a pan
+    if (e.touches.length === 1) {
+      const v = viewRef.current;
+      g.current = {
+        mode: v.s > 1 ? "pan" : "swipe",
+        sx: e.touches[0].clientX,
+        sy: e.touches[0].clientY,
+        x0: v.x,
+        y0: v.y,
+        moved: true,
+      };
+      return;
+    }
+    if (e.touches.length > 0) return;
+
+    const t = e.changedTouches[0];
+
+    // swipe to change image (only when not zoomed)
+    if (c.mode === "swipe" && multiple) {
+      const dx = t.clientX - c.sx;
+      const dy = t.clientY - c.sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+        go(dx < 0 ? 1 : -1);
+        g.current = {};
+        return;
+      }
+    }
+
+    // double tap: toggle zoom
+    if ((c.mode === "swipe" || c.mode === "pan") && !c.moved) {
+      const now = Date.now();
+      if (now - (c.lastTap || 0) < 300) {
+        setAnimate(true);
+        setView(
+          viewRef.current.s > 1 ? { s: 1, x: 0, y: 0 } : { s: 2.5, x: 0, y: 0 },
+        );
+        g.current = {};
+      } else {
+        g.current = { lastTap: now };
+      }
+      return;
+    }
+
+    // snap back to fit if pinched out to (almost) 1x
+    if (viewRef.current.s < 1.02) setView({ s: 1, x: 0, y: 0 });
+    g.current = {};
+  };
+
+  // desktop: mouse wheel zoom
+  const onWheel = (e) => {
+    setAnimate(false);
+    const v = viewRef.current;
+    const s = Math.min(5, Math.max(1, v.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
+    setView(clamp(s, v.x, v.y));
+  };
+
+  return createPortal(
+    <div className={styles.imgLightbox} role="dialog" aria-modal="true">
+      <div className={styles.imgLightboxBar}>
+        {multiple ? (
+          <span className={styles.imgLightboxCount}>
+            {index + 1} / {images.length}
+          </span>
+        ) : (
+          <span />
+        )}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className={styles.imgLightboxClose}
+        >
+          <Icon name="close" className={styles.icon24} />
+        </button>
+      </div>
+
+      <div
+        ref={stageRef}
+        className={styles.imgLightboxStage}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onWheel={onWheel}
+      >
+        <img
+          src={images[index]}
+          alt={alt}
+          draggable={false}
+          className={styles.imgLightboxImg}
+          style={{
+            transform: `translate(${view.x}px, ${view.y}px) scale(${view.s})`,
+            transition: animate ? "transform 0.2s ease" : "none",
+          }}
+        />
+      </div>
+
+      {multiple && (
+        <>
+          <button
+            aria-label="Previous image"
+            onClick={() => go(-1)}
+            className={cx(styles.imgNav, styles.imgNavPrev)}
+          >
+            <Icon name="chevron_left" className={styles.icon20} />
+          </button>
+          <button
+            aria-label="Next image"
+            onClick={() => go(1)}
+            className={cx(styles.imgNav, styles.imgNavNext)}
+          >
+            <Icon name="chevron_right" className={styles.icon20} />
+          </button>
+        </>
+      )}
+    </div>,
+    document.body,
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Job card                                                                  */
 /* -------------------------------------------------------------------------- */
-function JobCard({ job, onReport, showToast }) {
+function CommentText({ text }) {
+  const ref = useRef(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      if (!expanded) setOverflowing(el.scrollHeight > el.clientHeight + 1);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, expanded]);
+
+  return (
+    <>
+      <p
+        ref={ref}
+        className={cx(styles.commentText, !expanded && styles.commentTextClamped)}
+      >
+        {text}
+      </p>
+      {(overflowing || expanded) && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className={styles.commentMoreBtn}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
+    </>
+  );
+}
+
+function JobCard({ job, conversations, onReport, showToast }) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(job.likes);
   const [saved, setSaved] = useState(false);
@@ -1219,17 +1353,28 @@ function JobCard({ job, onReport, showToast }) {
   const [shareOpen, setShareOpen] = useState(false);
   const [portrait, setPortrait] = useState(false);
 
+  // Image carousel (shown when a post has 2+ images)
+  const images = job.images || [];
+  const [imgIndex, setImgIndex] = useState(0);
+  const currentImage = images[imgIndex] || null;
+  const hasMultiple = images.length > 1;
+  const imgTouchX = useRef(null);
+  const swipedRef = useRef(false); // true when the last touch was a swipe, not a tap
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const goImage = (d) =>
+    setImgIndex((i) => (i + d + images.length) % images.length);
+
+  // Landscape/square images are shown at their natural size (no cropping).
+  const fullImage = Boolean(currentImage) && !portrait;
+
   const menuRef = useRef(null);
   useOutsideClick(menuRef, () => setMenuOpen(false));
 
-  // Clicking outside this card closes the comments drawer instantly, without
-  // any scroll jump, and NOT while the comment input is focused (keyboard open).
   const cardRef = useRef(null);
   const commentInputRef = useRef(null);
   useEffect(() => {
     if (!showComments) return;
     const handler = (e) => {
-      // Keyboard open: the first outside tap only dismisses the keyboard.
       const inputFocused =
         commentInputRef.current &&
         document.activeElement === commentInputRef.current;
@@ -1239,10 +1384,8 @@ function JobCard({ job, onReport, showToast }) {
         const anchor = e.target;
         const topBefore = anchor.getBoundingClientRect().top;
 
-        // Close synchronously so the layout change happens right now...
         flushSync(() => setShowComments(false));
 
-        // ...then cancel out the shift before the browser paints.
         const delta = anchor.getBoundingClientRect().top - topBefore;
         if (delta) {
           window.scrollBy({ top: delta, left: 0, behavior: "instant" });
@@ -1265,8 +1408,6 @@ function JobCard({ job, onReport, showToast }) {
     setMenuOpen(false);
   };
 
-  // Opens our own Instagram-style share sheet instead of the OS default.
-  // The native picker is still reachable from inside it, via the "More" tile.
   const handleShare = () => setShareOpen(true);
 
   const toggleBookmark = () => {
@@ -1318,16 +1459,20 @@ function JobCard({ job, onReport, showToast }) {
           <div className={styles.alumniInfo}>
             <div className={styles.alumniNameRow}>
               <span className={styles.alumniName}>{job.alumni.name}</span>
-              <span className={styles.batchTag}>{job.alumni.batch}</span>
-              <span className={styles.postedAgo}>· {job.postedAgo}</span>
+              {job.alumni.batch && (
+                <span className={styles.batchTag}>{job.alumni.batch}</span>
+              )}
+              {job.postedAgo && (
+                <span className={styles.postedAgo}>· {job.postedAgo}</span>
+              )}
             </div>
             <span className={styles.designationText}>
-              {job.alumni.designation} at {job.company}
+              {job.alumni.designation}
+              {job.company ? ` at ${job.company}` : ""}
             </span>
           </div>
         </div>
 
-        {/* Context menu */}
         <div className={styles.menuWrap} ref={menuRef}>
           <button
             aria-label="Card options"
@@ -1378,27 +1523,74 @@ function JobCard({ job, onReport, showToast }) {
             styles.heroBanner,
             portrait && styles.heroBannerPortrait,
           )}
+          style={
+            fullImage
+              ? {
+                  height: "auto",
+                  minHeight: 0,
+                  maxHeight: "none",
+                  aspectRatio: "auto",
+                }
+              : undefined
+          }
+          onTouchStart={(e) => {
+            imgTouchX.current = e.touches[0].clientX;
+            swipedRef.current = false;
+          }}
+          onTouchEnd={(e) => {
+            if (imgTouchX.current == null || !hasMultiple) return;
+            const dx = e.changedTouches[0].clientX - imgTouchX.current;
+            imgTouchX.current = null;
+            if (Math.abs(dx) > 45) {
+              swipedRef.current = true;
+              goImage(dx < 0 ? 1 : -1);
+            }
+          }}
         >
-          {job.image ? (
+          {currentImage ? (
             <>
               {portrait && (
                 <img
-                  src={job.image}
+                  src={currentImage}
                   alt=""
                   aria-hidden="true"
                   className={styles.heroBackdrop}
                 />
               )}
               <img
-                src={job.image}
+                key={currentImage}
+                src={currentImage}
                 alt={`${job.company} workplace`}
                 loading="lazy"
+                onClick={() => {
+                  if (swipedRef.current) {
+                    swipedRef.current = false;
+                    return;
+                  }
+                  setLightboxOpen(true);
+                }}
                 onLoad={(e) =>
                   setPortrait(
-                    e.currentTarget.naturalHeight > e.currentTarget.naturalWidth,
+                    e.currentTarget.naturalHeight >
+                      e.currentTarget.naturalWidth,
                   )
                 }
-                className={cx(styles.heroImg, portrait && styles.heroImgContain)}
+                className={cx(
+                  styles.heroImg,
+                  portrait && styles.heroImgContain,
+                )}
+                style={
+                  fullImage
+                    ? {
+                        position: "static",
+                        display: "block",
+                        width: "100%",
+                        height: "auto",
+                        maxHeight: "none",
+                        objectFit: "contain",
+                      }
+                    : undefined
+                }
               />
             </>
           ) : (
@@ -1412,8 +1604,73 @@ function JobCard({ job, onReport, showToast }) {
               <div className={styles.heroMonogram}>{initials(job.company)}</div>
             </div>
           )}
-          <div className={styles.heroOverlay} />
+          <div
+            className={styles.heroOverlay}
+            style={fullImage ? { display: "none" } : undefined}
+          />
 
+          {hasMultiple && (
+            <>
+              <span className={styles.imgCount}>
+                {imgIndex + 1} / {images.length}
+              </span>
+              <button
+                aria-label="Previous image"
+                onClick={() => goImage(-1)}
+                className={cx(styles.imgNav, styles.imgNavPrev)}
+              >
+                <Icon name="chevron_left" className={styles.icon20} />
+              </button>
+              <button
+                aria-label="Next image"
+                onClick={() => goImage(1)}
+                className={cx(styles.imgNav, styles.imgNavNext)}
+              >
+                <Icon name="chevron_right" className={styles.icon20} />
+              </button>
+            </>
+          )}
+
+          
+
+          {currentImage && (
+            <div
+              className={styles.heroBottomBar}
+              style={
+                fullImage
+                  ? {
+                      position: "static",
+                      background: "#0f172a",
+                      padding: "12px 16px",
+                    }
+                  : undefined
+              }
+            >
+              <div>
+                <div className={styles.heroCompanyLabel}>{job.company}</div>
+                <h2 className={styles.heroRoleHeading}>{job.role}</h2>
+              </div>
+              {(job.directReferral || job.highVolumeReferrals) && (
+                <div className={styles.heroReferralPill}>
+                  <Icon
+                    name="verified_user"
+                    className={styles.heroReferralIcon}
+                  />
+                  {job.directReferral || "Velammal Exclusive Priority"}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ---------- Body ---------- */}
+      <div className={styles.cardBody}>
+        {(job.type ||
+          job.freshers ||
+          job.remote ||
+          job.referralAvailable ||
+          job.highVolumeReferrals) && (
           <div className={styles.heroBadges}>
             {job.type && <span className={styles.badge}>{job.type}</span>}
             {job.freshers && (
@@ -1437,29 +1694,18 @@ function JobCard({ job, onReport, showToast }) {
               </span>
             )}
           </div>
-
-          {job.image && (
-            <div className={styles.heroBottomBar}>
-              <div>
-                <div className={styles.heroCompanyLabel}>{job.company}</div>
-                <h2 className={styles.heroRoleHeading}>{job.role}</h2>
-              </div>
-              {(job.directReferral || job.highVolumeReferrals) && (
-                <div className={styles.heroReferralPill}>
-                  <Icon
-                    name="verified_user"
-                    className={styles.heroReferralIcon}
-                  />
-                  {job.directReferral || "Velammal Exclusive Priority"}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ---------- Body ---------- */}
-      <div className={styles.cardBody}>
+        )}
+        {job.directReferral && (
+          <div className={styles.pledgeBox}>
+            <Icon name="verified_user" className={styles.pledgeIcon} />
+            <p className={styles.pledgeText}>
+              <strong className={styles.pledgeStrong}>
+                Referral contact:{" "}
+              </strong>
+              {job.directReferral}
+            </p>
+          </div>
+        )}
         {job.pledge && (
           <div className={styles.pledgeBox}>
             <Icon name="school" className={styles.pledgeIcon} />
@@ -1484,7 +1730,6 @@ function JobCard({ job, onReport, showToast }) {
           </div>
         )}
 
-        {/* Metadata pills */}
         <div className={styles.metaGrid}>
           <MetaPill
             icon="payments"
@@ -1511,7 +1756,6 @@ function JobCard({ job, onReport, showToast }) {
           <MetaPill icon="code" label="Hiring Loop" value={job.hiringLoop} />
         </div>
 
-        {/* Skills */}
         {job.skills?.length > 0 && (
           <div className={styles.skillsRow}>
             <span className={styles.skillsLabel}>Skills:</span>
@@ -1523,18 +1767,19 @@ function JobCard({ job, onReport, showToast }) {
           </div>
         )}
 
-        {/* CTA */}
-        <div className={styles.ctaWrap}>
-          <a
-            href={job.applyLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.ctaBtn}
-          >
-            <span>{job.applyLabel || "Apply on company portal"}</span>
-            <Icon name="arrow_forward" className={styles.ctaIcon} />
-          </a>
-        </div>
+        {job.applyLink && (
+          <div className={styles.ctaWrap}>
+            <a
+              href={job.applyLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.ctaBtn}
+            >
+              <span>{job.applyLabel || "Apply on company portal"}</span>
+              <Icon name="arrow_forward" className={styles.ctaIcon} />
+            </a>
+          </div>
+        )}
       </div>
 
       {/* ---------- Social footer ---------- */}
@@ -1608,9 +1853,11 @@ function JobCard({ job, onReport, showToast }) {
                     <div className={styles.commentContent}>
                       <div className={styles.commentTop}>
                         <span className={styles.commentUser}>{c.user}</span>
-                        <span className={styles.commentTag}>{c.tag}</span>
+                        {c.tag && (
+                          <span className={styles.commentTag}>{c.tag}</span>
+                        )}
                       </div>
-                      <p className={styles.commentText}>{c.text}</p>
+                      <CommentText text={c.text} />
                     </div>
                   </div>
                 ))}
@@ -1636,6 +1883,16 @@ function JobCard({ job, onReport, showToast }) {
         </div>
       )}
 
+      {lightboxOpen && images.length > 0 && (
+        <ImageLightbox
+          images={images}
+          index={imgIndex}
+          onChange={setImgIndex}
+          onClose={() => setLightboxOpen(false)}
+          alt={`${job.company} ${job.role}`}
+        />
+      )}
+
       {reportOpen && (
         <ReportModal
           onClose={() => setReportOpen(false)}
@@ -1650,10 +1907,11 @@ function JobCard({ job, onReport, showToast }) {
       {shareOpen && (
         <ShareModal
           job={job}
+          conversations={conversations}
           onClose={() => setShareOpen(false)}
-          onSend={(contact, sharedJob) => {
-            // Wire this into your real messaging/DM send call, e.g.
-            // sendMessage({ toUserId: contact.id, jobId: sharedJob.id })
+          onSend={() => {
+            // Wire into your DM send call, e.g.
+            // api.post("/messages", { to: contact.id, postId: sharedJob.id })
           }}
           showToast={showToast}
         />
@@ -1663,88 +1921,35 @@ function JobCard({ job, onReport, showToast }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Header                                                                    */
+/*  Stats banner (all values derived from the fetched posts)                  */
 /* -------------------------------------------------------------------------- */
-function TopHeader() {
-  const NAV = ["Feed", "Referrals", "My Applications", "Mentorship"];
-  const [active, setActive] = useState("Feed");
+function StatsBanner({ jobs }) {
+  const referrerCount = useMemo(() => {
+    const ids = new Set();
+    jobs.forEach((j) => {
+      if (
+        j.referralAvailable ||
+        j.directReferral ||
+        j.highVolumeReferrals ||
+        j.pledge
+      ) {
+        ids.add(j.alumni.id || j.alumni.name);
+      }
+    });
+    return ids.size;
+  }, [jobs]);
 
-  return (
-    <header className={styles.header}>
-      <div className={styles.headerInner}>
-        <div className={styles.headerLeft}>
-          <a href="#" className={styles.logoLink}>
-            <div className={styles.logoIconWrap}>
-              <Icon name="school" className={styles.logoIcon} />
-            </div>
-            <div className={styles.logoTextWrap}>
-              <span className={styles.logoTitle}>Alumni Connect</span>
-              <span className={styles.logoSubtitle}>Career Hub</span>
-            </div>
-          </a>
-          <div className={styles.searchBox}>
-            <Icon name="search" className={styles.searchIcon} />
-            <input
-              placeholder="Search roles, alumni, companies..."
-              className={styles.searchInput}
-            />
-            <span className={styles.kbdHint}>⌘K</span>
-          </div>
-        </div>
-
-        <nav className={styles.nav}>
-          {NAV.map((n) => (
-            <button
-              key={n}
-              onClick={() => setActive(n)}
-              className={cx(styles.navBtn, active === n && styles.navBtnActive)}
-            >
-              {n}
-            </button>
-          ))}
-        </nav>
-
-        <div className={styles.headerRight}>
-          <button aria-label="Notifications" className={styles.notifBtn}>
-            <Icon name="notifications" className={styles.notifIcon} />
-            <span className={styles.notifDot} />
-          </button>
-          <div className={styles.divider} />
-          <div className={styles.profileWrap}>
-            <div className={styles.profileAvatarWrap}>
-              <div className={styles.profileAvatar}>
-                <Icon name="person" className={styles.profileAvatarIcon} />
-              </div>
-              <span className={styles.profileBatchBadge}>'19</span>
-            </div>
-            <div className={styles.profileTextWrap}>
-              <span className={styles.profileName}>Elena Rostova</span>
-              <span className={styles.profileRole}>Engineering Alumni</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
+  const latest = useMemo(
+    () => jobs.reduce((max, j) => (j.createdTs > max ? j.createdTs : max), 0),
+    [jobs],
   );
-}
 
-/* -------------------------------------------------------------------------- */
-/*  Stats banner                                                              */
-/* -------------------------------------------------------------------------- */
-function StatsBanner({ jobCount }) {
-  const referrerCount = 89;
   return (
     <div className={styles.statsBanner}>
       <div className={styles.statsBgBlob1} />
       <div className={styles.statsBgBlob2} />
       <div className={styles.statsContent}>
         <div>
-          {/* <div className={styles.statsLiveRow}>
-            <span className={styles.statsLiveDot} />
-            <span className={styles.statsLiveLabel}>
-              Verified Collegiate Pipeline
-            </span>
-          </div> */}
           <h1 className={styles.statsTitle}>JOB POSTS</h1>
           <p className={styles.statsDesc}>
             High-impact engineering, data, and leadership opportunities curated
@@ -1753,7 +1958,7 @@ function StatsBanner({ jobCount }) {
         </div>
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
-            <span className={styles.statValue}>{jobCount}</span>
+            <span className={styles.statValue}>{jobs.length}</span>
             <span className={styles.statLabel}>Active Openings</span>
           </div>
           <div className={styles.statCard}>
@@ -1764,9 +1969,9 @@ function StatsBanner({ jobCount }) {
           </div>
           <div className={styles.statCard}>
             <span className={cx(styles.statValue, styles.statValueTeal)}>
-              &lt;24h
+              {latest ? timeAgo(latest) : "—"}
             </span>
-            <span className={styles.statLabel}>Latest Referral</span>
+            <span className={styles.statLabel}>Latest Post</span>
           </div>
         </div>
       </div>
@@ -1781,7 +1986,6 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
   const filtersRef = useRef(null);
   const [atEnd, setAtEnd] = useState(false);
 
-  // Hide the fade once the row is scrolled all the way to the right.
   const updateFade = () => {
     const el = filtersRef.current;
     if (!el) return;
@@ -1839,17 +2043,14 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
             </button>
           ))}
         </div>
-        {/* Fade hint: visible only while there is more to scroll to on the right */}
-        <div
-          className={cx(styles.fadeHint, atEnd && styles.fadeHintHidden)}
-        />
+        <div className={cx(styles.fadeHint, atEnd && styles.fadeHintHidden)} />
       </div>
     </div>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Empty state                                                               */
+/*  Empty / loading / error states                                            */
 /* -------------------------------------------------------------------------- */
 function EmptyState({ onReset }) {
   return (
@@ -1869,10 +2070,32 @@ function EmptyState({ onReset }) {
   );
 }
 
+function LoadingState() {
+  return (
+    <div className={styles.emptyState}>
+      <span className={styles.pdfSpinner} />
+      <p className={styles.emptyText}>Loading opportunities…</p>
+    </div>
+  );
+}
+
+function ErrorState({ message, onRetry }) {
+  return (
+    <div className={styles.emptyState}>
+      <h3 className={styles.emptyTitle}>Couldn't load opportunities</h3>
+      <p className={styles.emptyText}>{message}</p>
+      <button onClick={onRetry} className={styles.emptyResetBtn}>
+        Try Again
+      </button>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Page                                                                      */
 /* -------------------------------------------------------------------------- */
-export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
+export default function AlumniJobFeed({ onReport, conversations = [] }) {
+  const { jobs, loading, error, reload } = usePosts();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("all");
@@ -1885,16 +2108,17 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
       const q = search.toLowerCase().trim();
       const matchesSearch =
         !q ||
-        job.company.toLowerCase().includes(q) ||
-        job.role.toLowerCase().includes(q);
+        job.company?.toLowerCase().includes(q) ||
+        job.role?.toLowerCase().includes(q) ||
+        job.skills?.some((s) => s.toLowerCase().includes(q));
       return matchesFilter && matchesSearch;
     });
 
+    if (sort === "recent")
+      list = [...list].sort((a, b) => b.createdTs - a.createdTs);
     if (sort === "likes") list = [...list].sort((a, b) => b.likes - a.likes);
     if (sort === "deadline")
-      list = [...list].sort((a, b) =>
-        (a.deadline || "").localeCompare(b.deadline || ""),
-      );
+      list = [...list].sort((a, b) => a.deadlineTs - b.deadlineTs);
 
     return list;
   }, [jobs, search, sort, filter]);
@@ -1908,11 +2132,9 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
     <div className={styles.page}>
       <FontStyles />
       {/* <TopHeader /> */}
-      <Navbar />
-
       <main className={styles.main}>
         <div className={styles.container}>
-          <StatsBanner jobCount={jobs.length} />
+          <StatsBanner jobs={jobs} />
 
           <Controls
             search={search}
@@ -1923,7 +2145,11 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
             setFilter={setFilter}
           />
 
-          {visibleJobs.length === 0 ? (
+          {loading ? (
+            <LoadingState />
+          ) : error ? (
+            <ErrorState message={error} onRetry={reload} />
+          ) : visibleJobs.length === 0 ? (
             <EmptyState onReset={resetFilters} />
           ) : (
             <div className={styles.jobList}>
@@ -1931,6 +2157,7 @@ export default function AlumniJobFeed({ jobs = SAMPLE_JOBS, onReport }) {
                 <JobCard
                   key={job.id}
                   job={job}
+                  conversations={conversations}
                   onReport={onReport}
                   showToast={showToast}
                 />
