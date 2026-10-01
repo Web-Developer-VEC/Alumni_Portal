@@ -679,6 +679,11 @@ export default function UploadPost({ onPublish, onCancel }) {
   const justRestored = useRef(false);
   const autosaveTimer = useRef(null);
 
+
+  if (!user) {
+    alert("Please login to create a post.");
+  }
+  console.log("User:", user);
   const writeDraft = useCallback((data, text) => {
     try {
       if (typeof window === "undefined") return false;
@@ -997,6 +1002,7 @@ export default function UploadPost({ onPublish, onCancel }) {
       post.skills.forEach((s) => formData.append("skills", s));
       files.forEach((f) => formData.append("files", f.file));
 
+      console.log(formData);
       await api.post("/posts", formData);
 
       setSubmitted(true);

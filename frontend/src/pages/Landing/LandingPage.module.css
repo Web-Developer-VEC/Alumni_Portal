@@ -164,7 +164,7 @@ a {
 
 .lp-navbar__logo {
   width: auto;
-  height: 48px;             /* logo height; adjust to taste */
+  height: 60px;             /* logo height; adjust to taste */
   max-width: 100%;
 
   flex: 0 0 auto;
@@ -206,7 +206,7 @@ a {
 .lp-navbar__college-name {
   color: #4a1518;
   font-family: "Times New Roman", Times, serif;
-  font-size: 17px;          /* bigger, like "VELAMMAL" in the image */
+  font-size: 15px;          /* bigger, like "VELAMMAL" in the image */
   font-weight: 500;
   letter-spacing: 0.06em;
   white-space: nowrap;
@@ -216,7 +216,7 @@ a {
   margin-top: 0;
   color: #1c2530;
   font-family: "Playfair Display", "Georgia", serif;
-  font-size: 10.5px;
+  font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.05em;
   white-space: nowrap;
@@ -579,15 +579,16 @@ a {
 ========================================================= */
 
 .scroll-progress {
-  position: fixed;
-  top: var(--nav-h);
+  position: absolute;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 3px;
-  z-index: 999;
+  z-index: 1001;
   transform-origin: left;
   background: linear-gradient(90deg, var(--gold), var(--maroon));
   will-change: transform;
+  pointer-events: none;
 }
 
 /* =========================================================
@@ -1749,20 +1750,7 @@ a {
 }
 
 .feature-card-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, var(--gold) 45%, var(--maroon) 100%);
-  border-radius: 0 0 20px 20px;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.feature-card:hover .feature-card-bar {
-  transform: scaleX(1);
+  display: none;
 }
 
 .feature-number {
@@ -2368,6 +2356,10 @@ a {
   padding: 8px 40px 8px calc(50vw - 590px);
   animation: eventsScroll 32s linear infinite;
 }
+   @keyframes eventsScroll {
+     0%   { transform: translateX(0); }
+     100% { transform: translateX(-50%); }
+   }
 
 .events-marquee-track:hover {
   animation-play-state: paused;
@@ -2391,12 +2383,11 @@ a {
 }
 
 .event-card {
-  flex: 0 0 420px;
+  flex: 0 0 340px;
   display: flex;
-  align-items: stretch;
-  min-height: 220px;
+  flex-direction: column;
   border: 1px solid #e2e2dc;
-  border-radius: 18px;
+  border-radius: 20px;
   background: white;
   overflow: hidden;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.055);
@@ -2410,81 +2401,131 @@ a {
   box-shadow: 0 24px 55px rgba(0, 0, 0, 0.12);
 }
 
+/* ---------- image area ---------- */
+
+.event-media {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+  background: #ebe7dc;
+}
+
+.event-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.event-card:hover .event-media img {
+  transform: scale(1.08);
+}
+
+/* soft dark gradient so the badges stay readable on any photo */
+.event-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.28) 0%,
+    transparent 40%,
+    transparent 70%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  pointer-events: none;
+}
+
+.event-media-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: rgba(128, 0, 0, 0.45);
+  background: linear-gradient(135deg, #f4efe0, #e8dfc6);
+}
+
+/* ---------- date badge (on the image) ---------- */
+
 .event-date {
-  flex: 0 0 80px;
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  min-width: 58px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  border-radius: 14px;
   background: var(--maroon);
-  color: white;
-  padding: 20px 10px;
-  transition: flex-basis 0.3s ease;
-}
-
-.event-card:hover .event-date {
-  flex-basis: 88px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .event-date strong {
   color: var(--gold);
-  font-size: 38px;
+  font-size: 26px;
   line-height: 1;
   font-weight: 800;
 }
 
 .event-date span {
-  margin-top: 6px;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.8);
 }
+
+/* ---------- category chip (on the image) ---------- */
+
+.event-type {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--maroon);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+/* ---------- text area ---------- */
 
 .event-info {
   flex: 1;
-  padding: 26px 24px;
   display: flex;
   flex-direction: column;
-  gap: 0;
-}
-
-.event-type {
-  color: var(--maroon);
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  margin-bottom: 10px;
+  padding: 22px 22px 20px;
 }
 
 .event-info h3 {
+  margin-bottom: 8px;
   color: #1a1a1a;
   font-size: 19px;
   font-weight: 700;
   line-height: 1.25;
-  margin-bottom: 10px;
 }
 
 .event-info p {
+  flex: 1;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.75;
-  flex: 1;
 }
 
 .event-location {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 18px;
+  margin-top: 16px;
   color: #888;
   font-size: 10px;
   font-weight: 500;
-}
-
-@keyframes eventsScroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
 }
 
 /* =========================================================
@@ -3938,22 +3979,23 @@ a {
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-page *,
-  .landing-page *::before,
-  .landing-page *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  .landing-page .events-marquee-track {
+    animation-duration: 32s !important;
+    animation-iteration-count: infinite !important;
   }
-  .reveal { opacity: 1 !important; transform: none !important; }
-  .hero-particles { display: none; }
-  .mentor-orbit,
-  .mentor-node,
-  .phone-frame { animation: none !important; }
-  .lp-navbar,
-  .lp-navbar__login-btn,
-  .lp-navbar__register-btn { transition: none; }
+
+  .landing-page .alumni-marquee-track {
+    animation-duration: 34s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .landing-page .alumni-marquee-reverse .alumni-marquee-track {
+    animation-duration: 38s !important;
+  }
+
+  .landing-page .alumni-marquee-slow {
+    animation-duration: 45s !important;
+  }
 }
 /* =========================================================
    FOOTER
@@ -3986,8 +4028,8 @@ a {
 /* ---------- CONTACT ---------- */
 
 .lp-footer-contact {
-  flex: 0 0 25%;
-  margin-left: 16px;
+  flex: 0 0 26%;
+  margin-left: 0;
 }
 
 .lp-footer-contact-inner {
@@ -4000,25 +4042,25 @@ a {
 }
 
 .lp-footer-address-block h3 {
-  padding: 0 20px;
+  padding: 0 16px;
   color: var(--gold);
   font-size: 18px;
   font-weight: 700;
 }
 
 .lp-footer-address {
-  margin: 4px 0 0 20px;
+  margin: 6px 0 0 16px;
   color: white;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
 .lp-footer-contact-info {
-  margin-top: 27px;
+  margin-top: 22px;
 }
 
 .lp-footer-contact-info p {
-  margin-left: 20px;
+  margin-left: 16px;
   font-size: 15px;
   line-height: 1.7;
 }
@@ -4036,57 +4078,49 @@ a {
 
 .lp-footer-privacy {
   display: inline-block;
-  margin: 8px 0 0 20px;
+  margin: 8px 0 0 16px;
   color: var(--gold);
   font-size: 15px;
 }
 
 .lp-footer-socials {
   display: flex;
+  align-items: center;
+  gap: 10px;
   width: fit-content;
-  margin: 8px 0;
+  margin: 12px 0 0 16px;
 }
 
 .lp-footer-socials a {
   display: grid;
   place-items: center;
-  margin-left: 5%;
-  padding: 5px;
+  margin: 0;
+  padding: 6px;
   color: white;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   transition:
     color 0.25s ease,
+    background 0.25s ease,
     transform 0.25s ease;
 }
 
 .lp-footer-socials a:first-child {
-  margin-left: 12px;
+  margin-left: 0;
 }
 
 .lp-footer-socials a:hover {
   color: var(--gold);
+  background: rgba(212, 175, 55, 0.18);
+  border-color: var(--gold);
   transform: translateY(-3px);
-}
-
-/* ---------- MAP ---------- */
-
-.lp-footer-map {
-  flex: 0 0 33.333%;
-  height: 300px;
-  margin-top: 40px;
-}
-
-.lp-footer-map iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  padding: 0 12px;
-  border: 0;
 }
 
 /* ---------- QUICK LINKS ---------- */
 
 .lp-footer-quick {
-  flex: 0 0 33.333%;
+  flex: 0 0 38%;
   max-width: 100%;
   margin-top: 16px;
   padding: 0 16px;
@@ -4131,6 +4165,53 @@ a {
 .lp-footer-quick ul li a:hover {
   text-decoration: underline;
 }
+
+/* ---------- MAP ---------- */
+
+.lp-footer-map {
+  flex: 0 0 30%;
+  margin-top: 16px;
+}
+
+.lp-footer-map-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 12px;
+}
+
+.lp-footer-map h3 {
+  color: var(--gold);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
+}
+
+.lp-footer-map-link {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.lp-footer-map-link:hover {
+  color: var(--gold-light);
+}
+
+.lp-footer-map iframe {
+  display: block;
+  width: 100%;
+  height: 260px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
 
 /* ---------- BOTTOM ---------- */
 
@@ -4192,5 +4273,1148 @@ a {
 @media (max-width: 600px) {
   .lp-footer-quick-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   DEDICATED MOBILE VIEW CORRECTIONS & RESPONSIVE ALIGNMENT
+   (Applies strictly to mobile view: <= 768px, <= 600px, <= 420px)
+   Preserves all desktop layouts and behavior.
+========================================================= */
+
+@media (max-width: 768px) {
+  /* Global Mobile Container & Layout */
+  .landing-page {
+    overflow-x: hidden;
+  }
+
+  .landing-container {
+    width: calc(100% - 32px) !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  /* Reveal Animations on Mobile - Ensure instant visibility without getting stuck */
+  .landing-page .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: opacity 0.4s ease, transform 0.4s ease !important;
+  }
+
+  /* ---------- NAVBAR MOBILE ---------- */
+  .landing-page .lp-navbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 6px 12px !important;
+    min-height: 76px !important;
+    column-gap: 8px !important;
+  }
+
+  .landing-page .lp-navbar::after {
+    left: 10px !important;
+    right: 10px !important;
+  }
+
+  /* ---------- SCROLL PROGRESS (ALWAYS EXACTLY ATTACHED TO HEADER BOTTOM) ---------- */
+  .landing-page .scroll-progress {
+    position: absolute !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 3px !important;
+    z-index: 1001 !important;
+    pointer-events: none !important;
+  }
+
+  .landing-page .lp-navbar__brand {
+    display: flex !important;
+    flex-direction: column !important; /* Stack logo above text like laptop view */
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    text-align: center !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  .landing-page .lp-navbar__logo {
+    width: auto !important;
+    height: 36px !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+    flex: 0 0 auto !important;
+  }
+
+  .landing-page .lp-navbar__college-domain {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1.15 !important;
+  }
+
+  .landing-page .lp-navbar__college-name {
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.05em !important;
+    color: #4a1518 !important;
+    white-space: nowrap !important;
+    line-height: 1.15 !important;
+  }
+
+  .landing-page .lp-navbar__college-sub {
+    font-family: "Playfair Display", "Georgia", serif !important;
+    font-size: 7.5px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.06em !important;
+    color: #1c2530 !important;
+    white-space: nowrap !important;
+    line-height: 1.15 !important;
+  }
+
+  .landing-page .lp-navbar__college-tagline {
+    display: block !important;
+    font-family: "Playfair Display", "Georgia", serif !important;
+    font-size: 6.8px !important;
+    font-style: italic !important;
+    font-weight: 500 !important;
+    color: #5c6b7a !important;
+    white-space: nowrap !important;
+    line-height: 1.15 !important;
+    margin-top: 1px !important;
+  }
+
+  .landing-page .lp-navbar__college-autonomous {
+    display: block !important;
+    font-family: "Playfair Display", "Georgia", serif !important;
+    font-size: 6.5px !important;
+    font-style: italic !important;
+    font-weight: 500 !important;
+    color: #5c6b7a !important;
+    white-space: nowrap !important;
+    line-height: 1.15 !important;
+    margin-top: 0 !important;
+  }
+
+  /* Hide center redundant title on mobile to make room for clean buttons */
+  .landing-page .lp-navbar__app-name {
+    display: none !important;
+  }
+
+  .landing-page .lp-navbar__actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .landing-page .lp-navbar button.lp-navbar__login-btn,
+  .landing-page .lp-navbar button.lp-navbar__register-btn {
+    min-height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 10.5px !important;
+    letter-spacing: 0.03em !important;
+    border-radius: 999px !important;
+    gap: 5px !important;
+  }
+
+  .landing-page .lp-navbar__login-btn svg,
+  .landing-page .lp-navbar__register-btn svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  /* ---------- HERO SECTION MOBILE ---------- */
+  .landing-page .hero-section {
+    min-height: auto !important;
+    padding-top: var(--nav-h, 70px) !important;
+    padding-bottom: 50px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+
+  .landing-page .hero-section::before {
+    width: 320px !important;
+    height: 320px !important;
+    right: -100px !important;
+    top: -60px !important;
+  }
+
+  .landing-page .hero-section::after {
+    width: 220px !important;
+    height: 220px !important;
+    right: -40px !important;
+    bottom: -80px !important;
+  }
+
+  .landing-page .hero-content {
+    order: 1 !important;
+    padding: 24px 0 10px !important;
+    text-align: left !important;
+    transform: none !important;
+  }
+
+  .landing-page .hero-label {
+    font-size: 11px !important;
+    letter-spacing: 0.12em !important;
+    margin-bottom: 12px !important;
+    gap: 8px !important;
+  }
+
+  .landing-page .hero-label span {
+    width: 20px !important;
+  }
+
+  .landing-page .hero-content h1 {
+    font-size: clamp(32px, 8.5vw, 44px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.03em !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .landing-page .hero-content p {
+    font-size: 13.5px !important;
+    line-height: 1.65 !important;
+    margin-top: 14px !important;
+    color: var(--muted) !important;
+  }
+
+  .landing-page .hero-buttons {
+    margin-top: 22px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .landing-page .hero-primary {
+    width: 100% !important;
+    min-height: 50px !important;
+    padding: 0 14px 0 20px !important;
+    font-size: 11px !important;
+    letter-spacing: 0.06em !important;
+    justify-content: space-between !important;
+  }
+
+  .landing-page .hero-primary .btn-arrow {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* Hero Visual (HeroCardStack) - Display cleanly below CTA on Mobile */
+  .landing-page .hero-visual {
+    order: 2 !important;
+    display: flex !important;
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 340px !important;
+    margin: 28px auto 0 !important;
+    padding: 12px 10px 24px !important;
+    border-radius: 24px !important;
+    justify-content: center !important;
+  }
+
+  .landing-page .hero-carousel {
+    gap: 16px !important;
+    width: 100% !important;
+  }
+
+  .landing-page .hero-carousel-stage {
+    height: 220px !important;
+    perspective: 800px !important;
+    margin-top: 10px !important;
+  }
+
+  .landing-page .hero-carousel-card {
+    width: 120px !important;
+    height: 175px !important;
+    margin-left: -60px !important;
+    --spread: 72px !important;
+    --depth: 110px !important;
+    border-radius: 14px !important;
+  }
+
+  .landing-page .hero-carousel-card.is-front {
+    width: 155px !important;
+    height: 215px !important;
+    margin-left: -77.5px !important;
+    margin-top: -15px !important;
+    border-radius: 16px !important;
+  }
+
+  .landing-page .hero-carousel-label strong {
+    font-size: 14px !important;
+  }
+
+  .landing-page .hero-carousel-label-meta {
+    font-size: 10px !important;
+  }
+
+  /* ---------- SECTION HEADINGS ON MOBILE ---------- */
+  .landing-page .section-tag {
+    font-size: 11px !important;
+    letter-spacing: 0.12em !important;
+    margin-bottom: 10px !important;
+  }
+
+  .landing-page .section-heading h2,
+  .landing-page .center-heading h2,
+  .landing-page .events-header h2,
+  .landing-page .overview-block h2,
+  .landing-page .alumni-showcase-heading h2,
+  .landing-page .app-content h2 {
+    font-size: clamp(26px, 7vw, 36px) !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.025em !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .landing-page .heading-line {
+    margin-top: 16px !important;
+    width: 42px !important;
+  }
+
+  .landing-page .center-heading {
+    margin-bottom: 30px !important;
+    text-align: center !important;
+  }
+
+  .landing-page .center-heading p {
+    margin-top: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.65 !important;
+  }
+
+  /* ---------- ABOUT SECTION MOBILE ---------- */
+  .landing-page .intro-section {
+    padding: 55px 0 !important;
+  }
+
+  .landing-page .intro-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  .landing-page .intro-content {
+    padding-top: 0 !important;
+  }
+
+  .landing-page .intro-content .intro-large {
+    font-size: 17px !important;
+    line-height: 1.55 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .landing-page .intro-content p {
+    font-size: 13.5px !important;
+    line-height: 1.7 !important;
+  }
+
+  .landing-page .text-button {
+    margin-top: 20px !important;
+    font-size: 10.5px !important;
+    letter-spacing: 0.08em !important;
+    gap: 10px !important;
+  }
+
+  .landing-page .text-button .btn-arrow {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  /* ---------- AWARDS SECTION MOBILE ---------- */
+  .landing-page .awards-section {
+    padding: 55px 0 !important;
+  }
+
+  .landing-page .awards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .landing-page .award-card {
+    min-height: auto !important;
+    padding: 20px 18px !important;
+    border-radius: 16px !important;
+    transform: none !important;
+  }
+
+  .landing-page .award-card:hover {
+    transform: none !important;
+  }
+
+  .landing-page .award-icon {
+    margin-bottom: 12px !important;
+  }
+
+  .landing-page .award-card h3 {
+    font-size: 16px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .landing-page .award-card p {
+    font-size: 12.5px !important;
+    line-height: 1.55 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .landing-page .award-card a {
+    align-self: flex-start !important;
+    padding: 8px 16px !important;
+    font-size: 10px !important;
+  }
+
+  /* ---------- OVERVIEW & VISION MOBILE ---------- */
+  .landing-page .overview-section {
+    padding: 55px 0 !important;
+  }
+
+  .landing-page .overview-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+
+  .landing-page .overview-block p {
+    margin-top: 16px !important;
+    font-size: 13.5px !important;
+    line-height: 1.7 !important;
+  }
+
+  .landing-page .vision-card {
+    padding: 24px 20px !important;
+    border-radius: 18px !important;
+    transform: none !important;
+  }
+
+  .landing-page .vision-card-tag {
+    font-size: 14px !important;
+    margin-bottom: 12px !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .landing-page .vision-card p {
+    font-size: 13.5px !important;
+    line-height: 1.7 !important;
+  }
+
+  /* ---------- MISSION & OBJECTIVES MOBILE ---------- */
+  .landing-page .mission-section {
+    padding: 55px 0 !important;
+  }
+
+  .landing-page .mission-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .landing-page .mission-panel {
+    padding: 22px 18px !important;
+    border-radius: 16px !important;
+  }
+
+  .landing-page .mission-panel h3 {
+    font-size: 18px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .landing-page .mission-list {
+    gap: 12px !important;
+  }
+
+  .landing-page .mission-list li {
+    font-size: 13px !important;
+    line-height: 1.65 !important;
+    padding-left: 18px !important;
+  }
+
+  .landing-page .mission-list li::before {
+    top: 6px !important;
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  /* ---------- STATS SECTION MOBILE (2x2 Grid) ---------- */
+  .landing-page .stats-section {
+    padding: 35px 0 !important;
+  }
+
+  .landing-page .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0 !important;
+  }
+
+  .landing-page .stat-item {
+    padding: 16px 10px !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+  }
+
+  .landing-page .stat-item:nth-child(2),
+  .landing-page .stat-item:nth-child(4) {
+    border-right: none !important;
+  }
+
+  .landing-page .stat-item:nth-child(3),
+  .landing-page .stat-item:nth-child(4) {
+    border-bottom: none !important;
+  }
+
+  .landing-page .stat-number {
+    font-size: 2.2rem !important;
+    letter-spacing: -1px !important;
+  }
+
+  .landing-page .stat-item span {
+    font-size: 9px !important;
+    letter-spacing: 0.08em !important;
+    margin-top: 6px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ---------- ALUMNI SERVICES / FEATURES MOBILE ---------- */
+  .landing-page .features-section {
+    padding: 55px 0 !important;
+  }
+
+  .landing-page .features-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .landing-page .feature-card {
+    min-height: auto !important;
+    padding: 22px 20px 65px !important;
+    border-radius: 18px !important;
+    transform: none !important;
+  }
+
+  .landing-page .feature-card:hover {
+    transform: none !important;
+  }
+
+  .landing-page .feature-icon-box {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 13px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .landing-page .feature-icon-box svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .landing-page .feature-card h3 {
+    font-size: 17px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .landing-page .feature-card p {
+    font-size: 12.5px !important;
+    line-height: 1.6 !important;
+  }
+
+  .landing-page .feature-card button {
+    left: 20px !important;
+    bottom: 20px !important;
+    padding: 8px 16px !important;
+    font-size: 9.5px !important;
+  }
+
+  /* ---------- ALUMNI SHOWCASE MOBILE ---------- */
+  .landing-page .directory-section.alumni-showcase {
+    padding: 55px 0 45px !important;
+    overflow: hidden !important;
+  }
+
+  .landing-page .alumni-showcase-heading {
+    margin-bottom: 25px !important;
+  }
+
+  /* CRITICAL: Overcome 150px gradients that obscure alumni on mobile */
+  .landing-page .alumni-marquee::before,
+  .landing-page .alumni-marquee::after {
+    width: 24px !important;
+  }
+
+  .landing-page .alumni-rolling-wrapper {
+    width: 100% !important;
+    margin-left: 0 !important;
+    gap: 12px !important;
+    padding: 6px 0 12px !important;
+    overflow-x: hidden !important;
+  }
+
+  .landing-page .alumni-rolling-card {
+    flex: 0 0 270px !important;
+    min-height: 100px !important;
+    padding: 12px 14px !important;
+    gap: 12px !important;
+    border-radius: 16px !important;
+    transform: none !important;
+  }
+
+  .landing-page .alumni-rolling-card:hover {
+    transform: none !important;
+  }
+
+  .landing-page .alumni-photo-wrapper {
+    flex: 0 0 65px !important;
+    width: 65px !important;
+    height: 72px !important;
+    border-radius: 12px !important;
+  }
+
+  .landing-page .alumni-rolling-info h3 {
+    font-size: 13.5px !important;
+  }
+
+  .landing-page .alumni-rolling-info p {
+    font-size: 10px !important;
+  }
+
+  .landing-page .alumni-card-arrow {
+    right: 12px !important;
+    bottom: 10px !important;
+    font-size: 13px !important;
+  }
+
+  .landing-page .alumni-showcase-footer {
+    margin-top: 25px !important;
+    gap: 12px !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  .landing-page .alumni-showcase-footer > span {
+    display: none !important;
+  }
+
+  .landing-page .alumni-showcase-footer button {
+    width: 100% !important;
+    max-width: 320px !important;
+    justify-content: space-between !important;
+    padding: 8px 12px 8px 22px !important;
+    font-size: 10.5px !important;
+  }
+
+  /* ---------- EVENTS SECTION MOBILE ---------- */
+  .landing-page .events-section {
+    padding: 55px 0 60px !important;
+    overflow: hidden !important;
+  }
+
+  .landing-page .events-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* CRITICAL: Overcome 280px shadow that blocks events on mobile */
+  .landing-page .events-marquee-shadow {
+    width: 30px !important;
+  }
+
+  .landing-page .events-marquee-outer {
+    width: 100% !important;
+    margin-left: 0 !important;
+    overflow-x: hidden !important;
+    padding: 8px 0 16px !important;
+  }
+
+  .landing-page .events-marquee-track {
+    gap: 14px !important;
+    padding: 6px 16px !important;
+  }
+
+  .landing-page .event-card {
+    flex: 0 0 270px !important;
+    border-radius: 16px !important;
+    transform: none !important;
+  }
+
+  .landing-page .event-card:hover {
+    transform: none !important;
+  }
+
+  .landing-page .event-media {
+    height: 145px !important;
+  }
+
+  .landing-page .event-date {
+    top: 10px !important;
+    left: 10px !important;
+    min-width: 48px !important;
+    padding: 6px 10px !important;
+    border-radius: 10px !important;
+  }
+
+  .landing-page .event-date strong {
+    font-size: 20px !important;
+  }
+
+  .landing-page .event-date span {
+    font-size: 9px !important;
+  }
+
+  .landing-page .event-type {
+    top: 10px !important;
+    right: 10px !important;
+    font-size: 8px !important;
+    padding: 4px 8px !important;
+  }
+
+  .landing-page .event-info {
+    padding: 16px 14px !important;
+  }
+
+  .landing-page .event-info h3 {
+    font-size: 15px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .landing-page .event-info p {
+    font-size: 12px !important;
+    line-height: 1.55 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .landing-page .event-location {
+    font-size: 11px !important;
+  }
+
+  /* ---------- ACHIEVEMENTS MOBILE ---------- */
+  .landing-page .achievement-section {
+    padding: 55px 0 !important;
+  }
+
+  .landing-page .achievement-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .landing-page .achievement-card {
+    min-height: 130px !important;
+    padding: 16px 10px !important;
+    border-radius: 14px !important;
+    transform: none !important;
+  }
+
+  .landing-page .achievement-card:hover {
+    transform: none !important;
+  }
+
+  .landing-page .achievement-card span {
+    margin-bottom: 8px !important;
+  }
+
+  .landing-page .achievement-card span svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .landing-page .achievement-card strong {
+    font-size: 12px !important;
+  }
+
+  .landing-page .achievement-card small {
+    font-size: 9.5px !important;
+    margin-top: 3px !important;
+  }
+
+  /* ---------- MOBILE APP SECTION ---------- */
+  .landing-page .app-section {
+    padding: 55px 0 !important;
+  }
+
+  .landing-page .app-grid {
+    grid-template-columns: 1fr !important;
+    gap: 36px !important;
+  }
+
+  .landing-page .app-content p {
+    font-size: 13.5px !important;
+    line-height: 1.65 !important;
+    margin-top: 14px !important;
+  }
+
+  .landing-page .app-buttons {
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .landing-page .app-buttons button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 50px !important;
+    padding: 10px 18px !important;
+    justify-content: center !important;
+  }
+
+  .landing-page .phone-mockup {
+    margin-top: 15px !important;
+  }
+
+  .landing-page .phone-frame {
+    width: 250px !important;
+    height: 490px !important;
+    transform: none !important;
+    animation: none !important;
+    margin: 0 auto !important;
+  }
+
+  /* ---------- FOOTER MOBILE ---------- */
+  .landing-page .lp-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 28px 18px 22px !important;
+    gap: 22px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border-top: 2px solid var(--gold) !important;
+    background: linear-gradient(135deg, #2b0000 0%, #630000 50%, #3e0000 100%) !important;
+  }
+
+  .landing-page .lp-footer-contact {
+    order: 1 !important;
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .landing-page .lp-footer-contact-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  .landing-page .lp-footer-address-block {
+    margin-top: 0 !important;
+  }
+
+  .landing-page .lp-footer-address-block h3 {
+    padding: 0 !important;
+    font-size: 16.5px !important;
+    font-weight: 700 !important;
+    color: var(--gold) !important;
+    margin: 0 0 6px 0 !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  .landing-page .lp-footer-address {
+    margin: 0 !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+
+  .landing-page .lp-footer-contact-info {
+    margin-top: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .landing-page .lp-footer-contact-info p {
+    margin: 0 !important;
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+
+  .landing-page .lp-footer-contact-info p a {
+    color: var(--gold) !important;
+    font-weight: 600 !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+  }
+
+  .landing-page .lp-footer-privacy {
+    display: inline-block !important;
+    margin: 4px 0 0 0 !important;
+    font-size: 13px !important;
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+  }
+
+  .landing-page .lp-footer-socials {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 8px 0 0 0 !important;
+    width: 100% !important;
+  }
+
+  .landing-page .lp-footer-socials a {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transition: all 0.25s ease !important;
+  }
+
+  .landing-page .lp-footer-socials a:hover,
+  .landing-page .lp-footer-socials a:active {
+    background: var(--gold) !important;
+    border-color: var(--gold) !important;
+    color: #3b0000 !important;
+    transform: translateY(-2px) !important;
+  }
+
+  .landing-page .lp-footer-socials a svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .landing-page .lp-footer-quick {
+    order: 2 !important;
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    white-space: normal !important;
+  }
+
+  .landing-page .lp-footer-quick h3 {
+    font-size: 16.5px !important;
+    font-weight: 700 !important;
+    color: var(--gold) !important;
+    text-align: left !important;
+    margin: 0 0 12px 0 !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  .landing-page .lp-footer-quick-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px 14px !important;
+  }
+
+  .landing-page .lp-footer-quick-grid > div:last-child {
+    grid-column: 1 / -1 !important;
+    margin-top: 4px !important;
+  }
+
+  .landing-page .lp-footer-quick-grid > div:last-child ul {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px 14px !important;
+  }
+
+  .landing-page .lp-quick-head {
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    margin: 0 0 8px 0 !important;
+    padding-bottom: 4px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: var(--gold) !important;
+  }
+
+  .landing-page .lp-footer-quick ul {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  .landing-page .lp-footer-quick ul li {
+    margin-bottom: 5px !important;
+    font-size: 12.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  .landing-page .lp-footer-quick ul li a {
+    color: rgba(255, 255, 255, 0.88) !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    padding: 2px 0 !important;
+    transition: color 0.2s ease !important;
+  }
+
+  .landing-page .lp-footer-quick ul li a:hover,
+  .landing-page .lp-footer-quick ul li a:active {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+  }
+
+  .landing-page .lp-footer-map {
+    order: 3 !important;
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .landing-page .lp-footer-map-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin: 0 0 10px 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .landing-page .lp-footer-map h3 {
+    font-size: 16.5px !important;
+    font-weight: 700 !important;
+    color: var(--gold) !important;
+    text-align: left !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  .landing-page .lp-footer-map-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    color: var(--gold) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 6px !important;
+    padding: 3px 9px !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .landing-page .lp-footer-map-link:hover,
+  .landing-page .lp-footer-map-link:active {
+    background: var(--gold) !important;
+    color: #3b0000 !important;
+  }
+
+  .landing-page .lp-footer-map iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: 290px !important;
+    padding: 0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+
+  .landing-page .lp-footer-bottom {
+    order: 4 !important;
+    width: 100% !important;
+    margin-top: 6px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    font-size: 12px !important;
+    text-align: center !important;
+  }
+
+  .landing-page .lp-footer-bottom p {
+    margin: 0 !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+
+  .landing-page .lp-footer-bottom a {
+    color: var(--gold) !important;
+    font-weight: 600 !important;
+    text-decoration: underline !important;
+  }
+}
+
+/* Extra Small Screens (<= 420px) */
+@media (max-width: 420px) {
+  .landing-container {
+    width: calc(100% - 24px) !important;
+  }
+
+  .landing-page .lp-navbar button.lp-navbar__login-btn,
+  .landing-page .lp-navbar button.lp-navbar__register-btn {
+    padding: 0 8px !important;
+    font-size: 9.5px !important;
+    gap: 4px !important;
+  }
+
+  .landing-page .lp-navbar__logo {
+    width: auto !important;
+    height: 30px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .landing-page .lp-navbar__college-name {
+    font-size: 9.5px !important;
+  }
+
+  .landing-page .lp-navbar__college-sub {
+    font-size: 6.5px !important;
+  }
+
+  .landing-page .lp-navbar__college-tagline {
+    font-size: 5.6px !important;
+  }
+
+  .landing-page .lp-navbar__college-autonomous {
+    font-size: 5.4px !important;
+  }
+
+  .landing-page .hero-content h1 {
+    font-size: 29px !important;
+  }
+
+  .landing-page .hero-visual {
+    max-width: 290px !important;
+  }
+
+  .landing-page .hero-carousel-stage {
+    height: 195px !important;
+  }
+
+  .landing-page .hero-carousel-card {
+    width: 105px !important;
+    height: 155px !important;
+    margin-left: -52.5px !important;
+    --spread: 60px !important;
+  }
+
+  .landing-page .hero-carousel-card.is-front {
+    width: 135px !important;
+    height: 190px !important;
+    margin-left: -67.5px !important;
+  }
+
+  .landing-page .stat-number {
+    font-size: 1.85rem !important;
+  }
+
+  .landing-page .lp-footer-quick-grid {
+    grid-template-columns: 1fr 1fr !important;
   }
 }
