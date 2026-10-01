@@ -4,7 +4,7 @@ import api from "../../api/api";
 import {
   ArrowLeft,
   CheckCircle2,
-  Pencil,
+  NotebookPen,
   FileText,
   Tag,
   Bold,
@@ -36,7 +36,6 @@ import {
   File as FileIcon,
 } from "lucide-react";
 import styles from "./uploadpost.module.css";
-import Navbar from "../../components/common/DashboardNavbar";
 import { getUser } from "../../api/session";
 
 const DRAFT_KEY = "alumniPortal.createPost.draft.v2";
@@ -48,8 +47,6 @@ const IMAGE_EXT = [".jpg", ".jpeg", ".png", ".webp"];
 
 // Documents: only ONE document is allowed
 const DOC_EXT = [".pdf", ".doc", ".docx"];
-
-const ALLOWED_EXT = [...IMAGE_EXT, ...DOC_EXT];
 
 const hasExtension = (name = "", extensions = []) =>
   extensions.some((ext) => name.toLowerCase().endsWith(ext));
@@ -67,7 +64,6 @@ const getFileCategory = (file) => {
 };
 
 const pad2 = (n) => String(n).padStart(2, "0");
-const hasAllowedExt = (name = "") => ALLOWED_EXT.some((ext) => name.toLowerCase().endsWith(ext));
 
 // "YYYY-MM-DD" -> local Date (new Date("YYYY-MM-DD") is parsed as UTC and can
 // show the previous day in timezones behind UTC).
@@ -485,6 +481,8 @@ function ContentEditor({ contentRef, html, length, onChange, maxLength, placehol
   };
 
   // The dialog steals focus, so remember the selection and put it back afterwards.
+  // (Used by the link / image toolbar buttons — currently commented out below.)
+  // eslint-disable-next-line no-unused-vars
   const openPrompt = (kind) => {
     const sel = window.getSelection();
     const el = contentRef.current;
@@ -648,6 +646,10 @@ function isPostEmpty(post, contentText = "") {
 }
 
 export default function UploadPost({ onPublish, onCancel }) {
+  // Read the session inside the component so it is fresh on every mount
+  // (a module-level call would be frozen at whatever it was when the app loaded).
+  const user = getUser();
+
   const [post, setPost] = useState(EMPTY_POST);
   const [contentText, setContentText] = useState("");
   const [files, setFiles] = useState([]);
@@ -677,11 +679,8 @@ export default function UploadPost({ onPublish, onCancel }) {
   const justRestored = useRef(false);
   const autosaveTimer = useRef(null);
 
-  const user = getUser();
-  if (!user) {
-    alert("Please login to create a post.");
-  }
-  console.log("User:", user);
+
+
   const writeDraft = useCallback((data, text) => {
     try {
       if (typeof window === "undefined") return false;
@@ -782,69 +781,38 @@ export default function UploadPost({ onPublish, onCancel }) {
 
     if (incoming.length === 0) return;
 
-    /*
-     * ---------------------------------------------------------
-     * 1. Check file types
-     * ---------------------------------------------------------
-     */
-
-    const invalidFiles = incoming.filter(
-      (file) => getFileCategory(file) === null
-    );
+    /* 1. Check file types */
+    const invalidFiles = incoming.filter((file) => getFileCategory(file) === null);
 
     if (invalidFiles.length > 0) {
       showAlert(
         `Unsupported file type. Allowed files are:\n\n` +
         `Images: JPG, JPEG, PNG, WEBP\n` +
         `Document: PDF, DOC, DOCX\n\n` +
-        `Invalid files:\n${invalidFiles
-          .map((file) => file.name)
-          .join("\n")}`,
+        `Invalid files:\n${invalidFiles.map((file) => file.name).join("\n")}`,
         "Invalid file type"
       );
-
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 2. Check file size
-     * ---------------------------------------------------------
-     */
-
-    const tooBig = incoming.filter(
-      (file) => file.size > MAX_FILE_BYTES
-    );
+    /* 2. Check file size */
+    const tooBig = incoming.filter((file) => file.size > MAX_FILE_BYTES);
 
     if (tooBig.length > 0) {
       showAlert(
         `Each file must be 10MB or smaller.\n\n` +
-        `These files are too large:\n${tooBig
-          .map((file) => file.name)
-          .join("\n")}`,
+        `These files are too large:\n${tooBig.map((file) => file.name).join("\n")}`,
         "File too large"
       );
-
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 3. Determine incoming categories
-     * ---------------------------------------------------------
-     */
-
+    /* 3. Determine incoming categories */
     const incomingCategories = incoming.map(getFileCategory);
-
     const incomingHasDocument = incomingCategories.includes("document");
     const incomingHasImage = incomingCategories.includes("image");
 
-    /*
-     * ---------------------------------------------------------
-     * 4. Prevent mixing document + image
-     * ---------------------------------------------------------
-     */
-
+    /* 4. Prevent mixing document + image */
     if (incomingHasDocument && incomingHasImage) {
       showAlert(
         "You cannot upload documents and images together.\n\n" +
@@ -854,29 +822,15 @@ export default function UploadPost({ onPublish, onCancel }) {
         "• Multiple images",
         "Mixed file types"
       );
-
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 5. Check existing uploaded files
-     * ---------------------------------------------------------
-     */
-
-    const existingCategories = files.map((item) =>
-      getFileCategory(item.file)
-    );
-
+    /* 5. Check existing uploaded files */
+    const existingCategories = files.map((item) => getFileCategory(item.file));
     const existingHasDocument = existingCategories.includes("document");
     const existingHasImage = existingCategories.includes("image");
 
-    /*
-     * ---------------------------------------------------------
-     * 6. Prevent adding images when a document exists
-     * ---------------------------------------------------------
-     */
-
+    /* 6. Prevent adding images when a document exists */
     if (incomingHasImage && existingHasDocument) {
       showAlert(
         "A document is already attached.\n\n" +
@@ -884,16 +838,10 @@ export default function UploadPost({ onPublish, onCancel }) {
         "Remove the document first if you want to upload images.",
         "Cannot add images"
       );
-
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 7. Prevent adding documents when images exist
-     * ---------------------------------------------------------
-     */
-
+    /* 7. Prevent adding documents when images exist */
     if (incomingHasDocument && existingHasImage) {
       showAlert(
         "Images are already attached.\n\n" +
@@ -901,85 +849,53 @@ export default function UploadPost({ onPublish, onCancel }) {
         "Remove the images first if you want to upload a document.",
         "Cannot add document"
       );
-
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 8. DOCUMENT RULE
-     *
-     * Only ONE document can be uploaded.
-     * ---------------------------------------------------------
-     */
-
+    /* 8. DOCUMENT RULE — only ONE document can be uploaded */
     if (incomingHasDocument) {
-      // A document is already present
       if (existingHasDocument) {
-        showAlert(
-          "Only one document can be uploaded.",
-          "Document limit reached"
-        );
-
+        showAlert("Only one document can be uploaded.", "Document limit reached");
         return;
       }
 
-      // User selected multiple documents at once
       if (incoming.length > 1) {
         showAlert(
           "You can upload only one document.\n\n" +
           "Please select a single PDF, DOC or DOCX file.",
           "Document limit"
         );
-
         return;
       }
 
       const file = incoming[0];
 
-      const newFile = {
-        file,
-        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2)}`,
-        url: null,
-      };
-
-      setFiles([newFile]);
+      setFiles([
+        {
+          file,
+          id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          url: null,
+        },
+      ]);
 
       return;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * 9. IMAGE RULE
-     *
-     * Multiple images are allowed.
-     * ---------------------------------------------------------
-     */
-
+    /* 9. IMAGE RULE — multiple images are allowed */
     if (incomingHasImage) {
       const remainingSlots = LIMITS.maxFiles - files.length;
 
       if (remainingSlots <= 0) {
-        showAlert(
-          `You can attach up to ${LIMITS.maxFiles} images.`,
-          "Image limit reached"
-        );
-
+        showAlert(`You can attach up to ${LIMITS.maxFiles} images.`, "Image limit reached");
         return;
       }
 
       const accepted = incoming.slice(0, remainingSlots);
-
-      const skippedForLimit =
-        incoming.length - accepted.length;
+      const skippedForLimit = incoming.length - accepted.length;
 
       const withPreviews = accepted.map((file) => ({
         file,
-        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2)}`,
+        id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         url: URL.createObjectURL(file),
       }));
 
@@ -988,13 +904,10 @@ export default function UploadPost({ onPublish, onCancel }) {
       if (skippedForLimit > 0) {
         showAlert(
           `Only ${LIMITS.maxFiles} images are allowed in total.\n\n` +
-          `${skippedForLimit} image${skippedForLimit === 1 ? "" : "s"
-          } was not added.`,
+          `${skippedForLimit} image${skippedForLimit === 1 ? "" : "s"} was not added.`,
           "Image limit reached"
         );
       }
-
-      return;
     }
   };
 
@@ -1048,62 +961,52 @@ export default function UploadPost({ onPublish, onCancel }) {
     if (isSubmitting) return;
     if (!validate()) return;
 
+    if (!user) {
+      showAlert("Your session has expired. Please log in again.", "Not logged in");
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // ---- Payload (multipart/form-data) -------------------------------------
-    const formData = new FormData();
-
-    const put = (key, value) => {
-      const v = typeof value === "string" ? value.trim() : value;
-      if (v) formData.append(key, v);
-    };
-
-    put("title", post.title);
-    formData.append("content", post.content);
-    put("link", post.link);
-    put("startTime", post.startTime);
-    put("endTime", post.endTime);
-    put("deadline", post.deadline);
-    put("company", post.company);
-    put("role", post.role);
-    put("eligibility", post.eligibility);
-    put("location", post.location);
-    put("package", post.package);
-
-    formData.append("type", post.type);
-    formData.append("freshers", String(post.freshers));
-    formData.append("remote", String(post.remote));
-    formData.append("referralAvailable", String(post.referralAvailable));
-    formData.append("email", user.email);
-    formData.append("Userrole", user.role);
-
-    post.skills.forEach((s) => {
-      formData.append("skills", s);
-    });
-
-    files.forEach((f) => {
-      formData.append("files", f.file);
-    });
-
     try {
+      // ---- Payload (multipart/form-data) ----
+      const formData = new FormData();
+
+      const put = (key, value) => {
+        const v = typeof value === "string" ? value.trim() : value;
+        if (v) formData.append(key, v);
+      };
+
+      put("title", post.title);
+      formData.append("content", post.content);
+      put("link", post.link);
+      put("startTime", post.startTime);
+      put("endTime", post.endTime);
+      put("deadline", post.deadline);
+      put("company", post.company);
+      put("role", post.role);
+      put("eligibility", post.eligibility);
+      put("location", post.location);
+      put("package", post.package);
+
+      formData.append("type", post.type);
+      formData.append("freshers", String(post.freshers));
+      formData.append("remote", String(post.remote));
+      formData.append("referralAvailable", String(post.referralAvailable));
+      formData.append("email", user.email);
+      formData.append("Userrole", user.role);
+
+      post.skills.forEach((s) => formData.append("skills", s));
+      files.forEach((f) => formData.append("files", f.file));
 
       console.log(formData);
       await api.post("/posts", formData);
 
-
       setSubmitted(true);
-
       clearTimeout(toastTimer.current);
-      toastTimer.current = setTimeout(
-        () => setSubmitted(false),
-        2600
-      );
+      toastTimer.current = setTimeout(() => setSubmitted(false), 2600);
 
-      files.forEach((f) => {
-        if (f.url) {
-          URL.revokeObjectURL(f.url);
-        }
-      });
+      files.forEach((f) => { if (f.url) URL.revokeObjectURL(f.url); });
 
       setPost(EMPTY_POST);
       setContentText("");
@@ -1111,12 +1014,10 @@ export default function UploadPost({ onPublish, onCancel }) {
       setErrors({});
       clearDraft();
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-    catch (err) {
+      onPublish?.();
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
       showAlert(
         err?.response?.data?.message ||
         err?.message ||
@@ -1127,7 +1028,6 @@ export default function UploadPost({ onPublish, onCancel }) {
       setIsSubmitting(false);
     }
   };
-
 
   // Falls back to browser-back when no onCancel prop is passed.
   const leavePage = () => (onCancel ? onCancel() : window.history.back());
@@ -1156,16 +1056,13 @@ export default function UploadPost({ onPublish, onCancel }) {
 
   return (
     <div className={styles.page}>
-      {/* <TopHeader /> */}
-      {/* <Navbar /> */}
-
       <main className={styles.main}>
         <div className={styles.container}>
           {/* 2) Title container */}
           <div className={styles.titleCard}>
             <div className={styles.titleContent}>
               <div className={styles.titleLeft}>
-                <div className={styles.headerIconBox}><Pencil size={22} /></div>
+                <div className={styles.headerIconBox}><NotebookPen size={22} /></div>
                 <div>
                   <h2 className={styles.headerTitle}>Create Post</h2>
                   <p className={styles.headerSubtitle}>Share job opportunities, events, updates and more with the alumni community.</p>
@@ -1256,7 +1153,14 @@ export default function UploadPost({ onPublish, onCancel }) {
 
                 <Section icon={Paperclip} title="Links & attachments" desc="Add relevant links or files (optional).">
                   <Field label="Link (optional)" error={errors.link}>
-                    <IconInput icon={Link2} type="url" value={post.link} onChange={(e) => set("link", e.target.value)} placeholder="Enter relevant link (e.g., apply link, website)" />
+                    <IconInput
+                      icon={Link2}
+                      type="url"
+                      autoComplete="off"
+                      value={post.link}
+                      onChange={(e) => set("link", e.target.value)}
+                      placeholder="Enter relevant link (e.g., apply link, website)"
+                    />
                   </Field>
 
                   <Field label="Attachments (optional)">
