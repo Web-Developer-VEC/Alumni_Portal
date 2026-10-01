@@ -680,10 +680,7 @@ export default function UploadPost({ onPublish, onCancel }) {
   const autosaveTimer = useRef(null);
 
 
-  if (!user) {
-    alert("Please login to create a post.");
-  }
-  console.log("User:", user);
+
   const writeDraft = useCallback((data, text) => {
     try {
       if (typeof window === "undefined") return false;
