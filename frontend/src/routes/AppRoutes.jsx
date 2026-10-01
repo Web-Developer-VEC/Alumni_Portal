@@ -20,6 +20,7 @@ import Gallery from "../pages/common/Gallery"
 import Events from "../components/common/events";
 
 import NotFound from "../components/common/NotFound";
+import Mentorship from "../pages/alumni/Mentorship";
 
 // import FeedbackForm from "../pages/feedback/FeedbackForm"; 
 function AppRoute() {
@@ -54,6 +55,8 @@ function AppRoute() {
                 <Route path="gallery" element={<Gallery />}/>
                 <Route path="members" element={<Members />} />
                 <Route path="events" element={<Events />} />
+                <Route path="mentor" element={<Mentorship />} />
+                
             </Route>
             
             <Route path="*" element={<NotFound />} />
