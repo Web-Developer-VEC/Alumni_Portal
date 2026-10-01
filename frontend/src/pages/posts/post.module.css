@@ -3052,3 +3052,282 @@
 .toggleSwitch input:checked + .toggleSlider::before {
   transform: translateX(1.25rem);
 }
+
+
+
+
+/* ==========================================================================
+   VEC Connect theme for the Job Board
+   PASTE THIS AT THE VERY BOTTOM of post.module.css (it overrides earlier rules).
+   Palette: warm cream page, white cards, maroon primary, yellow accent.
+   ========================================================================== */
+
+:root {
+  --color-page-bg: #fffffff4;
+  --color-white: #ffffff;
+  --color-ink: #2a1519;
+  --color-ink-soft: #3a1f26;
+  --color-text: #54494d;
+  --color-text-muted: #8a7f78;
+  --color-border: #efe6da;
+  --color-border-soft: #e6d9c6;
+  --color-surface: #faf5ec;
+  --color-surface-hover: #f4ead9;
+
+  --color-maroon: #7b1028;
+  --color-maroon-deep: #5a0a1d;
+  --color-yellow: #fdcc03;
+  --color-orange: var(--color-yellow);
+  --color-orange-dark: var(--color-maroon);
+  --color-orange-bg: #fff6d4;
+
+  /* re-skin purple chips (batch tag, comment avatar, group avatar) */
+  --color-purple: var(--color-maroon);
+  --color-purple-bg: #fff1c2;
+  --color-purple-text: var(--color-maroon);
+
+  --font-head: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+
+  --shadow-sm: 0 1px 2px rgba(90, 10, 29, 0.05);
+  --shadow-md: 0 6px 18px rgba(90, 10, 29, 0.08);
+  --shadow-xl: 0 14px 34px rgba(90, 10, 29, 0.12);
+}
+
+.page {
+  background: var(--color-page-bg);
+  color: var(--color-text);
+}
+
+/* ---------- Page heading + stats (no card, like "Alumni Members") ---------- */
+.statsBanner {
+  background: transparent;
+  box-shadow: none;
+  padding: 0.5rem 0 0.25rem;
+  overflow: visible;
+}
+.statsBgBlob1,
+.statsBgBlob2 { display: none; }
+.statsTitle {
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  /* color: var(--color-maroon); */
+}
+.statsDesc {
+  font-size: 15px;
+  color: var(--color-text);
+}
+.statCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-xl);
+}
+.statValue { color: var(--color-maroon); font-weight: 700; }
+.statValuePurple { color: var(--color-maroon); }
+.statValueTeal { color: var(--color-maroon); }
+.statLabel { color: var(--color-text-muted); }
+
+/* ---------- Search / sort / filters bar ---------- */
+.controls {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  padding: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+.controlsSearchInput {
+  background: #fffffff4;
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+  color: var(--color-ink);
+}
+.controlsSearchInput:focus {
+  background: var(--color-white);
+  border-color: var(--color-maroon);
+  box-shadow: 0 0 0 3px rgba(123, 16, 40, 0.1);
+}
+.sortMenuBtn {
+  background: var(--color-white);
+  color: var(--color-ink);
+  border: 1px solid var(--color-border-soft);
+  box-shadow: none;
+}
+.sortMenuBtn:hover {
+  background: var(--color-surface);
+  color: var(--color-maroon);
+  border-color: var(--color-maroon);
+}
+.filterToggleBtn,
+.filterToggleBtnActive {
+  background: var(--color-yellow);
+  color: var(--color-black);
+  box-shadow: none;
+}
+.filterToggleBtn:hover,
+.filterToggleBtnActive:hover {
+  background: var(--color-maroon);
+  color: var(--color-white);
+}
+.filterToggleCount {
+  background: var(--color-yellow);
+  color: var(--color-maroon-deep);
+}
+.sortCard {
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+}
+.sortOptionActive,
+.sortOptionActive:hover { background: var(--color-orange-bg); }
+.sortOptionCheck { color: var(--color-maroon); }
+
+/* ---------- Filter panel ---------- */
+.filterCard {
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+.filterCardTitle { color: var(--color-maroon); font-weight: 700; }
+.filterResetBtn { color: var(--color-maroon); }
+.filterToggleRow { background: var(--color-orange-bg); border: 1px solid #f6e3a1; }
+.filterSelectedTag { background: var(--color-orange-bg); color: var(--color-maroon); }
+.filterCheckbox { accent-color: var(--color-maroon); }
+.filterPillBtn {
+  background: var(--color-white);
+  border: 1px solid var(--color-border-soft);
+}
+.filterPillBtn:hover { border-color: var(--color-maroon); background: var(--color-surface); }
+.filterPillBtnActive,
+.filterPillBtnActive:hover {
+  background: var(--color-maroon);
+  border-color: var(--color-maroon);
+  color: var(--color-white);
+}
+.toggleSwitch input:checked + .toggleSlider { background: var(--color-maroon); }
+.filterApplyBtn { background: var(--color-maroon); color: var(--color-white); }
+.filterApplyBtn:active { background: var(--color-maroon-deep); }
+
+/* ---------- Job card ---------- */
+.jobCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 10px rgba(90, 10, 29, 0.04);
+  padding: 1.25rem;
+}
+.jobCard:hover {
+  transform: none;
+  border-color: #e9d7b3;
+  box-shadow: var(--shadow-xl);
+}
+@media (min-width: 640px) { .jobCard { padding: 1.5rem; } }
+
+/* alumni header: round avatar with yellow ring, like the Members page */
+.avatarImg,
+.avatarFallback {
+  height: 3.5rem;
+  width: 3.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-yellow);
+  padding: 2px;
+  background: var(--color-white);
+  box-sizing: border-box;
+}
+.avatarFallback {
+  background: var(--color-orange-bg);
+  color: var(--color-maroon);
+  font-size: 16px;
+  font-weight: 700;
+}
+.verifiedBadge {
+  background: #16a34a;
+  bottom: -0.1rem;
+  right: -0.1rem;
+  height: 1.15rem;
+  width: 1.15rem;
+  box-shadow: 0 0 0 2px var(--color-white);
+}
+.alumniName { font-size: 17px; font-weight: 700; color: var(--color-ink); }
+.batchTag {
+  background: var(--color-orange-bg);
+  color: var(--color-maroon);
+  border: 1px solid #f6e3a1;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+.designationText { color: var(--color-text-muted); }
+.menuBtn:hover { background: var(--color-surface); color: var(--color-maroon); }
+.menuDropdown { border: 1px solid var(--color-border); }
+.menuItem:hover { background: var(--color-surface); }
+.menuItemDanger { color: var(--color-red); }
+
+/* hero banner */
+.heroBanner { border-radius: 1rem; }
+.heroGradientBg {
+  background: linear-gradient(135deg, var(--color-maroon-deep), var(--color-maroon) 60%, #a3162f);
+}
+.heroTypeLabel { color: var(--color-yellow); letter-spacing: 0.08em; }
+.heroMonogram {
+  background: rgba(253, 204, 3, 0.16);
+  border-color: rgba(253, 204, 3, 0.4);
+  color: var(--color-yellow);
+}
+.heroOverlay { background: linear-gradient(to top, rgba(42, 21, 25, 0.8), transparent 60%); }
+.heroCompanyLabel { color: var(--color-yellow); }
+.heroReferralIcon { color: var(--color-maroon); }
+
+/* badges */
+.badge { background: var(--color-orange-bg); color: var(--color-maroon); border: 1px solid #f6e3a1; text-transform: none; letter-spacing: 0; font-size: 11px; }
+.badgeFreshers { background: #f3ecff; color: #5b3aa6; border-color: #e3d6fb; }
+.badgeRemote { background: #e7f7ee; color: #166534; border-color: #c4ecd3; }
+.badgeReferral { background: #e6f6f4; color: #0f5f58; border-color: #c2e8e3; }
+.badgeHighVolume { background: #fde8ec; color: var(--color-maroon); border-color: #f6c7d1; }
+
+/* body */
+.pledgeBox { background: var(--color-surface); border: 1px solid var(--color-border); }
+.pledgeIcon { color: var(--color-maroon); }
+.descriptionText { color: var(--color-text); line-height: 1.7; }
+.tagsRow { color: var(--color-maroon); }
+.metaPill { background: var(--color-surface); border: 1px solid var(--color-border); }
+.metaPillIcon { color: var(--color-maroon); }
+.metaPillLabel { color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; }
+.skillChip { background: var(--color-white); border: 1px solid var(--color-border-soft); color: var(--color-ink); }
+
+/* CTA: yellow, maroon on hover (same as the site's primary buttons) */
+.ctaBtn {
+  background: var(--color-yellow);
+  color: var(--color-black);
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(253, 204, 3, 0.35);
+}
+.ctaBtn:hover { background: var(--color-maroon); color: var(--color-white); box-shadow: 0 6px 16px rgba(123, 16, 40, 0.3); }
+
+/* social footer + comments */
+.socialFooter { border-top-color: var(--color-border); }
+.commentBtn:hover,
+.bookmarkBtn:hover { color: var(--color-maroon); }
+.bookmarkActive { color: var(--color-maroon); }
+.commentsDrawer { background: var(--color-surface); border-top: 1px solid var(--color-border); }
+.commentItem { border: 1px solid var(--color-border); }
+.commentInput { border: 1px solid var(--color-border-soft); }
+.commentInput:focus { border-color: var(--color-maroon); box-shadow: 0 0 0 3px rgba(123, 16, 40, 0.1); }
+.commentSendBtn { background: var(--color-maroon); color: var(--color-white); }
+.commentSendBtn:hover:not(:disabled) { background: var(--color-maroon-deep); }
+.commentMoreBtn { color: var(--color-maroon); }
+
+/* modals, pdf, empty/loading states */
+.moreBtn { background: var(--color-yellow); color: var(--color-maroon-deep); }
+.moreBtn:hover { background: var(--color-maroon); color: var(--color-white); }
+.shareAvatar { color: var(--color-maroon-deep); }
+.pdfBar { background: var(--color-maroon-deep); }
+.pdfSpinner { border-top-color: var(--color-maroon); }
+.reportRadio { accent-color: var(--color-maroon); }
+.emptyState { border: 1px solid var(--color-border); }
+.emptyTitle { color: var(--color-maroon); font-weight: 700; }
+.emptyResetBtn { background: var(--color-maroon); color: var(--color-white); }
+.toast { background: var(--color-maroon-deep); }
+.toastIcon { color: var(--color-yellow); }
