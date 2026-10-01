@@ -431,7 +431,7 @@ body {
     left: 50%;
 
     width: 205px;
-    height: 305px;
+    height: 315px;
 
     border-radius: 15px;
 
@@ -481,8 +481,6 @@ body {
 
     filter: none;
 
-    box-shadow:
-        0 28px 65px rgba(60, 30, 10, 0.20);
 }
 
 
@@ -702,22 +700,6 @@ body {
 
     font-weight: 600;
 }
-
-
-/* GOLD ACCENT */
-
-.card-accent {
-    width: 25px;
-
-    height: 3px;
-
-    border-radius: 4px;
-
-    background: #f5b000;
-
-    margin-top: 7px;
-}
-
 
 /* =========================================================
    CAROUSEL BUTTONS
