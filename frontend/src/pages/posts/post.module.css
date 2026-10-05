@@ -33,6 +33,12 @@
 
   --color-yellow: #fdcc03;
 
+  /* Primary accent used across the header / CTA / active-filter states —
+     restored to the site's original yellow + maroon theme. */
+  --color-orange: var(--color-yellow);
+  --color-orange-dark: var(--color-maroon);
+  --color-orange-bg: #fff5cc;
+
   --font-head: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
@@ -84,8 +90,6 @@
 
 /* ==========================================================================
    Toast
-   Fixed to always render bottom-center on mobile and bottom-right on
-   desktop, so it never appears to "jump" between positions.
    ========================================================================== */
 .toast {
   position: fixed;
@@ -139,10 +143,6 @@
 
 /* ==========================================================================
    Report modal
-   Anchored near the top of the viewport with a fixed offset instead of
-   `align-items: center`, so it no longer shifts when mobile browser chrome
-   or the on-screen keyboard resizes the viewport. Scrolls internally if
-   content is taller than the available space.
    ========================================================================== */
 .reportOverlay {
   position: fixed;
@@ -250,9 +250,9 @@
   background: var(--color-surface);
 }
 .reportRadio {
-  height: 1rem;
-  width: 1rem;
-  accent-color: var(--color-green);
+  height: 1.05rem;
+  width: 1.05rem;
+  accent-color: var(--color-maroon);
 }
 .reportReasonText {
   font-family: var(--font-head);
@@ -276,7 +276,7 @@
   color: var(--color-text-muted);
 }
 .reportTextarea:focus {
-  box-shadow: 0 0 0 1px var(--color-green-accent);
+  box-shadow: 0 0 0 1px var(--color-orange);
 }
 .reportFooter {
   display: flex;
@@ -537,15 +537,15 @@
   font-family: var(--font-head);
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-white);
-  background: var(--color-green);
+  color: #000000;
+  background: var(--color-orange);
   transition: all 0.15s ease;
 }
 .shareAvatarGroup {
   background: var(--color-purple);
 }
 .shareAvatarSelected {
-  box-shadow: 0 0 0 2px var(--color-maroon);
+  box-shadow: 0 0 0 2px var(--color-orange-dark);
 }
 .shareSelectedBadge {
   position: absolute;
@@ -557,7 +557,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: var(--color-maroon);
+  background: var(--color-orange-dark);
   color: var(--color-white);
   box-shadow: 0 0 0 2px var(--color-white);
 }
@@ -627,7 +627,7 @@
   justify-content: center;
   gap: 0.375rem;
   border-radius: var(--radius-xl);
-  background: var(--color-yellow);
+  background: var(--color-orange);
   padding: 0.75rem;
   font-family: var(--font-head);
   font-size: 12px;
@@ -638,7 +638,7 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .moreBtn:hover {
-  background: var(--color-maroon);
+  background: var(--color-orange-dark);
   color: var(--color-white);
 }
 @media (min-width: 640px) {
@@ -694,24 +694,19 @@
 .jobCard {
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-2xl);
   background: var(--color-white);
   padding: 1rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
 }
 .jobCard:hover {
-  transform: translateY(-0.25rem);
+  transform: translateY(-0.15rem);
   box-shadow: var(--shadow-xl);
 }
 @media (min-width: 640px) {
   .jobCard {
-    padding: 1.5rem;
-  }
-}
-@media (min-width: 1024px) {
-  .jobCard {
-    padding: 2rem;
+    padding: 1.25rem;
   }
 }
 
@@ -721,7 +716,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
 }
 .cardHeaderLeft {
   display: flex;
@@ -746,11 +741,11 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-2xl);
-  background: var(--color-border);
+  background: var(--color-orange-bg);
   font-family: var(--font-head);
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-green);
+  color: var(--color-orange-dark);
 }
 .verifiedBadge {
   position: absolute;
@@ -860,13 +855,13 @@
   background: rgba(255, 218, 214, 0.2);
 }
 .bookmarkActive {
-  color: var(--color-maroon);
+  color: var(--color-orange-dark);
 }
 
 /* -- hero banner -- */
 .heroBanner {
   position: relative;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   height: 13rem;
   width: 100%;
   overflow: hidden;
@@ -886,6 +881,382 @@
 }
 .jobCard:hover .heroImg {
   transform: scale(1.05);
+}
+
+
+/* ===== Append this whole file to the bottom of post.module.css ===== */
+
+/* Filters button */
+.filterToggleBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-xl);
+  background: #fdcc03;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: #000000;
+  box-shadow: var(--shadow-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.filterToggleBtn:hover { background: var(--color-surface-hover); }
+.filterToggleBtnActive { background: var(--color-orange); color: #000; }
+.filterToggleBtnActive:hover { background: var(--color-orange); }
+.filterToggleCount {
+  min-width: 1.25rem;
+  border-radius: var(--radius-full);
+  background: var(--color-maroon);
+  padding: 0.05rem 0.4rem;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25rem;
+  text-align: center;
+  color: var(--color-white);
+}
+
+/* Filter panel header: Reset + X */
+.filterHeaderActions { display: flex; align-items: center; gap: 0.75rem; }
+.filterCloseBtn {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.filterCloseBtn:hover { background: var(--color-surface-hover); color: var(--color-ink); }
+
+/* Mobile: filter sheet from the top */
+.filterSheetOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  align-items: flex-start;
+  background: rgba(19, 27, 46, 0.4);
+  backdrop-filter: blur(4px);
+}
+.filterSheet {
+  display: flex;
+  width: 100%;
+  max-height: min(88dvh, 760px);
+  flex-direction: column;
+  border-radius: 0 0 var(--radius-3xl) var(--radius-3xl);
+  background: var(--color-white);
+  padding-top: env(safe-area-inset-top, 0px);
+  box-shadow: var(--shadow-2xl);
+  transform: translateY(-100%);
+  transition: transform 0.22s ease;
+}
+.filterSheetVisible { transform: translateY(0); }
+.filterSheetBody {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.filterSheet .filterCard { box-shadow: none; border-radius: 0; }
+.filterSheetFooter {
+  border-top: 1px solid var(--color-border);
+  padding: 0.75rem 1rem;
+}
+.filterApplyBtn {
+  width: 100%;
+  border-radius: var(--radius-xl);
+  background: var(--color-orange);
+  padding: 0.875rem 1.5rem;
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  border: none;
+  cursor: pointer;
+}
+.filterApplyBtn:active { background: var(--color-orange-dark); color: var(--color-white); }
+
+/* Sort card */
+.sortMenuWrap { position: relative; flex-shrink: 0; }
+.sortMenuBtn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  white-space: nowrap;
+  border-radius: var(--radius-xl);
+  background: var(--color-white);
+  padding: 0.75rem 1rem;
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  box-shadow: var(--shadow-sm);
+  border: none;
+  cursor: pointer;
+}
+@media (min-width: 640px) { .sortMenuBtn { width: auto; min-width: 11rem; } }
+.sortCard {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 40;
+  width: 100%;
+  min-width: 17rem;
+  border-radius: var(--radius-2xl);
+  background: var(--color-white);
+  padding: 0.5rem;
+  box-shadow: var(--shadow-xl);
+}
+.sortCardTitle {
+  padding: 0.5rem 0.75rem 0.375rem;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+.sortOption {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: var(--radius-xl);
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.sortOption:hover { background: var(--color-surface); }
+.sortOptionActive, .sortOptionActive:hover { background: var(--color-orange-bg); }
+.sortOptionText { display: flex; flex-direction: column; }
+.sortOptionLabel {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.sortOptionDesc {
+  margin-top: 0.125rem;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.sortOptionCheck {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  color: var(--color-orange-dark);
+}
+
+
+
+
+
+/* ===== Append this whole file to the bottom of post.module.css ===== */
+
+/* Filters button */
+.filterToggleBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-xl);
+  background: #fdcc03;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  box-shadow: var(--shadow-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.filterToggleBtn:hover { background: #800000; color: #ffffff; }
+.filterToggleBtnActive { background: var(--color-orange); color: #000; }
+.filterToggleBtnActive:hover { background: #800000; color: #ffffff; }
+.filterToggleCount {
+  min-width: 1.25rem;
+  border-radius: var(--radius-full);
+  background: var(--color-maroon);
+  padding: 0.05rem 0.4rem;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25rem;
+  text-align: center;
+  color: var(--color-white);
+}
+
+/* Filter panel header: Reset + X */
+.filterHeaderActions { display: flex; align-items: center; gap: 0.75rem; }
+.filterCloseBtn {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.filterCloseBtn:hover { background: var(--color-surface-hover); color: var(--color-ink); }
+
+/* Mobile: filter sheet from the top */
+.filterSheetOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-start;
+  background: rgba(19, 27, 46, 0.4);
+  backdrop-filter: blur(4px);
+}
+.filterSheet {
+  display: flex;
+  width: 100%;
+  max-height: min(88dvh, 760px);
+  flex-direction: column;
+  border-radius: 0 0 var(--radius-3xl) var(--radius-3xl);
+  background: var(--color-white);
+  padding-top: env(safe-area-inset-top, 0px);
+  box-shadow: var(--shadow-2xl);
+  transform: translateY(-100%);
+  transition: transform 0.22s ease;
+}
+.filterSheetVisible { transform: translateY(0); }
+.filterSheetBody {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.filterSheet .filterCard { box-shadow: none; border-radius: 0; }
+.filterSheetFooter {
+  border-top: 1px solid var(--color-border);
+  padding: 0.75rem 1rem;
+}
+.filterApplyBtn {
+  width: 100%;
+  border-radius: var(--radius-xl);
+  background: var(--color-orange);
+  padding: 0.875rem 1.5rem;
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  border: none;
+  cursor: pointer;
+}
+.filterApplyBtn:active { background: var(--color-orange-dark); color: var(--color-white); }
+
+/* Sort card */
+.sortMenuWrap { position: relative; flex-shrink: 0; }
+.sortMenuBtn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  white-space: nowrap;
+  border-radius: var(--radius-xl);
+  background: #fdcc03;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: #000000;
+  box-shadow: var(--shadow-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+@media (max-width: 639px) {
+  .sortMenuBtn {
+    position: relative;
+    justify-content: center;
+  }
+  .sortMenuBtn svg {
+    position: absolute;
+    right: 1rem;
+  }
+}
+.sortMenuBtn:hover {
+  background: #800000;
+  color: #ffffff;
+}
+@media (min-width: 640px) { .sortMenuBtn { width: auto; min-width: 11rem; } }
+.sortCard {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 40;
+  width: 100%;
+  min-width: 17rem;
+  border-radius: var(--radius-2xl);
+  background: var(--color-white);
+  padding: 0.5rem;
+  box-shadow: var(--shadow-xl);
+}
+.sortCardTitle {
+  padding: 0.5rem 0.75rem 0.375rem;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+.sortOption {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: var(--radius-xl);
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.sortOption:hover { background: var(--color-surface); }
+.sortOptionActive, .sortOptionActive:hover { background: var(--color-orange-bg); }
+.sortOptionText { display: flex; flex-direction: column; }
+.sortOptionLabel {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.sortOptionDesc {
+  margin-top: 0.125rem;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.sortOptionCheck {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  color: var(--color-orange-dark);
 }
 
 /* portrait photo: blurred backdrop + the whole image visible */
@@ -918,7 +1289,7 @@
   width: 100%;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(to top right, #6860ef, #047857, #00766c);
+  background: linear-gradient(to top right, var(--color-orange), var(--color-orange-dark));
   padding: 0 2rem;
 }
 .heroGradientTextWrap {
@@ -932,7 +1303,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--color-teal-light);
+  color: var(--color-orange-bg);
 }
 .heroRoleTitle {
   font-family: var(--font-head);
@@ -969,26 +1340,30 @@
 }
 .badge {
   border-radius: var(--radius-full);
-  background: var(--color-surface);
+  background: var(--color-red-bg);
   padding: 0.25rem 0.75rem;
   font-family: var(--font-head);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-maroon);
+  color: var(--color-red-dark);
 }
 .badgeFreshers {
-  color: var(--color-purple);
+  background: var(--color-purple-bg);
+  color: var(--color-purple-text);
 }
 .badgeRemote {
+  background: var(--color-green-light);
   color: var(--color-green);
 }
 .badgeReferral {
-  color: var(--color-purple);
+  background: var(--color-teal-light);
+  color: var(--color-teal-dark);
 }
 .badgeHighVolume {
-  color: var(--color-teal-dark);
+  background: var(--color-orange-bg);
+  color: var(--color-orange-dark);
 }
 .heroBottomBar {
   position: absolute;
@@ -1029,23 +1404,23 @@
   align-items: center;
   gap: 0.375rem;
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   padding: 0.375rem 0.75rem;
   font-family: var(--font-head);
   font-size: 11px;
   font-weight: 600;
   color: var(--color-ink);
   backdrop-filter: blur(8px);
-  overflow-wrap: anywhere; /* long emails wrap instead of overflowing */
+  overflow-wrap: anywhere;
 }
 .heroReferralIcon {
   height: 1rem;
   width: 1rem;
   flex-shrink: 0;
-  color: var(--color-green);
+  color: var(--color-orange-dark);
 }
 
-/* -- image carousel controls (hero banner + fullscreen viewer) -- */
+/* -- image carousel controls -- */
 .imgNav {
   position: absolute;
   top: 50%;
@@ -1147,9 +1522,9 @@
   -webkit-user-drag: none;
 }
 
-/* -- PDF document viewer (LinkedIn style) -- */
+/* -- PDF document viewer -- */
 .pdfWrap {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   overflow: hidden;
   border-radius: var(--radius-2xl);
   background: var(--color-white);
@@ -1190,7 +1565,7 @@
   width: 1.75rem;
   border-radius: var(--radius-full);
   border: 3px solid var(--color-border-soft);
-  border-top-color: var(--color-green-accent);
+  border-top-color: var(--color-orange);
   animation: pdfSpin 0.8s linear infinite;
 }
 @keyframes pdfSpin {
@@ -1312,7 +1687,7 @@
 .cardBody {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 .pledgeBox {
   display: flex;
@@ -1320,14 +1695,14 @@
   gap: 0.75rem;
   border-radius: var(--radius-xl);
   background: var(--color-surface);
-  padding: 1rem;
+  padding: 0.875rem;
 }
 .pledgeIcon {
   margin-top: 0.125rem;
   height: 22px;
   width: 22px;
   flex-shrink: 0;
-  color: var(--color-green-accent);
+  color: var(--color-orange-dark);
 }
 .pledgeText {
   font-family: var(--font-body);
@@ -1352,13 +1727,13 @@
   font-family: var(--font-head);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-green);
+  color: var(--color-orange-dark);
 }
 .metaGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
+  gap: 0.625rem;
+  padding-top: 0.25rem;
 }
 @media (min-width: 480px) {
   .metaGrid {
@@ -1392,7 +1767,7 @@
   color: var(--color-ink);
 }
 .ctaWrap {
-  padding-top: 0.5rem;
+  padding-top: 0.25rem;
 }
 .ctaBtn {
   display: flex;
@@ -1401,7 +1776,7 @@
   justify-content: center;
   gap: 0.625rem;
   border-radius: var(--radius-xl);
-  background: var(--color-yellow);
+  background: var(--color-orange);
   padding: 0.875rem 1.5rem;
   font-family: var(--font-head);
   font-size: 16px;
@@ -1412,7 +1787,7 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .ctaBtn:hover {
-  background: var(--color-maroon);
+  background: var(--color-orange-dark);
   color: var(--color-white);
 }
 .ctaIcon {
@@ -1426,12 +1801,12 @@
 
 /* -- social footer -- */
 .socialFooter {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--color-border);
-  padding-top: 1.5rem;
+  padding-top: 1rem;
 }
 .socialLeft {
   display: flex;
@@ -1454,7 +1829,7 @@
   color: var(--color-red);
 }
 .commentBtn:hover {
-  color: var(--color-green);
+  color: var(--color-orange-dark);
 }
 .shareCardBtn:hover {
   color: var(--color-ink);
@@ -1508,7 +1883,7 @@
   transition: color 0.15s ease;
 }
 .bookmarkBtn:hover {
-  color: var(--color-maroon);
+  color: var(--color-orange-dark);
 }
 .bookmarkIconLarge {
   height: 22px;
@@ -1517,28 +1892,20 @@
 
 /* -- comments drawer -- */
 .commentsDrawer {
-  margin: 1.25rem -1rem 0;
+  margin: 1rem -1rem 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  border-radius: 0 0 var(--radius-3xl) var(--radius-3xl);
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   background: rgba(242, 243, 255, 0.5);
-  padding: 1.25rem 1rem 1rem;
+  padding: 1rem 1rem 0.875rem;
 }
 @media (min-width: 640px) {
   .commentsDrawer {
-    margin-left: -1.5rem;
-    margin-right: -1.5rem;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-@media (min-width: 1024px) {
-  .commentsDrawer {
-    margin-left: -2rem;
-    margin-right: -2rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
 }
 .commentsEmpty {
@@ -1648,7 +2015,7 @@
   font-family: var(--font-head);
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-green-accent);
+  color: var(--color-orange-dark);
 }
 .commentMoreBtn:hover {
   text-decoration: underline;
@@ -1673,11 +2040,11 @@
   color: var(--color-text-muted);
 }
 .commentInput:focus {
-  box-shadow: 0 0 0 1px var(--color-green-accent);
+  box-shadow: 0 0 0 1px var(--color-orange);
 }
 .commentSendBtn {
   border-radius: var(--radius-xl);
-  background: var(--color-yellow);
+  background: var(--color-orange);
   padding: 0.625rem 1.25rem;
   font-family: var(--font-head);
   font-size: 13px;
@@ -1688,7 +2055,7 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .commentSendBtn:hover:not(:disabled) {
-  background: var(--color-maroon);
+  background: var(--color-orange-dark);
   color: var(--color-white);
 }
 .commentSendBtn:disabled {
@@ -1697,7 +2064,8 @@
 }
 
 /* ==========================================================================
-   Top header
+   Top header (unused if a separate Navbar component supplies its own
+   styles — kept here in case AlumniJobFeed renders its own header)
    ========================================================================== */
 .header {
   position: fixed;
@@ -1742,7 +2110,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xl);
-  background: var(--color-green-accent);
+  background: var(--color-orange);
   box-shadow: var(--shadow-sm);
   transition: transform 0.15s ease;
 }
@@ -1752,7 +2120,7 @@
 .logoIcon {
   height: 22px;
   width: 22px;
-  color: var(--color-white);
+  color: #000000;
 }
 .logoTextWrap {
   display: flex;
@@ -1773,7 +2141,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-green-accent);
+  color: var(--color-orange-dark);
 }
 .searchBox {
   display: none;
@@ -1847,12 +2215,12 @@
   color: var(--color-ink);
 }
 .navBtnActive {
-  background: var(--color-green-accent);
-  color: var(--color-white);
+  background: var(--color-orange);
+  color: #000000;
   box-shadow: var(--shadow-sm);
 }
 .navBtnActive:hover {
-  color: var(--color-white);
+  color: #000000;
 }
 .headerRight {
   display: flex;
@@ -1884,7 +2252,7 @@
   height: 0.5rem;
   width: 0.5rem;
   border-radius: var(--radius-full);
-  background: var(--color-green-accent);
+  background: var(--color-orange);
   box-shadow: 0 0 0 2px var(--color-white);
 }
 .divider {
@@ -1914,12 +2282,12 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: var(--color-green);
+  background: var(--color-orange);
 }
 .profileAvatarIcon {
   height: 18px;
   width: 18px;
-  color: var(--color-white);
+  color: #000000;
 }
 .profileBatchBadge {
   position: absolute;
@@ -1965,7 +2333,7 @@
   overflow: hidden;
   border-radius: var(--radius-2xl);
   background: var(--color-white);
-  padding: 1.5rem;
+  padding: 1.25rem;
   box-shadow: var(--shadow-sm);
 }
 .statsBgBlob1 {
@@ -1976,7 +2344,7 @@
   height: 16rem;
   width: 16rem;
   border-radius: var(--radius-full);
-  background: rgba(4, 120, 87, 0.05);
+  background: rgba(249, 115, 22, 0.06);
   filter: blur(64px);
 }
 .statsBgBlob2 {
@@ -1996,7 +2364,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 @media (min-width: 1024px) {
   .statsContent {
@@ -2101,7 +2469,7 @@
 }
 
 /* ==========================================================================
-   Controls (search + filters)
+   Controls (search + filters, above the feed)
    ========================================================================== */
 .controls {
   position: relative;
@@ -2109,7 +2477,7 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 @media (min-width: 1024px) {
   .controls {
@@ -2165,11 +2533,11 @@
 .sortWrap {
   position: relative;
   flex-shrink: 0;
-  display: flex; /* removes the inline baseline gap so the icon centers exactly */
+  display: flex;
 }
 .sortSelect {
   display: block;
-  width: 100%; /* select fills the wrapper on mobile, so the icon sits inside it */
+  width: 100%;
   cursor: pointer;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -2188,7 +2556,7 @@
 }
 @media (min-width: 640px) {
   .sortSelect {
-    width: auto; /* natural width when it sits beside the search box */
+    width: auto;
   }
 }
 .sortIcon {
@@ -2233,15 +2601,15 @@
   cursor: pointer;
 }
 .filterBtn:hover {
-  background: var(--color-surface-hover);
-  color: var(--color-ink);
+  background: var(--color-maroon);
+  color: var(--color-white);
 }
 .filterBtnActive {
-  background: var(--color-yellow);
+  background: var(--color-orange);
   color: #000000;
 }
 .filterBtnActive:hover {
-  background: var(--color-yellow);
+  background: var(--color-orange);
   color: #000000;
 }
 .filtersWrap {
@@ -2276,7 +2644,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-2xl);
   background: var(--color-white);
   padding: 3rem;
   text-align: center;
@@ -2312,12 +2680,12 @@
 .emptyResetBtn {
   margin-top: 1.25rem;
   border-radius: var(--radius-xl);
-  background: var(--color-yellow);
+  background: var(--color-orange);
   padding: 0.625rem 1.5rem;
   font-family: var(--font-head);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-black);
+  color: #000000;
   border: none;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -2341,36 +2709,31 @@
 .container {
   margin: 0 auto;
   width: 100%;
-  max-width: 80rem;
+  max-width: none;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: 1.5rem 1rem;
+  gap: 1rem;
+  padding: 1rem;
 }
 @media (min-width: 640px) {
   .container {
-    gap: 2rem;
-    padding: 2rem 1.5rem;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
   }
 }
 @media (min-width: 1024px) {
   .container {
-    padding-left: 3rem;
-    padding-right: 3rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 .jobList {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-}
-@media (min-width: 640px) {
-  .jobList {
-    gap: 2rem;
-  }
+  gap: 1rem;
 }
 .footer {
-  margin-top: 2rem;
+  margin-top: 1rem;
   width: 100%;
   background: var(--color-white);
   box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.02);
@@ -2378,18 +2741,18 @@
 .footerInner {
   margin: 0 auto;
   display: flex;
-  max-width: 80rem;
+  max-width: none;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 3rem 1.5rem;
+  padding: 2rem 1.5rem;
 }
 @media (min-width: 1024px) {
   .footerInner {
     flex-direction: row;
-    padding-left: 3rem;
-    padding-right: 3rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }
 .footerLogo {
@@ -2404,12 +2767,12 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-lg);
-  background: var(--color-green-accent);
+  background: var(--color-orange);
 }
 .footerLogoIcon {
   height: 1rem;
   width: 1rem;
-  color: var(--color-white);
+  color: #000000;
 }
 .footerLogoTitle {
   font-family: var(--font-head);
@@ -2442,3 +2805,529 @@
   font-size: 11px;
   color: var(--color-text);
 }
+
+/* ==========================================================================
+   Content grid (Filter Roles sidebar + main column)
+   ========================================================================== */
+.contentGrid {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+@media (min-width: 1024px) {
+  .contentGrid {
+    flex-direction: row;
+    gap: 1.25rem;
+  }
+}
+.mainCol {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ==========================================================================
+   Filter sidebar ("Filter Roles" card) — no search field here: the search
+   box above the feed (Controls) already covers text search.
+   ========================================================================== */
+.filterSidebar {
+  width: 100%;
+  flex-shrink: 0;
+}
+@media (min-width: 1024px) {
+  .filterSidebar {
+    width: 26%;
+    min-width: 19rem;
+    max-width: 23rem;
+    position: sticky;
+    top: 1.25rem;
+    /* Cap the sidebar to the visible viewport and let it scroll internally.
+       Without this, at higher browser zoom the card can be taller than the
+       viewport, and the bottom filters become unreachable while stuck. */
+    max-height: calc(100vh - 2.5rem);
+    overflow-y: auto;
+  }
+}
+.filterCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-2xl);
+  background: var(--color-white);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+.filterCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.875rem;
+}
+.filterCardTitle {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.filterResetBtn {
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-orange-dark);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.filterResetBtn:hover {
+  text-decoration: underline;
+}
+.filterSection {
+  border-top: 1px solid var(--color-border);
+  padding: 0.875rem 0;
+}
+.filterSection:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.filterSectionLast {
+  padding-bottom: 0;
+}
+.filterToggleSection {
+  border-top: none;
+  padding-top: 0;
+}
+.filterToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-orange-bg);
+  padding: 0.75rem;
+}
+.filterToggleLabel {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.filterToggleSub {
+  margin-top: 0.125rem;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.filterSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.625rem;
+  gap: 0.5rem;
+}
+.filterSectionTitle {
+  display: block;
+  margin-bottom: 0.625rem;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+.filterSectionHeader .filterSectionTitle {
+  margin-bottom: 0;
+}
+.filterSelectedTag {
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-orange-bg);
+  padding: 0.125rem 0.5rem;
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-orange-dark);
+  white-space: nowrap;
+}
+.filterList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.filterCheckboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.filterCheckbox {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  accent-color: var(--color-orange);
+  cursor: pointer;
+}
+.filterCheckboxText {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-ink);
+}
+.filterCount {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.filterPillGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.filterPillBtn {
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.filterPillBtn:hover {
+  background: var(--color-surface-hover);
+}
+.filterPillBtnActive {
+  background: var(--color-orange);
+  color: #000000;
+}
+.filterPillBtnActive:hover {
+  background: var(--color-orange);
+}
+
+/* toggle switch (Alumni Referral) */
+.toggleSwitch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.5rem;
+  width: 2.75rem;
+  cursor: pointer;
+}
+.toggleSwitch input {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+}
+.toggleSlider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  transition: background-color 0.2s ease;
+}
+.toggleSlider::before {
+  content: "";
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  height: 1.125rem;
+  width: 1.125rem;
+  border-radius: 50%;
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+.toggleSwitch input:checked + .toggleSlider {
+  background: var(--color-orange);
+}
+.toggleSwitch input:checked + .toggleSlider::before {
+  transform: translateX(1.25rem);
+}
+
+
+
+
+/* ==========================================================================
+   VEC Connect theme for the Job Board
+   PASTE THIS AT THE VERY BOTTOM of post.module.css (it overrides earlier rules).
+   Palette: warm cream page, white cards, maroon primary, yellow accent.
+   ========================================================================== */
+
+:root {
+  --color-page-bg: #fffffff4;
+  --color-white: #ffffff;
+  --color-ink: #2a1519;
+  --color-ink-soft: #3a1f26;
+  --color-text: #54494d;
+  --color-text-muted: #8a7f78;
+  --color-border: #efe6da;
+  --color-border-soft: #e6d9c6;
+  --color-surface: #faf5ec;
+  --color-surface-hover: #f4ead9;
+
+  --color-maroon: #7b1028;
+  --color-maroon-deep: #5a0a1d;
+  --color-yellow: #fdcc03;
+  --color-orange: var(--color-yellow);
+  --color-orange-dark: var(--color-maroon);
+  --color-orange-bg: #fff6d4;
+
+  /* re-skin purple chips (batch tag, comment avatar, group avatar) */
+  --color-purple: var(--color-maroon);
+  --color-purple-bg: #fff1c2;
+  --color-purple-text: var(--color-maroon);
+
+  --font-head: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+
+  --shadow-sm: 0 1px 2px rgba(90, 10, 29, 0.05);
+  --shadow-md: 0 6px 18px rgba(90, 10, 29, 0.08);
+  --shadow-xl: 0 14px 34px rgba(90, 10, 29, 0.12);
+}
+
+.page {
+  background: var(--color-page-bg);
+  color: var(--color-text);
+}
+
+/* ---------- Page heading + stats (no card, like "Alumni Members") ---------- */
+.statsBanner {
+  background: transparent;
+  box-shadow: none;
+  padding: 0.5rem 0 0.25rem;
+  overflow: visible;
+}
+.statsBgBlob1,
+.statsBgBlob2 { display: none; }
+.statsTitle {
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  /* color: var(--color-maroon); */
+}
+.statsDesc {
+  font-size: 15px;
+  color: var(--color-text);
+}
+.statCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-xl);
+}
+.statValue { color: var(--color-maroon); font-weight: 700; }
+.statValuePurple { color: var(--color-maroon); }
+.statValueTeal { color: var(--color-maroon); }
+.statLabel { color: var(--color-text-muted); }
+
+/* ---------- Search / sort / filters bar ---------- */
+.controls {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  padding: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+.controlsSearchInput {
+  background: #fffffff4;
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+  color: var(--color-ink);
+}
+.controlsSearchInput:focus {
+  background: var(--color-white);
+  border-color: var(--color-maroon);
+  box-shadow: 0 0 0 3px rgba(123, 16, 40, 0.1);
+}
+.sortMenuBtn {
+  background: var(--color-white);
+  color: var(--color-ink);
+  border: 1px solid var(--color-border-soft);
+  box-shadow: none;
+}
+.sortMenuBtn:hover {
+  background: var(--color-surface);
+  color: var(--color-maroon);
+  border-color: var(--color-maroon);
+}
+.filterToggleBtn,
+.filterToggleBtnActive {
+  background: var(--color-yellow);
+  color: var(--color-black);
+  box-shadow: none;
+}
+.filterToggleBtn:hover,
+.filterToggleBtnActive:hover {
+  background: var(--color-maroon);
+  color: var(--color-white);
+}
+.filterToggleCount {
+  background: var(--color-yellow);
+  color: var(--color-maroon-deep);
+}
+.sortCard {
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+}
+.sortOptionActive,
+.sortOptionActive:hover { background: var(--color-orange-bg); }
+.sortOptionCheck { color: var(--color-maroon); }
+
+/* ---------- Filter panel ---------- */
+.filterCard {
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+.filterCardTitle { color: var(--color-maroon); font-weight: 700; }
+.filterResetBtn { color: var(--color-maroon); }
+.filterToggleRow { background: var(--color-orange-bg); border: 1px solid #f6e3a1; }
+.filterSelectedTag { background: var(--color-orange-bg); color: var(--color-maroon); }
+.filterCheckbox { accent-color: var(--color-maroon); }
+.filterPillBtn {
+  background: var(--color-white);
+  border: 1px solid var(--color-border-soft);
+}
+.filterPillBtn:hover { border-color: var(--color-maroon); background: var(--color-surface); }
+.filterPillBtnActive,
+.filterPillBtnActive:hover {
+  background: var(--color-maroon);
+  border-color: var(--color-maroon);
+  color: var(--color-white);
+}
+.toggleSwitch input:checked + .toggleSlider { background: var(--color-maroon); }
+.filterApplyBtn { background: var(--color-maroon); color: var(--color-white); }
+.filterApplyBtn:active { background: var(--color-maroon-deep); }
+
+/* ---------- Job card ---------- */
+.jobCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 10px rgba(90, 10, 29, 0.04);
+  padding: 1.25rem;
+}
+.jobCard:hover {
+  transform: none;
+  border-color: #e9d7b3;
+  box-shadow: var(--shadow-xl);
+}
+@media (min-width: 640px) { .jobCard { padding: 1.5rem; } }
+
+/* alumni header: round avatar with yellow ring, like the Members page */
+.avatarImg,
+.avatarFallback {
+  height: 3.5rem;
+  width: 3.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-yellow);
+  padding: 2px;
+  background: var(--color-white);
+  box-sizing: border-box;
+}
+.avatarFallback {
+  background: var(--color-orange-bg);
+  color: var(--color-maroon);
+  font-size: 16px;
+  font-weight: 700;
+}
+.verifiedBadge {
+  background: #16a34a;
+  bottom: -0.1rem;
+  right: -0.1rem;
+  height: 1.15rem;
+  width: 1.15rem;
+  box-shadow: 0 0 0 2px var(--color-white);
+}
+.alumniName { font-size: 17px; font-weight: 700; color: var(--color-ink); }
+.batchTag {
+  background: var(--color-orange-bg);
+  color: var(--color-maroon);
+  border: 1px solid #f6e3a1;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+.designationText { color: var(--color-text-muted); }
+.menuBtn:hover { background: var(--color-surface); color: var(--color-maroon); }
+.menuDropdown { border: 1px solid var(--color-border); }
+.menuItem:hover { background: var(--color-surface); }
+.menuItemDanger { color: var(--color-red); }
+
+/* hero banner */
+.heroBanner { border-radius: 1rem; }
+.heroGradientBg {
+  background: linear-gradient(135deg, var(--color-maroon-deep), var(--color-maroon) 60%, #a3162f);
+}
+.heroTypeLabel { color: var(--color-yellow); letter-spacing: 0.08em; }
+.heroMonogram {
+  background: rgba(253, 204, 3, 0.16);
+  border-color: rgba(253, 204, 3, 0.4);
+  color: var(--color-yellow);
+}
+.heroOverlay { background: linear-gradient(to top, rgba(42, 21, 25, 0.8), transparent 60%); }
+.heroCompanyLabel { color: var(--color-yellow); }
+.heroReferralIcon { color: var(--color-maroon); }
+
+/* badges */
+.badge { background: var(--color-orange-bg); color: var(--color-maroon); border: 1px solid #f6e3a1; text-transform: none; letter-spacing: 0; font-size: 11px; }
+.badgeFreshers { background: #f3ecff; color: #5b3aa6; border-color: #e3d6fb; }
+.badgeRemote { background: #e7f7ee; color: #166534; border-color: #c4ecd3; }
+.badgeReferral { background: #e6f6f4; color: #0f5f58; border-color: #c2e8e3; }
+.badgeHighVolume { background: #fde8ec; color: var(--color-maroon); border-color: #f6c7d1; }
+
+/* body */
+.pledgeBox { background: var(--color-surface); border: 1px solid var(--color-border); }
+.pledgeIcon { color: var(--color-maroon); }
+.descriptionText { color: var(--color-text); line-height: 1.7; }
+.tagsRow { color: var(--color-maroon); }
+.metaPill { background: var(--color-surface); border: 1px solid var(--color-border); }
+.metaPillIcon { color: var(--color-maroon); }
+.metaPillLabel { color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; }
+.skillChip { background: var(--color-white); border: 1px solid var(--color-border-soft); color: var(--color-ink); }
+
+/* CTA: yellow, maroon on hover (same as the site's primary buttons) */
+.ctaBtn {
+  background: var(--color-yellow);
+  color: var(--color-black);
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(253, 204, 3, 0.35);
+}
+.ctaBtn:hover { background: var(--color-maroon); color: var(--color-white); box-shadow: 0 6px 16px rgba(123, 16, 40, 0.3); }
+
+/* social footer + comments */
+.socialFooter { border-top-color: var(--color-border); }
+.commentBtn:hover,
+.bookmarkBtn:hover { color: var(--color-maroon); }
+.bookmarkActive { color: var(--color-maroon); }
+.commentsDrawer { background: var(--color-surface); border-top: 1px solid var(--color-border); }
+.commentItem { border: 1px solid var(--color-border); }
+.commentInput { border: 1px solid var(--color-border-soft); }
+.commentInput:focus { border-color: var(--color-maroon); box-shadow: 0 0 0 3px rgba(123, 16, 40, 0.1); }
+.commentSendBtn { background: var(--color-maroon); color: var(--color-white); }
+.commentSendBtn:hover:not(:disabled) { background: var(--color-maroon-deep); }
+.commentMoreBtn { color: var(--color-maroon); }
+
+/* modals, pdf, empty/loading states */
+.moreBtn { background: var(--color-yellow); color: var(--color-maroon-deep); }
+.moreBtn:hover { background: var(--color-maroon); color: var(--color-white); }
+.shareAvatar { color: var(--color-maroon-deep); }
+.pdfBar { background: var(--color-maroon-deep); }
+.pdfSpinner { border-top-color: var(--color-maroon); }
+.reportRadio { accent-color: var(--color-maroon); }
+.emptyState { border: 1px solid var(--color-border); }
+.emptyTitle { color: var(--color-maroon); font-weight: 700; }
+.emptyResetBtn { background: var(--color-maroon); color: var(--color-white); }
+.toast { background: var(--color-maroon-deep); }
+.toastIcon { color: var(--color-yellow); }
