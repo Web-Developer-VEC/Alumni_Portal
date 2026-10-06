@@ -28,16 +28,12 @@ function AppRoute() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/jobs" element={<AlumniJobFeed />} />
-            <Route path="/createpost" element={<CreatePost />} />
+      
             <Route path="/feedback" element={<FeedbackForm />} /> 
       
       
 
-            <Route path="/members" element={<Members />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/student" element={<StudentLayout />} >
+
                 <Route path="gallery" element={<Gallery />}/>
                 <Route path="events" element={<Events />} />
             </Route >
