@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   getPendingAlumni,
   getPendingUserById,
@@ -11,9 +12,20 @@ import {
   approvePost,
   rejectPost,
   deletePrePost,
+  createHODEvent,
+  getHODEvents,
+  updateHODEvent,
+  deleteHODEvent,
 } from "../../controllers/HOD/hodpost.controller.js";
 
 const router = express.Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB max
+  },
+});
 
 // =============================================
 // USER / ALUMNI APPROVAL ROUTES
@@ -60,23 +72,20 @@ router.patch("/reject-post/:id", rejectPost);
 router.delete("/posts/pending/:id", deletePrePost);
 
 // =============================================
-// POST APPROVAL ROUTES (pre_post -> post)
+// HOD EVENT MANAGEMENT ROUTES
 // =============================================
-// Get all pending posts waiting for HOD approval
-router.get("/posts/pending", getPendingPosts);
+// Create and post event by HOD (supports single image upload)
+router.post("/events", upload.single("image"), createHODEvent);
+router.post("/event", upload.single("image"), createHODEvent);
 
-// Get single pending post by id
-router.get("/posts/pending/:id", getPendingPostById);
+// Get all events for HOD management
+router.get("/getevents", getHODEvents);
 
-// Approve post and move from pre_post collection to post collection
-router.patch("/posts/approve/:id", approvePost);
-router.patch("/approve-post/:id", approvePost);
+// Update event by HOD (supports single image replacement)
+router.put("/updateevents/:id", upload.single("image"), updateHODEvent);
+router.patch("/updateevents/:id", upload.single("image"), updateHODEvent);
 
-// Reject post in pre_post collection with reason
-router.patch("/posts/reject/:id", rejectPost);
-router.patch("/reject-post/:id", rejectPost);
-
-// Delete pending post from pre_post collection
-router.delete("/posts/pending/:id", deletePrePost);
+// Delete event by HOD
+router.delete("/deleteevents/:id", deleteHODEvent);
 
 export default router;

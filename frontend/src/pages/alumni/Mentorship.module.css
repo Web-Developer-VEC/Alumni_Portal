@@ -1,10 +1,4 @@
-/* =========================================================================
-   Mentorship.module.css  (mentor only)
-   Same Velammal theme as uploadpost.module.css:
-   maroon #7A0C24 structural accent, gold #F5B301 highlight, warm-grey page.
-   ========================================================================= */
-
-.page {
+:root {
     --maroon: #7A0C24;
     --maroon-dark: #5C0A1B;
     --gold: #F5B301;
@@ -14,7 +8,9 @@
     --border: #DEDBD6;
     --cream: #F7F5F2;
     --page-bg: #EFEDEA;
+}
 
+.page {
     min-height: 100vh;
     background: var(--page-bg);
     padding: 28px 20px 60px;
@@ -22,8 +18,6 @@
     color: var(--ink);
 }
 .page * { box-sizing: border-box; }
-.page button:focus-visible,
-.page input:focus-visible { outline: 2px solid var(--maroon); outline-offset: 2px; }
 
 .wrap { max-width: 1040px; margin: 0 auto; }
 
@@ -42,7 +36,21 @@
 @media (min-width: 900px) {
     .layout { display: grid; grid-template-columns: 2fr 1fr; align-items: start; gap: 20px; }
 }
-.main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.main { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---------------- Role tabs (Mentee / Mentor) ---------------- */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(31,36,48,0.05); }
+.tab {
+    border: none; background: #fff; padding: 16px 12px; cursor: pointer; text-align: center;
+    display: flex; flex-direction: column; gap: 2px; transition: background .15s ease;
+    border-bottom: 3px solid transparent;
+}
+.tab:hover { background: var(--cream); }
+.tabActive { background: var(--cream); border-bottom-color: var(--maroon); }
+.tabName { font-size: 15px; font-weight: 700; color: var(--muted); }
+.tabActive .tabName { color: var(--maroon); }
+.tabSub { font-size: 12px; color: var(--muted); }
 
 /* ---------------- Cards ---------------- */
 .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; box-shadow: 0 2px 8px rgba(31,36,48,0.05); }
@@ -50,12 +58,12 @@
 .cardText { font-size: 13.5px; line-height: 1.65; color: var(--muted); margin: 0 0 8px; }
 .cardText:last-of-type { margin-bottom: 0; }
 
+.registerCard { border-left: 3px solid var(--gold); }
 .registerBtn {
     display: inline-flex; align-items: center; gap: 7px; border: none; background: var(--maroon); color: #fff;
     border-radius: 8px; padding: 10px 20px; font-size: 13.5px; font-weight: 600; cursor: pointer; margin-top: 10px;
     transition: background .15s ease;
 }
-.registerCard { border-left: 3px solid var(--gold); }
 .registerBtn:hover { background: var(--maroon-dark); }
 
 /* ---------------- Empty / applications card ---------------- */
@@ -64,42 +72,37 @@
 .statusLink { background: none; border: none; color: var(--maroon); font-weight: 700; font-size: 13.5px; cursor: pointer; text-decoration: underline; }
 .statusLink:hover { color: var(--maroon-dark); }
 
-.applicationItem { text-align: left; display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--cream); }
+.applicationItem { text-align: left; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--cream); }
 .applicationItem + .applicationItem { margin-top: 10px; }
-.applicationHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.applicationHead { display: flex; align-items: center; justify-content: space-between; }
+.applicationRole { font-size: 12px; font-weight: 700; color: var(--maroon); text-transform: uppercase; letter-spacing: .03em; }
 .applicationDate { font-size: 11.5px; color: var(--muted); }
 .applicationKeywords { display: flex; flex-wrap: wrap; gap: 6px; }
 .miniChip { background: var(--maroon); color: var(--gold); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
-.applicationSnippet { font-size: 12.5px; color: var(--ink); line-height: 1.5; margin: 0; overflow-wrap: anywhere; }
-.withdrawBtn {
-    display: inline-flex; align-items: center; gap: 5px; background: none; border: 1px solid var(--border); border-radius: 6px;
-    padding: 4px 9px; font-size: 11.5px; font-weight: 600; color: var(--muted); cursor: pointer;
-    transition: color .15s ease, border-color .15s ease, background .15s ease;
-}
-.withdrawBtn:hover { color: var(--maroon); border-color: var(--maroon); background: #fff; }
+.applicationSnippet { font-size: 12.5px; color: var(--ink); line-height: 1.5; }
 
 /* ---------------- FAQ sidebar ---------------- */
 .faqCard { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; box-shadow: 0 2px 8px rgba(31,36,48,0.05); }
 .faqTitle { font-size: 16px; font-weight: 700; color: var(--ink); margin: 0 0 8px; }
 .faqDivider { width: 34px; height: 3px; background: var(--gold); border-radius: 2px; margin-bottom: 14px; }
-.faqList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.faqList { display: flex; flex-direction: column; gap: 2px; }
 .faqItem { border-bottom: 1px solid var(--border); }
 .faqItem:last-child { border-bottom: none; }
 .faqQuestion {
     width: 100%; display: flex; align-items: flex-start; gap: 8px; text-align: left; background: none; border: none;
-    cursor: pointer; padding: 10px 0; font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.5; font-family: inherit;
+    cursor: pointer; padding: 10px 0; font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.5;
 }
 .faqIndex { color: var(--maroon); font-weight: 700; flex-shrink: 0; }
-.faqChevron { margin-left: auto; flex-shrink: 0; margin-top: 3px; color: var(--muted); transition: transform .15s ease; }
+.faqChevron { margin-left: auto; flex-shrink: 0; color: var(--muted); transition: transform .15s ease; }
 .faqChevronOpen { transform: rotate(180deg); color: var(--maroon); }
-.faqAnswer { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin: 0; padding: 0 0 12px 22px; }
-.viewAllBtn { margin-top: 10px; background: none; border: none; color: var(--maroon); font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; font-family: inherit; }
+.faqAnswer { font-size: 12.5px; line-height: 1.6; color: var(--muted); padding: 0 0 12px 22px; }
+.viewAllBtn { margin-top: 10px; background: none; border: none; color: var(--maroon); font-size: 13px; font-weight: 700; cursor: pointer; }
 .viewAllBtn:hover { color: var(--maroon-dark); text-decoration: underline; }
 
 /* ---------------- Questionnaire form ---------------- */
-.formTabsRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
+.formTabsRow { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
 .formTab { padding: 10px 2px 12px; font-size: 14.5px; font-weight: 700; color: var(--maroon); border-bottom: 2px solid var(--maroon); margin-bottom: -1px; }
-.sampleLink { background: none; border: none; color: var(--maroon); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.sampleLink { background: none; border: none; color: var(--maroon); font-size: 13px; font-weight: 600; cursor: pointer; }
 .sampleLink:hover { text-decoration: underline; }
 
 .formCard { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 26px 28px; box-shadow: 0 2px 8px rgba(31,36,48,0.05); }
@@ -108,7 +111,7 @@
 .fieldLabel { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
 .required { color: var(--maroon); margin-left: 2px; }
 .fieldHint { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
-.errorText { font-size: 12px; color: var(--maroon); font-weight: 600; margin: 6px 0 0; }
+.errorText { font-size: 11.5px; color: var(--maroon); font-weight: 500; margin: 6px 0 0; }
 
 .textarea {
     width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--border); border-radius: 8px;
@@ -117,19 +120,18 @@
 }
 .textarea::placeholder { color: #A7ACB5; }
 .textarea:focus { outline: none; border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(245,179,1,0.28); }
-.textareaInvalid { border-color: var(--maroon); }
 .charCount { display: flex; justify-content: flex-end; font-size: 11px; color: var(--muted); margin-top: 4px; }
 .charCountOver { color: var(--maroon); font-weight: 700; }
 
 .keywordBox { border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 8px; transition: border-color .15s ease, box-shadow .15s ease; }
 .keywordBox:focus-within { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(245,179,1,0.28); }
-.keywordBoxInvalid { border-color: var(--maroon); }
 .keywordList { display: flex; flex-wrap: wrap; gap: 6px; }
 .keywordChip { display: flex; align-items: center; gap: 6px; background: var(--maroon); color: var(--gold); padding: 5px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
-.keywordRemove { border: none; background: transparent; cursor: pointer; color: var(--gold); display: flex; opacity: .8; padding: 0; }
+.keywordRemove { border: none; background: transparent; cursor: pointer; color: var(--gold); display: flex; opacity: .8; }
 .keywordRemove:hover { opacity: 1; }
 .keywordInput { min-width: 140px; flex: 1; background: transparent; border: none; outline: none; padding: 6px 4px; font-size: 13px; color: var(--ink); font-family: inherit; }
-.page .keywordInput:focus-visible { outline: none; }
+.addKeywordBtn { background: none; border: none; color: var(--maroon); font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; padding: 0; }
+.addKeywordBtn:hover { text-decoration: underline; }
 
 .formFooter { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--border); }
 .cancelBtn {
@@ -141,9 +143,10 @@
     display: flex; align-items: center; gap: 7px; border: none; background: var(--maroon); color: #fff;
     border-radius: 8px; padding: 10px 22px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s ease;
 }
-.submitBtn:hover { background: var(--maroon-dark); }
+.submitBtn:hover:not(:disabled) { background: var(--maroon-dark); }
+.submitBtn:disabled { opacity: .45; cursor: not-allowed; }
 
-/* ---------------- Sample application modal ---------------- */
+/* ---------------- Sample applications modal ---------------- */
 .modalBackdrop {
     position: fixed; inset: 0; background: rgba(40,24,16,0.32); backdrop-filter: blur(3px);
     display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem;
@@ -155,25 +158,19 @@
 .modalClose:hover { background: var(--gold-soft); }
 .modalBody { padding: 20px 22px; display: flex; flex-direction: column; gap: 18px; }
 .sampleEntry { padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--cream); }
-.sampleLabel { font-size: 11.5px; font-weight: 700; color: var(--maroon); margin: 0 0 4px; }
+.sampleLabel { font-size: 11.5px; font-weight: 700; color: var(--maroon); text-transform: uppercase; letter-spacing: .03em; margin: 0 0 4px; }
 .sampleAnswer { font-size: 13px; color: var(--ink); line-height: 1.6; margin: 0 0 12px; }
 .sampleAnswer:last-child { margin-bottom: 0; }
 
 /* ---------------- Toast ---------------- */
 @keyframes mtToastIn { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .toast {
-    position: fixed; bottom: 28px; right: 28px; z-index: 1100; display: flex; align-items: center; gap: 12px;
+    position: fixed; bottom: 28px; right: 28px; z-index: 60; display: flex; align-items: center; gap: 12px;
     border-radius: 8px; background: var(--ink); padding: 12px 16px; color: #fff;
     border-left: 3px solid var(--gold); box-shadow: 0 8px 20px rgba(0,0,0,0.22); animation: mtToastIn .2s ease-out; font-size: 13.5px;
-}
-@media (prefers-reduced-motion: reduce) {
-    .toast { animation: none; }
-    .faqChevron { transition: none; }
 }
 
 @media (max-width: 640px) {
     .formCard { padding: 20px; }
     .header { gap: 8px; }
-    .toast { left: 16px; right: 16px; bottom: 16px; }
-    .formFooter { flex-wrap: wrap; }
 }
