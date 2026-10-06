@@ -955,11 +955,11 @@ export default function UploadPost({ onPublish, onCancel }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (isSubmitting) return;
-    if (!validate()) return;
+  if (isSubmitting) return;
+  if (!validate()) return;
 
     if (!user) {
       showAlert("Your session has expired. Please log in again.", "Not logged in");
