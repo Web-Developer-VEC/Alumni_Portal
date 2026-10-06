@@ -1,2 +1,9 @@
-export { getProfileByToken } from "./profile.controller.js";
-export { getUserPostsByToken } from "./post.controller.js";
+export {
+  getProfileByToken,
+  updateProfileByToken,
+} from "./profile.controller.js";
+
+export {
+  getUserPostsByToken,
+  deletePostByToken,
+} from "./post.controller.js";

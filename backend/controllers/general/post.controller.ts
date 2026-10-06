@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import mongoose from "mongoose";
 import Post from "../../models/post.js";
 import PrePost from "../../models/prePost.js";
 import User from "../../models/User.js";
@@ -126,6 +127,156 @@ export const getUserPostsByToken = async (
     res.status(500).json({
       success: false,
       message: "Internal server error while fetching user posts",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Controller to delete a post created by the user (or admin) using token
+ */
+export const deletePostByToken = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const token = extractTokenFromRequest(req);
+
+    if (!token) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication token is required",
+      });
+      return;
+    }
+
+    const decoded = decodeJwtToken(token);
+
+    if (!decoded) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid or expired authentication token",
+      });
+      return;
+    }
+
+    let email = typeof decoded.email === "string" ? decoded.email.trim() : "";
+    const userId = (decoded.id || decoded._id || decoded.userId) as string | undefined;
+
+    // Resolve user by ID or email
+    const userQuery: Record<string, unknown>[] = [];
+    if (email) {
+      userQuery.push({ email: email.toLowerCase().trim() });
+      userQuery.push({ email: email.trim() });
+    }
+    if (userId) {
+      userQuery.push({ _id: userId });
+    }
+
+    if (userQuery.length === 0) {
+      res.status(400).json({
+        success: false,
+        message: "User identity could not be determined from the token",
+      });
+      return;
+    }
+
+    const user = await User.findOne({ $or: userQuery })
+      .select("-password")
+      .lean();
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found in database",
+      });
+      return;
+    }
+
+    const postId =
+      req.params.id ||
+      req.body?.id ||
+      req.body?.postId ||
+      (req.query?.id as string) ||
+      (req.query?.postId as string);
+
+    if (!postId) {
+      res.status(400).json({
+        success: false,
+        message: "Post ID is required to delete a post",
+      });
+      return;
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid post ID format",
+      });
+      return;
+    }
+
+    // Check in Post collection (approved posts)
+    const postInApproved = await Post.findById(postId);
+    if (postInApproved) {
+      const isOwner = postInApproved.author.toString() === user._id.toString();
+      const isAdmin = user.role === "ADMIN";
+
+      if (!isOwner && !isAdmin) {
+        res.status(403).json({
+          success: false,
+          message: "You are not authorized to delete this post",
+        });
+        return;
+      }
+
+      await Post.findByIdAndDelete(postId);
+
+      res.status(200).json({
+        success: true,
+        message: "Post deleted successfully",
+        postId,
+        source: "post",
+      });
+      return;
+    }
+
+    // Check in PrePost collection (pending or rejected posts)
+    const postInPrePost = await PrePost.findById(postId);
+    if (postInPrePost) {
+      const isOwner = postInPrePost.author.toString() === user._id.toString();
+      const isAdmin = user.role === "ADMIN";
+
+      if (!isOwner && !isAdmin) {
+        res.status(403).json({
+          success: false,
+          message: "You are not authorized to delete this post",
+        });
+        return;
+      }
+
+      await PrePost.findByIdAndDelete(postId);
+
+      res.status(200).json({
+        success: true,
+        message: "Post deleted successfully",
+        postId,
+        source: "pre_post",
+      });
+      return;
+    }
+
+    // Post not found in either collection
+    res.status(404).json({
+      success: false,
+      message: "Post not found",
+      postId,
+    });
+  } catch (error) {
+    console.error("deletePostByToken error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error while deleting post",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
