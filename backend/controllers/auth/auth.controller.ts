@@ -5,6 +5,7 @@ import Otp from "../../service/Otp.js";
 import { sendEmail } from "../../service/sendEmail.js";
 import { getOtpEmailTemplate } from "../../utils/emailTemplates.js";
 import jwt from "jsonwebtoken";
+import alumniprofile from "../../models/alumniprofile.js";
 
 // Generate a random 6-digit OTP
 const generateOTP = () => {
@@ -22,15 +23,26 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
 
     // Check if user already exists (return all stored details except password)
     const existingUser = await User.findOne({ email }).select("-password").lean();
+    
 
     if (existingUser) {
+      const existingAlumni= await alumniprofile.findOne({ email }).select("-password").lean();
+      if(existingAlumni) {
+        res.status(400).json({
+          success: false,
+          message: "User already exists with this email",
+          user: existingAlumni,
+        });
+        return;
+      }
+      else{
       res.status(400).json({
         success: false,
-        message: "User already exists with this email",
-        user: existingUser,
+        message: "Waiting for approval",
       });
       return;
     }
+  }
 
     // Generate OTP
     const otpCode = generateOTP();
@@ -78,14 +90,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check again if user exists (return all stored details except password)
+    // Check again if user exists
     const existingUser = await User.findOne({ email }).select("-password").lean();
 
     if (existingUser) {
       res.status(400).json({
         success: false,
         message: "User already exists with this email",
-        user: existingUser,
       });
       return;
     }
@@ -254,7 +265,6 @@ export const login = async (
         email: payload.email,
         role: payload.role,
       },
-      token
     });
   } catch (error) {
     console.error("Login error:", error);
