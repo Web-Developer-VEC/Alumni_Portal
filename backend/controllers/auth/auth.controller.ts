@@ -20,27 +20,41 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const formattedEmail = email.toLowerCase().trim();
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      $or: [{ email: formattedEmail }, { email: email.trim() }],
+    });
+
     if (existingUser) {
-      res.status(400).json({ message: "User already exists with this email" });
-      return;
+      if (existingUser.status === "APPROVED") {
+        res.status(400).json({ message: "Email already exists" });
+        return;
+      }
+      if (existingUser.status === "REJECTED") {
+        res.status(400).json({ message: "Your registration has been rejected." });
+        return;
+      }
+      // If user is in PENDING status, allow user to send OTP
     }
 
     // Generate OTP
     const otpCode = generateOTP();
 
     // Remove any existing OTP for this email
-    await Otp.deleteMany({ email });
+    await Otp.deleteMany({
+      $or: [{ email: formattedEmail }, { email: email.trim() }],
+    });
 
     // Save new OTP
-    const newOtp = new Otp({ email, otp: otpCode });
+    const newOtp = new Otp({ email: formattedEmail, otp: otpCode });
     await newOtp.save();
 
     // Send Email
     const emailHtml = getOtpEmailTemplate(otpCode);
     const emailSent = await sendEmail(
-      email,
+      formattedEmail,
       "Alumni Portal Registration OTP",
       emailHtml
     );
@@ -65,8 +79,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const formattedEmail = email.toLowerCase().trim();
+
     // Verify OTP
-    const otpRecord = await Otp.findOne({ email, otp });
+    const otpRecord = await Otp.findOne({
+      $or: [{ email: formattedEmail }, { email: email.trim() }],
+      otp,
+    });
 
     if (!otpRecord) {
       res.status(400).json({ message: "Invalid or expired OTP" });
@@ -74,13 +93,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Check again if user exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      $or: [{ email: formattedEmail }, { email: email.trim() }],
+    });
+
     if (existingUser) {
-      res.status(400).json({ message: "User already exists with this email" });
-      return;
+      if (existingUser.status === "APPROVED") {
+        res.status(400).json({ message: "Email already exists" });
+        return;
+      }
+      if (existingUser.status === "REJECTED") {
+        res.status(400).json({ message: "Your registration has been rejected." });
+        return;
+      }
+      // If user is in PENDING status, allow verification to proceed
     }
-
-
 
     res.status(200).json({ message: "OTP verified successfully" });
   } catch (error) {
@@ -91,36 +118,52 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const setPassword = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email,password } = req.body;
+    const { email, password } = req.body;
 
-    if (!email ||!password) {
+    if (!email || !password) {
       res.status(400).json({ message: "Email and password are required" });
       return;
     }
 
-    // Verify OTP again for security before setting password
-    
-
-  
-
-    
-    
+    const formattedEmail = email.toLowerCase().trim();
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create User
-    const newUser = new User({
-      email,
-      password: hashedPassword,
-      role: "ALUMNI"
-
+    // Check if user already exists
+    const existingUser = await User.findOne({
+      $or: [{ email: formattedEmail }, { email: email.trim() }],
     });
-    await newUser.save();
+
+    if (existingUser) {
+      if (existingUser.status === "APPROVED") {
+        res.status(400).json({ message: "Email already exists" });
+        return;
+      }
+      if (existingUser.status === "REJECTED") {
+        res.status(400).json({ message: "Your registration has been rejected." });
+        return;
+      }
+
+      // If user is in PENDING status, update password
+      existingUser.password = hashedPassword;
+      await existingUser.save();
+    } else {
+      // Create User
+      const newUser = new User({
+        email: formattedEmail,
+        password: hashedPassword,
+        role: "ALUMNI",
+        status: "PENDING",
+      });
+      await newUser.save();
+    }
 
     // Delete OTP after successful registration
-    await Otp.deleteMany({ email });
+    await Otp.deleteMany({
+      $or: [{ email: formattedEmail }, { email: email.trim() }],
+    });
 
     res.status(201).json({ message: "Password set and user registered successfully" });
   } catch (error) {
@@ -253,7 +296,6 @@ export const login = async (
         email: payload.email,
         role: payload.role,
       },
-      token
     });
   } catch (error) {
     console.error("Login error:", error);
