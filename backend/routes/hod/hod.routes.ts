@@ -79,13 +79,13 @@ router.post("/events", upload.single("image"), createHODEvent);
 router.post("/event", upload.single("image"), createHODEvent);
 
 // Get all events for HOD management
-router.get("/events", getHODEvents);
+router.get("/getevents", getHODEvents);
 
 // Update event by HOD (supports single image replacement)
-router.put("/events/:id", upload.single("image"), updateHODEvent);
-router.patch("/events/:id", upload.single("image"), updateHODEvent);
+router.put("/updateevents/:id", upload.single("image"), updateHODEvent);
+router.patch("/updateevents/:id", upload.single("image"), updateHODEvent);
 
 // Delete event by HOD
-router.delete("/events/:id", deleteHODEvent);
+router.delete("/deleteevents/:id", deleteHODEvent);
 
 export default router;
