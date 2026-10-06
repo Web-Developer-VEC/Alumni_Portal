@@ -17,7 +17,8 @@ import StudentLayout from "../Layouts/StudentLayout";
 
 import Members from "../pages/common/Members"
 import Gallery from "../pages/common/Gallery"
-import Events from "../components/common/events";
+import Events from "../pages/events/event";
+import EventDetails from "../pages/events/eventdetails";
 
 import NotFound from "../components/common/NotFound";
 import Mentorship from "../pages/alumni/Mentorship";
@@ -30,14 +31,15 @@ function AppRoute() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/feedback" element={<FeedbackForm />} /> 
-      
-      
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventDetails />} />
 
             <Route path="/student" element={<StudentLayout />}>
                 <Route index element={<AlumniJobFeed />} />
                 <Route path="members" element={<Members />} />
                 <Route path="gallery" element={<Gallery />}/>
                 <Route path="events" element={<Events />} />
+                <Route path="events/:id" element={<EventDetails />} />
             </Route >
 
             <Route path="/admin" element={<AdminLayout />}>
@@ -46,7 +48,8 @@ function AppRoute() {
                 <Route path="members" element={<Members />} />
                 <Route path="alumni-approval" element={<AlumniApproval />} />
                 <Route path="post-approval" element={<PostApproval />} />
-                 <Route path="events" element={<Events />} />
+                <Route path="events" element={<Events />} />
+                <Route path="events/:id" element={<EventDetails />} />
             </Route>
 
             <Route path="/alumni" element={<AlumniLayout/>}>
@@ -55,8 +58,7 @@ function AppRoute() {
                 <Route path="gallery" element={<Gallery />}/>
                 <Route path="members" element={<Members />} />
                 <Route path="events" element={<Events />} />
-                <Route path="mentor" element={<Mentorship />} />
-                
+                <Route path="events/:id" element={<EventDetails />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
