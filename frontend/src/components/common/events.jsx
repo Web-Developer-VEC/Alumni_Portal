@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "./Events.css";
 import Navbar from "./DashboardNavbar";
 import { getAllEvents } from "../../api/event";
@@ -86,6 +86,10 @@ function isUpcoming(dateValue) {
   return d.getTime() >= today.getTime();
 }
 
+function getGallery(event) {
+  return Array.isArray(event?.gallery) ? event.gallery.filter(Boolean) : [];
+}
+
 /* ---------------------------------------------------------
    useImageTone
    Looks at the lower half of the image (where the text sits)
@@ -150,7 +154,7 @@ function useImageTone(url) {
 
 /* =========================================================
    COMPONENT: EventCard
-   Maroon frame -> image inside -> text colour follows image.
+   Text colour follows the image brightness.
    Optional: set event.textTone = "light" | "dark" from the
    backend to override the automatic detection.
 ========================================================= */
@@ -159,6 +163,7 @@ function EventCard({ event, onViewMore }) {
   const { day, month, weekday } = formatDateParts(event.date);
   const categoryLabel = CATEGORY_LABELS[event.category] || "Event";
   const upcoming = isUpcoming(event.date);
+  const hasGallery = getGallery(event).length > 0;
 
   const autoTone = useImageTone(event.imageUrl);
   const tone = event.textTone || autoTone;
@@ -193,7 +198,7 @@ function EventCard({ event, onViewMore }) {
             className="ev-view-more-btn"
             onClick={() => onViewMore(event)}
           >
-            VIEW MORE
+            {!upcoming && hasGallery ? "VIEW GALLERY" : "VIEW MORE"}
             <span className="btn-arrow">
               <ArrowRight size={16} />
             </span>
@@ -224,130 +229,341 @@ function EventCardSkeleton() {
 }
 
 /* =========================================================
+   COMPONENT: Lightbox (full-screen photo viewer)
+========================================================= */
+
+function Lightbox({ images, index, title, onClose, onPrev, onNext }) {
+  return (
+    <div
+      className="ev-lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${title} photos`}
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        className="ev-lightbox-close"
+        onClick={onClose}
+        aria-label="Close photo viewer"
+      >
+        <X size={20} />
+      </button>
+
+      {images.length > 1 && (
+        <button
+          type="button"
+          className="ev-lightbox-nav ev-lightbox-nav--prev"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPrev();
+          }}
+          aria-label="Previous photo"
+        >
+          <ChevronLeft size={26} />
+        </button>
+      )}
+
+      <img
+        className="ev-lightbox-img"
+        src={images[index]}
+        alt={`${title} photo ${index + 1}`}
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      {images.length > 1 && (
+        <button
+          type="button"
+          className="ev-lightbox-nav ev-lightbox-nav--next"
+          onClick={(e) => {
+            e.stopPropagation();
+            onNext();
+          }}
+          aria-label="Next photo"
+        >
+          <ChevronRight size={26} />
+        </button>
+      )}
+
+      <span className="ev-lightbox-count">
+        {index + 1} / {images.length}
+      </span>
+    </div>
+  );
+}
+function ImageCarousel({ images, title, paused, onOpen }) {
+  const [index, setIndex] = useState(0);
+  const [hover, setHover] = useState(false);
+  const count = images.length;
+
+  const next = useCallback(() => setIndex((i) => (i + 1) % count), [count]);
+  const prev = useCallback(
+    () => setIndex((i) => (i - 1 + count) % count),
+    [count],
+  );
+
+  /* auto-scroll every 3.5s (stops on hover or when the viewer is open) */
+  useEffect(() => {
+    if (count < 2 || hover || paused) return undefined;
+    const timer = setInterval(next, 3500);
+    return () => clearInterval(timer);
+  }, [count, hover, paused, next]);
+
+  return (
+    <div
+      className="ev-carousel"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <div
+        className="ev-carousel-track"
+        style={{ transform: `translateX(-${index * 100}%)` }}
+      >
+        {images.map((src, i) => (
+          <button
+            type="button"
+            key={`${src}-${i}`}
+            className="ev-carousel-slide"
+            onClick={() => onOpen(i)}
+            aria-label={`Open photo ${i + 1}`}
+          >
+            <img
+              src={src}
+              alt={`${title} photo ${i + 1}`}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          </button>
+        ))}
+      </div>
+
+      {count > 1 && (
+        <>
+          <button
+            type="button"
+            className="ev-carousel-arrow ev-carousel-arrow--prev"
+            onClick={prev}
+            aria-label="Previous photo"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            type="button"
+            className="ev-carousel-arrow ev-carousel-arrow--next"
+            onClick={next}
+            aria-label="Next photo"
+          >
+            <ChevronRight size={22} />
+          </button>
+
+          <div className="ev-carousel-dots">
+            {images.map((_, i) => (
+              <button
+                type="button"
+                key={i}
+                className={`ev-carousel-dot ${i === index ? "is-active" : ""}`}
+                onClick={() => setIndex(i)}
+                aria-label={`Go to photo ${i + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      <span className="ev-carousel-count">
+        <Images size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+        {index + 1} / {count}
+      </span>
+    </div>
+  );
+}
+
+/* =========================================================
    COMPONENT: EventDetailsModal
+   - Upcoming event  -> details + REGISTER NOW
+   - Finished event  -> full details + recap + photo gallery
 ========================================================= */
 
 function EventDetailsModal({ event, onClose }) {
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const gallery = getGallery(event);
+  const galleryLength = gallery.length;
+
+  /* keyboard: Esc closes; when the viewer is open, arrows navigate */
   useEffect(() => {
     const onKeyDown = (e) => {
+      if (lightboxIndex !== null) {
+        if (e.key === "Escape") {
+          setLightboxIndex(null);
+        } else if (e.key === "ArrowRight") {
+          setLightboxIndex((i) => (i + 1) % galleryLength);
+        } else if (e.key === "ArrowLeft") {
+          setLightboxIndex((i) => (i - 1 + galleryLength) % galleryLength);
+        }
+        return;
+      }
+
       if (e.key === "Escape") onClose();
     };
 
     document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose, lightboxIndex, galleryLength]);
+
+  /* lock page scroll while the modal is open */
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+
+    return () => {
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, []);
 
   if (!event) return null;
 
+  const upcoming = isUpcoming(event.date);
   const { day, month, weekday, full } = formatDateParts(event.date);
   const timeRange = formatTimeRange(event.startTime, event.endTime);
   const categoryLabel = CATEGORY_LABELS[event.category] || "Event";
-  const LocationIcon =
-    (LOCATION_META[event.locationType] || LOCATION_META.physical).icon;
-  const locationLabel =
-    (LOCATION_META[event.locationType] || LOCATION_META.physical).label;
+  const locationMeta =
+    LOCATION_META[event.locationType] || LOCATION_META.physical;
+  const LocationIcon = locationMeta.icon;
+  const locationLabel = locationMeta.label;
+
+  const highlights = Array.isArray(event.highlights) ? event.highlights : [];
+  const speakers = Array.isArray(event.guestSpeakers)
+    ? event.guestSpeakers
+    : [];
 
   return (
-    <div className="ev-modal-overlay" onClick={onClose}>
-      <div
-        className="ev-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label={event.title}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          className="ev-modal-close"
-          onClick={onClose}
-          aria-label="Close"
+    <>
+      <div className="ev-modal-overlay" onClick={onClose}>
+        <div
+          className={`ev-modal ${upcoming ? "" : "ev-modal--past"}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={event.title}
+          onClick={(e) => e.stopPropagation()}
         >
-          <X size={18} />
-        </button>
+          <button
+            type="button"
+            className="ev-modal-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
 
-        <div className="ev-modal-media">
-          {event.imageUrl ? (
-            <img src={event.imageUrl} alt={event.title} />
-          ) : (
-            <div className="ev-modal-fallback" aria-hidden="true">
-              <Calendar size={38} />
-            </div>
-          )}
-
-          <div className="ev-modal-date-badge">
-            <strong>{day}</strong>
-            <span>{month}</span>
-          </div>
-
-          <span className="ev-card-category ev-modal-category">
-            {categoryLabel}
-          </span>
-        </div>
-
-        <div className="ev-modal-body">
-          <span className="ev-card-weekday">{weekday}</span>
-
-          <h2>{event.title}</h2>
-
-          <p className="ev-modal-desc">{event.description}</p>
-
-          <div className="ev-modal-meta-grid">
-            <div className="ev-modal-meta-item">
-              <Calendar size={16} />
-              <div>
-                <span>Date</span>
-                <strong>{full}</strong>
-              </div>
-            </div>
-
-            <div className="ev-modal-meta-item">
-              <Clock size={16} />
-              <div>
-                <span>Time</span>
-                <strong>{timeRange}</strong>
-              </div>
-            </div>
-
-            <div className="ev-modal-meta-item">
-              <LocationIcon size={16} />
-              <div>
-                <span>{locationLabel}</span>
-                <strong>{event.venue}</strong>
-              </div>
-            </div>
-
-            {event.organizer && (
-              <div className="ev-modal-meta-item">
-                <Mic2 size={16} />
-                <div>
-                  <span>Organizer</span>
-                  <strong>{event.organizer}</strong>
-                </div>
+          {/* ---------- cover: slider for finished events, image for upcoming ---------- */}
+          <div className="ev-modal-media">
+            {!upcoming && galleryLength > 0 ? (
+              <ImageCarousel
+                images={gallery}
+                title={event.title}
+                paused={lightboxIndex !== null}
+                onOpen={setLightboxIndex}
+              />
+            ) : event.imageUrl ? (
+              <img src={event.imageUrl} alt={event.title} />
+            ) : (
+              <div className="ev-modal-fallback" aria-hidden="true">
+                <Calendar size={38} />
               </div>
             )}
 
-            {typeof event.capacity === "number" && (
-              <div className="ev-modal-meta-item">
-                <Users size={16} />
-                <div>
-                  <span>Capacity</span>
-                  <strong>{event.capacity} seats</strong>
-                </div>
-              </div>
+            {!upcoming && (
+              <span className="ev-modal-completed">
+                <CheckCircle2 size={13} /> EVENT COMPLETED
+              </span>
             )}
+
+            <div className="ev-modal-date-badge">
+              <strong>{day}</strong>
+              <span>{month}</span>
+            </div>
+
+            <span className="ev-card-category ev-modal-category">
+              {categoryLabel}
+            </span>
           </div>
 
-          {Array.isArray(event.guestSpeakers) &&
-            event.guestSpeakers.length > 0 && (
+          {/* ---------- body ---------- */}
+          <div className="ev-modal-body">
+            <div className="ev-modal-head">
+              <span className="ev-card-weekday">{weekday}</span>
+              <h2>{event.title}</h2>
+            </div>
+
+            <p className="ev-modal-desc">{event.description}</p>
+
+            {/* meta */}
+            <div className="ev-modal-meta-grid">
+              <div className="ev-modal-meta-item">
+                <Calendar size={16} />
+                <div>
+                  <span>Date</span>
+                  <strong>{full}</strong>
+                </div>
+              </div>
+
+              <div className="ev-modal-meta-item">
+                <Clock size={16} />
+                <div>
+                  <span>Time</span>
+                  <strong>{timeRange}</strong>
+                </div>
+              </div>
+
+              <div className="ev-modal-meta-item">
+                <LocationIcon size={16} />
+                <div>
+                  <span>{locationLabel}</span>
+                  <strong>{event.venue}</strong>
+                </div>
+              </div>
+
+              {event.organizer && (
+                <div className="ev-modal-meta-item">
+                  <Mic2 size={16} />
+                  <div>
+                    <span>Organizer</span>
+                    <strong>{event.organizer}</strong>
+                  </div>
+                </div>
+              )}
+
+              {upcoming && typeof event.capacity === "number" && (
+                <div className="ev-modal-meta-item">
+                  <Users size={16} />
+                  <div>
+                    <span>Capacity</span>
+                    <strong>{event.capacity} seats</strong>
+                  </div>
+                </div>
+              )}
+
+              {!upcoming && typeof event.attendees === "number" && (
+                <div className="ev-modal-meta-item">
+                  <Users size={16} />
+                  <div>
+                    <span>Attended</span>
+                    <strong>{event.attendees} people</strong>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* speakers */}
+            {speakers.length > 0 && (
               <div className="ev-modal-speakers">
-                <span className="ev-modal-speakers-label">Guest speakers</span>
+                <span className="ev-modal-speakers-label">
+                  {upcoming ? "Guest speakers" : "Speakers & guests"}
+                </span>
                 <div className="ev-card-speakers">
-                  {event.guestSpeakers.map((speaker, i) => (
+                  {speakers.map((speaker, i) => (
                     <span className="ev-speaker-chip" key={`${speaker}-${i}`}>
                       {speaker}
                     </span>
@@ -356,26 +572,101 @@ function EventDetailsModal({ event, onClose }) {
               </div>
             )}
 
-          {event.registrationLink ? (
-            <a
-              href={event.registrationLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ev-register-btn ev-modal-register"
-            >
-              REGISTER NOW
-              <span className="btn-arrow">
-                <ArrowUpRight size={16} />
-              </span>
-            </a>
-          ) : (
-            <span className="ev-register-btn ev-register-btn--disabled ev-modal-register">
-              REGISTRATIONS CLOSED
-            </span>
-          )}
+            {/* =====================================================
+                UPCOMING -> register only
+            ===================================================== */}
+            {upcoming &&
+              (event.registrationLink ? (
+                <a
+                  href={event.registrationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ev-register-btn ev-modal-register"
+                >
+                  REGISTER NOW
+                  <span className="btn-arrow">
+                    <ArrowUpRight size={16} />
+                  </span>
+                </a>
+              ) : (
+                <span className="ev-register-btn ev-register-btn--disabled ev-modal-register">
+                  REGISTRATIONS OPENING SOON
+                </span>
+              ))}
+
+            {/* =====================================================
+                FINISHED -> recap, highlights, gallery
+            ===================================================== */}
+            {!upcoming && (
+              <>
+                {event.summary && (
+                  <div className="ev-modal-section">
+                    <span className="ev-modal-section-label">Event recap</span>
+                    <p className="ev-modal-summary">{event.summary}</p>
+                  </div>
+                )}
+
+                {highlights.length > 0 && (
+                  <div className="ev-modal-section">
+                    <span className="ev-modal-section-label">Highlights</span>
+                    <ul className="ev-modal-highlights">
+                      {highlights.map((item, i) => (
+                        <li key={`${item}-${i}`}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="ev-modal-section">
+                  <span className="ev-modal-section-label">
+                    <Images size={14} /> Event gallery
+                    {galleryLength > 0 && <em>{galleryLength} photos</em>}
+                  </span>
+
+                  {galleryLength > 0 ? (
+                    <div className="ev-gallery">
+                      {gallery.map((src, i) => (
+                        <button
+                          type="button"
+                          key={`${src}-${i}`}
+                          className="ev-gallery-item"
+                          onClick={() => setLightboxIndex(i)}
+                          aria-label={`Open photo ${i + 1}`}
+                        >
+                          <img
+                            src={src}
+                            alt={`${event.title} photo ${i + 1}`}
+                            loading="lazy"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="ev-gallery-empty">
+                      Photos from this event will be added soon.
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* full-screen photo viewer */}
+      {lightboxIndex !== null && galleryLength > 0 && (
+        <Lightbox
+          images={gallery}
+          index={lightboxIndex}
+          title={event.title}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() =>
+            setLightboxIndex((i) => (i - 1 + galleryLength) % galleryLength)
+          }
+          onNext={() => setLightboxIndex((i) => (i + 1) % galleryLength)}
+        />
+      )}
+    </>
   );
 }
 
@@ -437,7 +728,15 @@ function Events() {
         }`.toLowerCase();
         return haystack.includes(q);
       })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+      .sort((a, b) => {
+        const aUp = isUpcoming(a.date);
+        const bUp = isUpcoming(b.date);
+
+        // upcoming first (soonest first), then past (most recent first)
+        if (aUp && bUp) return new Date(a.date) - new Date(b.date);
+        if (!aUp && !bUp) return new Date(b.date) - new Date(a.date);
+        return aUp ? -1 : 1;
+      });
   }, [events, activeCategory, query, showPast]);
 
   const categoryCounts = useMemo(() => {

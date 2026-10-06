@@ -1,6 +1,5 @@
 /* =========================================================
-   EVENTS PAGE — single glass poster card + details modal
-   (text sits directly on the image, no card inside a card)
+   EVENTS PAGE — glass poster cards + details popup with slider
 ========================================================= */
 
 .ev-page {
@@ -17,7 +16,7 @@
 
   width: 100%;
   min-height: 100vh;
-    padding-top: 0;
+  padding-top: 0;
   background: var(--cream);
   color: var(--text);
   font-family: "Poppins", sans-serif;
@@ -29,7 +28,7 @@
 }
 
 /* =========================================================
-   FILTER BAR (top of page, scrolls with the page)
+   FILTER BAR
 ========================================================= */
 
 .ev-filter-bar {
@@ -199,8 +198,8 @@
 }
 
 /* =========================================================
-   EVENT CARD — ONE glass card
-   image fills the card, text sits straight on the image
+   EVENT CARD — clear image, text sits on the image
+   (no blur, past events look exactly like upcoming ones)
 ========================================================= */
 
 .ev-card {
@@ -211,7 +210,7 @@
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 24px;
   overflow: hidden;
-  /* fallback when an event has no image */
+  opacity: 1;
   background: linear-gradient(160deg, #7a0000 0%, #2a0000 60%, #0a0000 100%);
   box-shadow:
     0 14px 34px rgba(0, 0, 0, 0.18),
@@ -228,8 +227,10 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-.ev-card--past {
-  opacity: 0.7;
+/* past cards: same clarity as upcoming */
+.ev-card--past,
+.ev-card--past:hover {
+  opacity: 1;
 }
 
 .ev-card-inner {
@@ -241,23 +242,6 @@
   min-width: 0;
   padding: 0;
   background: transparent;
-}
-
-/* frosted blur that fades in toward the bottom of the card
-   (this is the "glass" — it is NOT a separate box) */
-.ev-card-inner::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 62%;
-  z-index: 1;
-  pointer-events: none;
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  -webkit-mask-image: linear-gradient(to top, #000 35%, transparent 100%);
-  mask-image: linear-gradient(to top, #000 35%, transparent 100%);
 }
 
 .ev-card-media {
@@ -314,9 +298,7 @@
   padding: 6px 14px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.85);
   color: var(--maroon);
   font-size: 9px;
   font-weight: 800;
@@ -338,7 +320,6 @@
   letter-spacing: 0.1em;
 }
 
-/* text block — no background, no border, no box */
 .ev-card-body {
   position: relative;
   z-index: 2;
@@ -350,8 +331,6 @@
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 .ev-card-date-chip {
@@ -361,8 +340,6 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
 }
 
 .ev-card-body h3 {
@@ -382,9 +359,9 @@
   overflow: hidden;
 }
 
-/* ---- dark image -> WHITE text ---- */
+/* dark image -> white text */
 .ev-card--dark .ev-card-date-chip {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
 
@@ -393,10 +370,10 @@
 }
 
 .ev-card--dark .ev-card-desc {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.88);
 }
 
-/* ---- bright image -> BLACK text ---- */
+/* bright image -> black text */
 .ev-card--light .ev-card-date-chip {
   background: rgba(0, 0, 0, 0.09);
   color: #111111;
@@ -410,7 +387,7 @@
   color: rgba(0, 0, 0, 0.78);
 }
 
-/* ---- VIEW MORE button ---- */
+/* VIEW MORE / VIEW GALLERY button */
 .ev-view-more-btn {
   display: inline-flex;
   align-items: center;
@@ -465,10 +442,6 @@
   background-size: 400% 100%;
   animation: evShimmer 1.4s ease infinite;
   box-shadow: none;
-}
-
-.ev-skeleton .ev-card-inner::before {
-  display: none;
 }
 
 .ev-skeleton-line {
@@ -538,7 +511,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(20, 8, 8, 0.55);
+  background: rgba(20, 8, 8, 0.6);
   backdrop-filter: blur(3px);
   animation: evFadeIn 0.25s ease both;
 }
@@ -552,12 +525,14 @@
   }
 }
 
-.ev-modal {
+.ev-modal,
+.ev-modal--past {
   position: relative;
   width: 100%;
-  max-width: 620px;
+  max-width: 780px;
   max-height: calc(100vh - 48px);
   overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 22px;
   background: #ffffff;
   box-shadow: 0 40px 90px rgba(0, 0, 0, 0.35);
@@ -579,14 +554,14 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: 2;
+  z-index: 6;
   display: grid;
   place-items: center;
   width: 34px;
   height: 34px;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.5);
   color: #ffffff;
   cursor: pointer;
   transition: background 0.25s ease;
@@ -596,13 +571,16 @@
   background: var(--maroon);
 }
 
-.ev-modal-media {
+/* ---------- cover area ---------- */
+
+.ev-modal-media,
+.ev-modal--past .ev-modal-media {
   position: relative;
-  height: 260px;
+  height: 340px;
   background: linear-gradient(135deg, var(--maroon), var(--dark-maroon));
 }
 
-.ev-modal-media img {
+.ev-modal-media > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -617,10 +595,40 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+.ev-modal-completed {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ev-modal-completed svg {
+  color: var(--gold);
+}
+
+.ev-modal-category {
+  top: 16px;
+  right: 62px;
+  z-index: 4;
+}
+
 .ev-modal-date-badge {
   position: absolute;
-  bottom: -26px;
-  left: 24px;
+  bottom: -30px;
+  left: 28px;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -647,49 +655,193 @@
   letter-spacing: 0.08em;
 }
 
-.ev-modal-category {
-  top: 16px;
-  right: 60px;
+/* =========================================================
+   IMAGE SLIDER (top of finished-event popup)
+========================================================= */
+
+.ev-carousel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #1a0000;
 }
 
+.ev-carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ev-carousel-slide {
+  display: block;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+}
+
+.ev-carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* soft shade so badges, dots and counter stay readable */
+.ev-carousel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.45) 0%,
+    transparent 30%,
+    transparent 65%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+.ev-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #ffffff;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease;
+}
+
+.ev-carousel-arrow:hover {
+  background: var(--maroon);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.ev-carousel-arrow--prev {
+  left: 14px;
+}
+
+.ev-carousel-arrow--next {
+  right: 14px;
+}
+
+.ev-carousel-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  gap: 7px;
+  transform: translateX(-50%);
+}
+
+.ev-carousel-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+
+.ev-carousel-dot.is-active {
+  width: 24px;
+  background: var(--gold);
+}
+
+.ev-carousel-count {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 3;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   MODAL BODY
+========================================================= */
+
 .ev-modal-body {
-  padding: 42px 28px 28px;
+  padding: 44px 32px 32px;
+}
+
+.ev-modal-head {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 54px;
+  margin-top: -22px;
+  padding-left: 78px; /* sits beside the date badge */
 }
 
 .ev-modal-body h2 {
-  margin-top: 6px;
+  margin: 0;
   color: #1a1a1a;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .ev-modal-desc {
-  margin-top: 12px;
+  margin-top: 18px;
   color: var(--muted);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.8;
 }
 
+/* ---------- info tiles ---------- */
+
 .ev-modal-meta-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 22px;
+  margin-top: 24px;
 }
 
 .ev-modal-meta-item {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   gap: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--light);
+  padding: 14px;
+  border: 1px solid #eeece5;
+  border-radius: 14px;
+  background: #fbfaf6;
 }
 
 .ev-modal-meta-item svg {
+  box-sizing: border-box;
   flex: 0 0 auto;
-  margin-top: 2px;
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  border-radius: 10px;
+  background: rgba(128, 0, 0, 0.08);
   color: var(--maroon);
 }
 
@@ -716,6 +868,8 @@
   word-break: break-word;
 }
 
+/* ---------- speakers ---------- */
+
 .ev-modal-speakers {
   margin-top: 22px;
 }
@@ -737,6 +891,147 @@
   padding: 13px 13px 13px 22px;
 }
 
+/* ---------- recap + highlights cards ---------- */
+
+.ev-modal-section {
+  margin-top: 24px;
+  padding: 18px 20px;
+  border: 1px solid #eeece5;
+  border-radius: 16px;
+  background: #fbfaf6;
+}
+
+.ev-modal-section-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: var(--gold-dark);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ev-modal-summary {
+  color: #444444;
+  font-size: 13.5px;
+  line-height: 1.85;
+}
+
+.ev-modal-highlights {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ev-modal-highlights li {
+  position: relative;
+  padding-left: 24px;
+  color: #444444;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.ev-modal-highlights li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(253, 204, 3, 0.2);
+}
+
+/* =========================================================
+   LIGHTBOX (full-screen photo viewer)
+========================================================= */
+
+.ev-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 70px;
+  background: rgba(10, 4, 4, 0.92);
+  animation: evFadeIn 0.2s ease both;
+}
+
+.ev-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.ev-lightbox-close,
+.ev-lightbox-nav {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease;
+}
+
+.ev-lightbox-close {
+  top: 18px;
+  right: 18px;
+  width: 42px;
+  height: 42px;
+}
+
+.ev-lightbox-nav {
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  transform: translateY(-50%);
+}
+
+.ev-lightbox-nav--prev {
+  left: 16px;
+}
+
+.ev-lightbox-nav--next {
+  right: 16px;
+}
+
+.ev-lightbox-close:hover,
+.ev-lightbox-nav:hover {
+  background: var(--maroon);
+}
+
+.ev-lightbox-nav:hover {
+  transform: translateY(-50%) scale(1.08);
+}
+
+.ev-lightbox-count {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
 /* =========================================================
    REGISTER BUTTON (modal)
 ========================================================= */
@@ -752,6 +1047,7 @@
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.06em;
+  text-decoration: none;
   white-space: nowrap;
   transition:
     background 0.3s ease,
@@ -784,10 +1080,17 @@
 }
 
 .ev-register-btn--disabled {
+  justify-content: center;
   background: #ececec;
   color: #9a9a9a;
-  padding: 9px 16px;
+  padding: 13px 16px;
   cursor: not-allowed;
+}
+
+.ev-register-btn--disabled:hover {
+  background: #ececec;
+  transform: none;
+  box-shadow: none;
 }
 
 /* =========================================================
@@ -843,7 +1146,21 @@
   }
 
   .ev-modal-meta-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ev-lightbox {
+    padding: 64px 12px;
+  }
+
+  .ev-lightbox-nav {
+    top: auto;
+    bottom: 16px;
+    transform: none;
+  }
+
+  .ev-lightbox-nav:hover {
+    transform: scale(1.08);
   }
 }
 
@@ -853,17 +1170,40 @@
     align-items: flex-end;
   }
 
-  .ev-modal {
+  .ev-modal,
+  .ev-modal--past {
     max-width: 100%;
     max-height: 92vh;
     border-radius: 22px 22px 0 0;
   }
 
-  .ev-modal-media {
-    height: 200px;
+  .ev-modal-media,
+  .ev-modal--past .ev-modal-media {
+    height: 230px;
+  }
+
+  .ev-modal-date-badge {
+    left: 18px;
   }
 
   .ev-modal-body {
-    padding: 38px 20px 24px;
+    padding: 44px 18px 24px;
+  }
+
+  .ev-modal-head {
+    padding-left: 76px;
+  }
+
+  .ev-modal-body h2 {
+    font-size: 21px;
+  }
+
+  .ev-modal-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ev-carousel-arrow {
+    width: 36px;
+    height: 36px;
   }
 }

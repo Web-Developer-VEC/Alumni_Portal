@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Mail, Eye, EyeOff, Clock, Check, X } from "lucide-react";
 import styles from "./Register.module.css";
+import { useLocation } from "react-router-dom";
 
 const API_BASE_URL = "http://localhost:5000";
 const steps = ["Email & OTP", "Password", "Details"];
@@ -16,6 +17,7 @@ function readSaved() {
 }
 
 export default function Register() {
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [otpSent, setOtpSent] = useState(false);
   const [submitted, setSubmitted] = useState(readSaved); // { referenceId, firstName, email } | null
@@ -332,6 +334,11 @@ export default function Register() {
     setEngagements([]);
     setDetailsScreen(1);
   };
+  useEffect(() => {
+    if (location.state && location.state.username !== undefined) {
+      setEmail(location.state.username);
+    }
+  }, [location.state]);
 
   return (
     <div className={styles["register-page"]}>

@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx watch server.ts",
-    "dev": "tsx watch server.ts"
-  },
+"dev": "nodemon --exec tsx server.ts"  },
   "keywords": [],
   "author": "",
   "license": "ISC",

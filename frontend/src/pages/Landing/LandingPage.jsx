@@ -6,7 +6,24 @@ import React, {
   useCallback,
 } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "./LandingPage.css";
+import styles from "./LandingPage.module.css";
+
+const s = (...classes) => {
+  const result = new Set();
+  for (const c of classes) {
+    if (!c) continue;
+    const str = typeof c === "string" ? c : String(c);
+    const parts = str.trim().split(/\s+/);
+    for (const part of parts) {
+      if (!part) continue;
+      if (styles[part]) {
+        result.add(styles[part]);
+      }
+      result.add(part);
+    }
+  }
+  return Array.from(result).join(" ");
+};
 import vecLogo from "../../assets/VEC_Logo.png";
 import { getLandingData } from "../../api/landing";
 import {
@@ -154,6 +171,13 @@ function useReveal(threshold = 0.18) {
       return;
     }
 
+    const isMobile =
+      typeof window !== "undefined" && window.innerWidth <= 768;
+    const effectiveThreshold = isMobile ? 0.05 : threshold;
+    const effectiveRootMargin = isMobile
+      ? "0px 0px 20px 0px"
+      : "0px 0px -60px 0px";
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -162,8 +186,8 @@ function useReveal(threshold = 0.18) {
         }
       },
       {
-        threshold,
-        rootMargin: "0px 0px -60px 0px",
+        threshold: effectiveThreshold,
+        rootMargin: effectiveRootMargin,
       },
     );
 
@@ -290,7 +314,7 @@ function Reveal({
   return (
     <Tag
       ref={ref}
-      className={`reveal ${visible ? "is-visible" : ""} ${className}`}
+      className={s(`reveal ${visible ? "is-visible" : ""} ${className}`)}
       style={{
         "--reveal-delay": `${delay}ms`,
       }}
@@ -311,12 +335,12 @@ function TiltCard({ className = "", children, ...rest }) {
   return (
     <article
       ref={ref}
-      className={`tilt-card ${className}`}
+      className={s(`tilt-card ${className}`)}
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
       {...rest}
     >
-      <span className="tilt-glow" aria-hidden="true" />
+      <span className={s("tilt-glow")} aria-hidden="true" />
 
       {children}
     </article>
@@ -336,7 +360,7 @@ function Words({ text, visible, startIndex = 0, wordDelay = 55 }) {
       {words.map((word, i) => (
         <span
           key={i}
-          className={`reveal-word ${visible ? "is-visible" : ""}`}
+          className={s(`reveal-word ${visible ? "is-visible" : ""}`)}
           style={{
             transitionDelay: `${(startIndex + i) * wordDelay}ms`,
           }}
@@ -367,7 +391,7 @@ function RevealHeading({
   return (
     <Tag
       ref={ref}
-      className={`word-stagger word-stagger-${direction} ${className}`}
+      className={s(`word-stagger word-stagger-${direction} ${className}`)}
     >
       {children(visible)}
     </Tag>
@@ -386,9 +410,9 @@ function Stat({ target, suffix, label }) {
   return (
     <div
       ref={ref}
-      className={`stat-item reveal ${visible ? "is-visible" : ""}`}
+      className={s(`stat-item reveal ${visible ? "is-visible" : ""}`)}
     >
-      <strong className="stat-number">
+      <strong className={s("stat-number")}>
         {value}
         {suffix}
       </strong>
@@ -427,8 +451,8 @@ function HeroCardStack({ items = [], interval = 2600 }) {
   const front = items[active] || items[0] || {};
 
   return (
-    <div className="hero-carousel">
-      <div className="hero-carousel-stage" aria-hidden="true">
+    <div className={s("hero-carousel")}>
+      <div className={s("hero-carousel-stage")} aria-hidden="true">
         {items.map((person, i) => {
           // position relative to the active card, wrapped into shortest signed distance
           let rel = i - active;
@@ -445,7 +469,7 @@ function HeroCardStack({ items = [], interval = 2600 }) {
 
           return (
             <div
-              className={`hero-carousel-card ${isFront ? "is-front" : ""}`}
+              className={s(`hero-carousel-card ${isFront ? "is-front" : ""}`)}
               style={cardStyle}
               key={person.id || i}
             >
@@ -455,11 +479,11 @@ function HeroCardStack({ items = [], interval = 2600 }) {
         })}
       </div>
 
-      <div className="hero-carousel-label">
+      <div className={s("hero-carousel-label")}>
         <strong>{front.name}</strong>
-        <div className="hero-carousel-label-meta">
+        <div className={s("hero-carousel-label-meta")}>
           <span>{front.batch}</span>
-          <span className="hero-carousel-dot" />
+          <span className={s("hero-carousel-dot")} />
           <span>{front.role}</span>
         </div>
       </div>
@@ -473,20 +497,62 @@ function HeroCardStack({ items = [], interval = 2600 }) {
 
 function AlumniRollingCard({ image, name, role }) {
   return (
-    <article className="alumni-rolling-card">
-      <div className="alumni-photo-wrapper">
-        <img src={image} alt={name} className="alumni-photo" loading="lazy" />
+    <article className={s("alumni-rolling-card")}>
+      <div className={s("alumni-photo-wrapper")}>
+        <img src={image} alt={name} className={s("alumni-photo")} loading="lazy" />
 
-        <span className="alumni-live-dot"></span>
+        <span className={s("alumni-live-dot")}></span>
       </div>
 
-      <div className="alumni-rolling-info">
+      <div className={s("alumni-rolling-info")}>
         <h3>{name}</h3>
 
         <p>{role}</p>
       </div>
 
-      <span className="alumni-card-arrow">↗</span>
+      <span className={s("alumni-card-arrow")}>↗</span>
+    </article>
+  );
+}
+/* =================================================
+   EVENT CARD
+================================================= */
+
+function EventCard({ ev }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = ev.image && !imgFailed;
+
+  return (
+    <article className={s("event-card")}>
+      <div className={s("event-media")}>
+        {showImage ? (
+          <img
+            src={ev.image}
+            alt={ev.title}
+            loading="lazy"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className={s("event-media-fallback")} aria-hidden="true">
+            <Calendar size={40} />
+          </div>
+        )}
+
+        <div className={s("event-date")}>
+          <strong>{ev.day}</strong>
+          <span>{ev.month}</span>
+        </div>
+
+        <span className={s("event-type")}>{ev.category || "EVENT"}</span>
+      </div>
+
+      <div className={s("event-info")}>
+        <h3>{ev.title}</h3>
+        <p>{ev.description}</p>
+        <span className={s("event-location")}>
+          <MapPin size={11} /> {ev.venue}
+        </span>
+      </div>
     </article>
   );
 }
@@ -497,30 +563,226 @@ function AlumniRollingCard({ image, name, role }) {
 
 function DiscussionCard({ initials, name, time, message, replies, likes }) {
   return (
-    <Reveal as={TiltCard} className="discussion-card">
-      <div className="discussion-avatar">{initials}</div>
+    <Reveal as={TiltCard} className={s("discussion-card")}>
+      <div className={s("discussion-avatar")}>{initials}</div>
 
-      <div className="discussion-body">
-        <div className="discussion-meta">
+      <div className={s("discussion-body")}>
+        <div className={s("discussion-meta")}>
           <strong>{name}</strong>
           <span>{time}</span>
         </div>
 
         <p>{message}</p>
 
-        <div className="discussion-actions">
-          <span className="discussion-stat">
+        <div className={s("discussion-actions")}>
+          <span className={s("discussion-stat")}>
             <MessageCircle size={13} /> {replies} Replies
           </span>
-          <span className="discussion-stat">
+          <span className={s("discussion-stat")}>
             <Heart size={13} /> {likes} Likes
           </span>
-          <span className="discussion-cta">View Thread →</span>
+          <span className={s("discussion-cta")}>View Thread →</span>
         </div>
       </div>
     </Reveal>
   );
 }
+
+/* =========================================================
+   FALLBACK DATASETS (used if backend is slow/offline)
+========================================================= */
+
+const heroAlumniStack = [
+  {
+    id: "s1",
+    name: "Arun Kumar",
+    batch: "Batch of 2019",
+    role: "Software Engineer @ Zoho",
+    image:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "s2",
+    name: "Priya S",
+    batch: "Batch of 2020",
+    role: "Data Analyst @ TCS",
+    image:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "s3",
+    name: "Rahul V",
+    batch: "Batch of 2018",
+    role: "AI Engineer @ Presidio",
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "s4",
+    name: "Keerthana R",
+    batch: "Batch of 2021",
+    role: "Product Designer @ Freshworks",
+    image:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "s5",
+    name: "Vignesh M",
+    batch: "Batch of 2017",
+    role: "Cloud Engineer @ Infosys",
+    image:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+  },
+];
+
+const fallbackShowcaseAlumni = [
+  {
+    id: "f1",
+    name: "Arun Kumar",
+    role: "Software Engineer @ Zoho",
+    image:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f2",
+    name: "Priya S",
+    role: "Data Analyst @ TCS",
+    image:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f3",
+    name: "Rahul V",
+    role: "AI Engineer @ Presidio",
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f4",
+    name: "Keerthana R",
+    role: "Product Designer @ Freshworks",
+    image:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f5",
+    name: "Vignesh M",
+    role: "Cloud Engineer @ Infosys",
+    image:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f6",
+    name: "Harish Kumar",
+    role: "Full Stack Developer @ Amazon",
+    image:
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f7",
+    name: "Divya S",
+    role: "Business Analyst @ Deloitte",
+    image:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f8",
+    name: "Sanjay Kumar",
+    role: "DevOps Engineer @ Microsoft",
+    image:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f9",
+    name: "Nithya R",
+    role: "HR Manager @ Google",
+    image:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f10",
+    name: "Karthik S",
+    role: "Software Architect @ Cisco",
+    image:
+      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f11",
+    name: "Swetha P",
+    role: "UX Designer",
+    image:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "f12",
+    name: "Adithya R",
+    role: "Machine Learning Engineer",
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+  },
+];
+
+const fallbackEvents = [
+  {
+    id: "fe1",
+    day: "15",
+    month: "MAR",
+    category: "REUNION",
+    title: "VEC Alumni Meet 2026",
+    description: "Reconnect with classmates and revisit your college memories.",
+    venue: "Velammal Engineering College",
+  },
+  {
+    id: "fe2",
+    day: "22",
+    month: "APR",
+    category: "NETWORKING",
+    title: "Alumni Industry Connect",
+    description:
+      "Meet professionals from different industries and build meaningful connections.",
+    venue: "Chennai Trade Centre",
+  },
+  {
+    id: "fe3",
+    day: "10",
+    month: "MAY",
+    category: "MENTORSHIP",
+    title: "Alumni Mentorship Session",
+    description:
+      "Experienced alumni share career insights with the next generation.",
+    venue: "Online (Google Meet)",
+  },
+  {
+    id: "fe4",
+    day: "18",
+    month: "JUN",
+    category: "WORKSHOP",
+    title: "Tech Skills Bootcamp",
+    description:
+      "Hands-on workshop covering the latest in AI, cloud and full-stack development.",
+    venue: "VEC Auditorium, Chennai",
+  },
+  {
+    id: "fe5",
+    day: "05",
+    month: "JUL",
+    category: "REUNION",
+    title: "Department Batch Meetup",
+    description:
+      "Celebrate your department's legacy and reconnect with batch mates.",
+    venue: "Velammal Engineering College",
+  },
+  {
+    id: "fe6",
+    day: "20",
+    month: "AUG",
+    category: "NETWORKING",
+    title: "Startup & Innovation Summit",
+    description:
+      "Alumni entrepreneurs pitch ideas and connect with investors and mentors.",
+    venue: "Taj Coromandel, Bengaluru",
+  },
+];
 
 /* =========================================================
    MAIN LANDING PAGE
@@ -539,9 +801,9 @@ function LandingPage() {
     departmentsCount: 20,
     eventsCount: 50,
   });
-  const [heroAlumni, setHeroAlumni] = useState([]);
-  const [showcaseAlumni, setShowcaseAlumni] = useState([]);
-  const [events, setEvents] = useState([]);
+  const [heroAlumni, setHeroAlumni] = useState(heroAlumniStack);
+  const [showcaseAlumni, setShowcaseAlumni] = useState(fallbackShowcaseAlumni);
+  const [events, setEvents] = useState(fallbackEvents);
 
   useEffect(() => {
     let isMounted = true;
@@ -554,13 +816,13 @@ function LandingPage() {
         if (data?.stats) {
           setStats(data.stats);
         }
-        if (Array.isArray(data?.heroAlumni)) {
+        if (Array.isArray(data?.heroAlumni) && data.heroAlumni.length > 0) {
           setHeroAlumni(data.heroAlumni);
         }
-        if (Array.isArray(data?.showcaseAlumni)) {
+        if (Array.isArray(data?.showcaseAlumni) && data.showcaseAlumni.length > 0) {
           setShowcaseAlumni(data.showcaseAlumni);
         }
-        if (Array.isArray(data?.events)) {
+        if (Array.isArray(data?.events) && data.events.length > 0) {
           setEvents(data.events);
         }
       })
@@ -690,32 +952,31 @@ function LandingPage() {
   };
 
   return (
-
-    <main className="landing-page">
+    <main className={s("landing-page")}>
       {/* =================================================
         NAVBAR
     ================================================= */}
 
       <header
         ref={navRef}
-        className={`lp-navbar ${scrollY > 8 ? "lp-navbar--scrolled" : ""}`}
+        className={s(`lp-navbar ${scrollY > 8 ? "lp-navbar--scrolled" : ""}`)}
       >
         {/* ---------- BRAND ---------- */}
 
-        <div className="lp-navbar__brand">
+        <div className={s("lp-navbar__brand")}>
           <img
             src={vecLogo}
             alt="Velammal Engineering College emblem"
-            className="lp-navbar__logo"
+            className={s("lp-navbar__logo")}
           />
 
-          <div className="lp-navbar__college-domain">
-            <span className="lp-navbar__college-name">VELAMMAL</span>
-            <span className="lp-navbar__college-sub">ENGINEERING COLLEGE</span>
-            <span className="lp-navbar__college-tagline">
+          <div className={s("lp-navbar__college-domain")}>
+            <span className={s("lp-navbar__college-name")}>VELAMMAL</span>
+            <span className={s("lp-navbar__college-sub")}>ENGINEERING COLLEGE</span>
+            <span className={s("lp-navbar__college-tagline")}>
               The Wheel of Knowledge rolls on!
             </span>
-            <span className="lp-navbar__college-autonomous">
+            <span className={s("lp-navbar__college-autonomous")}>
               (An Autonomous Institution)
             </span>
           </div>
@@ -723,22 +984,22 @@ function LandingPage() {
 
         {/* ---------- APP NAME (CENTERED) ---------- */}
 
-        <span className="lp-navbar__app-name">
-          VEC<span className="lp-navbar__app-name-accent">Connect</span>
+        <span className={s("lp-navbar__app-name")}>
+          VEC<span className={s("lp-navbar__app-name-accent")}>Connect</span>
         </span>
 
         {/* ---------- ACTION BUTTONS ---------- */}
 
-        <div className="lp-navbar__actions">
+        <div className={s("lp-navbar__actions")}>
           {/* LOGIN */}
 
           <button
             type="button"
-            className="lp-navbar__login-btn"
+            className={s("lp-navbar__login-btn")}
             onClick={() => navigate("/login")}
             aria-label="Log in"
           >
-            <span className="lp-navbar__icon-solid" aria-hidden="true">
+            <span className={s("lp-navbar__icon-solid")} aria-hidden="true">
               <svg
                 viewBox="0 0 20 20"
                 fill="none"
@@ -770,18 +1031,18 @@ function LandingPage() {
               </svg>
             </span>
 
-            <span className="lp-navbar__btn-label">Log in</span>
+            <span className={s("lp-navbar__btn-label")}>Log in</span>
           </button>
 
           {/* REGISTER */}
 
           <button
             type="button"
-            className="lp-navbar__register-btn"
+            className={s("lp-navbar__register-btn")}
             onClick={() => navigate("/register")}
             aria-label="Register"
           >
-            <span className="lp-navbar__icon-glass" aria-hidden="true">
+            <span className={s("lp-navbar__icon-glass")} aria-hidden="true">
               <svg
                 viewBox="0 0 20 20"
                 fill="none"
@@ -818,40 +1079,37 @@ function LandingPage() {
               </svg>
             </span>
 
-            <span className="lp-navbar__btn-label">Register</span>
+            <span className={s("lp-navbar__btn-label")}>Register</span>
           </button>
         </div>
+
+        {/* ---------- SCROLL PROGRESS (ATTACHED DIRECTLY TO HEADER) ---------- */}
+        <div
+          className={s("scroll-progress")}
+          style={{
+            transform: `scaleX(${getScrollProgress()})`,
+          }}
+        />
       </header>
-
-      {/* =================================================
-        SCROLL PROGRESS
-    ================================================= */}
-
-      <div
-        className="scroll-progress"
-        style={{
-          transform: `scaleX(${getScrollProgress()})`,
-        }}
-      />
 
       {/* =================================================
         HERO
     ================================================= */}
-      <section className="hero-section" ref={heroRef}>
+      <section className={s("hero-section")} ref={heroRef}>
         <div
-          className="hero-overlay"
+          className={s("hero-overlay")}
           style={{
             transform: `translateY(${scrollY * 0.25}px)`,
           }}
         />
 
-        <div className="hero-particles" aria-hidden="true">
+        <div className={s("hero-particles")} aria-hidden="true">
           {Array.from({
             length: 14,
           }).map((_, i) => (
             <span
               key={i}
-              className="particle"
+              className={s("particle")}
               style={{
                 "--i": i,
               }}
@@ -859,16 +1117,13 @@ function LandingPage() {
           ))}
         </div>
 
-        <div className="hero-visual" aria-hidden="true">
-          <HeroCardStack items={heroAlumni} />
-        </div>
         <div
-          className="landing-container hero-content"
+          className={s("landing-container hero-content")}
           style={{
             transform: `translateY(${scrollY * 0.12}px)`,
           }}
         >
-          <div className="hero-label">
+          <div className={s("hero-label")}>
             <span></span>
             VEC ALUMNI NETWORK
           </div>
@@ -889,18 +1144,22 @@ function LandingPage() {
             institution — building relationships that continue beyond college.
           </p>
 
-          <div className="hero-buttons">
+          <div className={s("hero-buttons")}>
             <button
-              className="hero-primary"
+              className={s("hero-primary")}
               type="button"
               onClick={() => navigate("/register")}
             >
               JOIN THE ALUMNI NETWORK
-              <span className="btn-arrow">
+              <span className={s("btn-arrow")}>
                 <ArrowRight size={18} />
               </span>
             </button>
           </div>
+        </div>
+
+        <div className={s("hero-visual")} aria-hidden="true">
+          <HeroCardStack items={heroAlumni} />
         </div>
       </section>
 
@@ -908,10 +1167,10 @@ function LandingPage() {
           ABOUT
       ================================================= */}
 
-      <section className="intro-section" id="about">
-        <div className="landing-container intro-grid">
-          <Reveal className="section-heading" as="div">
-            <span className="section-tag">ABOUT THE NETWORK</span>
+      <section className={s("intro-section")} id="about">
+        <div className={s("landing-container intro-grid")}>
+          <Reveal className={s("section-heading")} as="div">
+            <span className={s("section-tag")}>ABOUT THE NETWORK</span>
 
             <RevealHeading as="h2" direction="right">
               {(visible) => (
@@ -929,11 +1188,11 @@ function LandingPage() {
               )}
             </RevealHeading>
 
-            <div className="heading-line"></div>
+            <div className={s("heading-line")}></div>
           </Reveal>
 
-          <Reveal className="intro-content" delay={150}>
-            <p className="intro-large">
+          <Reveal className={s("intro-content")} delay={150}>
+            <p className={s("intro-large")}>
               The VEC Alumni Network brings together graduates from different
               batches, departments and generations under one connected
               community.
@@ -946,12 +1205,12 @@ function LandingPage() {
             </p>
 
             <button
-              className="text-button"
+              className={s("text-button")}
               type="button"
               onClick={() => navigate("/register")}
             >
               BECOME A MEMBER
-              <span className="btn-arrow">
+              <span className={s("btn-arrow")}>
                 <ArrowRight size={18} />
               </span>
             </button>
@@ -962,10 +1221,10 @@ function LandingPage() {
           AWARDS / NOMINATIONS
       ================================================= */}
 
-      <section className="awards-section" id="awards">
-        <div className="landing-container">
-          <Reveal className="center-heading">
-            <span className="section-tag">NOMINATIONS OPEN — 2025</span>
+      <section className={s("awards-section")} id="awards">
+        <div className={s("landing-container")}>
+          <Reveal className={s("center-heading")}>
+            <span className={s("section-tag")}>NOMINATIONS OPEN — 2025</span>
 
             <RevealHeading as="h2" direction="up">
               {(visible) => (
@@ -994,9 +1253,9 @@ function LandingPage() {
             </p>
           </Reveal>
 
-          <div className="awards-grid">
-            <Reveal as={TiltCard} className="award-card">
-              <div className="award-icon">
+          <div className={s("awards-grid")}>
+            <Reveal as={TiltCard} className={s("award-card")}>
+              <div className={s("award-icon")}>
                 <Trophy size={28} />
               </div>
               <h3>Placement Icon Award</h3>
@@ -1010,8 +1269,8 @@ function LandingPage() {
               </a>
             </Reveal>
 
-            <Reveal as={TiltCard} className="award-card" delay={80}>
-              <div className="award-icon">
+            <Reveal as={TiltCard} className={s("award-card")} delay={80}>
+              <div className={s("award-icon")}>
                 <Rocket size={28} />
               </div>
               <h3>Emerging Entrepreneur Award</h3>
@@ -1025,8 +1284,8 @@ function LandingPage() {
               </a>
             </Reveal>
 
-            <Reveal as={TiltCard} className="award-card" delay={160}>
-              <div className="award-icon">
+            <Reveal as={TiltCard} className={s("award-card")} delay={160}>
+              <div className={s("award-icon")}>
                 <Star size={28} />
               </div>
               <h3>Path Breaker Award</h3>
@@ -1040,8 +1299,8 @@ function LandingPage() {
               </a>
             </Reveal>
 
-            <Reveal as={TiltCard} className="award-card" delay={240}>
-              <div className="award-icon">
+            <Reveal as={TiltCard} className={s("award-card")} delay={240}>
+              <div className={s("award-icon")}>
                 <Target size={28} />
               </div>
               <h3>Optimal Pursuer Award</h3>
@@ -1055,8 +1314,8 @@ function LandingPage() {
               </a>
             </Reveal>
 
-            <Reveal as={TiltCard} className="award-card" delay={320}>
-              <div className="award-icon">
+            <Reveal as={TiltCard} className={s("award-card")} delay={320}>
+              <div className={s("award-icon")}>
                 <Heart size={28} />
               </div>
               <h3>Humanitarian Award</h3>
@@ -1077,10 +1336,10 @@ function LandingPage() {
           ALUMNI CELL OVERVIEW + VISION
       ================================================= */}
 
-      <section className="overview-section" id="overview">
-        <div className="landing-container overview-grid">
-          <Reveal className="overview-block">
-            <span className="section-tag">ALUMNI CELL OVERVIEW</span>
+      <section className={s("overview-section")} id="overview">
+        <div className={s("landing-container overview-grid")}>
+          <Reveal className={s("overview-block")}>
+            <span className={s("section-tag")}>ALUMNI CELL OVERVIEW</span>
 
             <RevealHeading as="h2" direction="right">
               {(visible) => (
@@ -1102,7 +1361,7 @@ function LandingPage() {
               )}
             </RevealHeading>
 
-            <div className="heading-line"></div>
+            <div className={s("heading-line")}></div>
 
             <p>
               The VEC Alumni Cell fosters relationships between alumni, students
@@ -1113,8 +1372,8 @@ function LandingPage() {
             </p>
           </Reveal>
 
-          <Reveal className="vision-card" delay={150}>
-            <span className="vision-card-tag">OUR VISION</span>
+          <Reveal className={s("vision-card")} delay={150}>
+            <span className={s("vision-card-tag")}>OUR VISION</span>
             <p>
               To establish a strong, lifelong bond between the institution and
               its alumni, fostering a mutually beneficial relationship that
@@ -1129,10 +1388,10 @@ function LandingPage() {
           MISSION & OBJECTIVES
       ================================================= */}
 
-      <section className="mission-section">
-        <div className="landing-container">
-          <Reveal className="center-heading">
-            <span className="section-tag">WHAT DRIVES US</span>
+      <section className={s("mission-section")}>
+        <div className={s("landing-container")}>
+          <Reveal className={s("center-heading")}>
+            <span className={s("section-tag")}>WHAT DRIVES US</span>
 
             <RevealHeading as="h2" direction="up">
               {(visible) => (
@@ -1151,10 +1410,10 @@ function LandingPage() {
             </RevealHeading>
           </Reveal>
 
-          <div className="mission-grid">
-            <Reveal className="mission-panel">
+          <div className={s("mission-grid")}>
+            <Reveal className={s("mission-panel")}>
               <h3>Mission</h3>
-              <ul className="mission-list">
+              <ul className={s("mission-list")}>
                 <li>
                   To build a dynamic and engaged alumni network that contributes
                   to the academic and career growth of current students.
@@ -1175,9 +1434,9 @@ function LandingPage() {
               </ul>
             </Reveal>
 
-            <Reveal className="mission-panel" delay={150}>
+            <Reveal className={s("mission-panel")} delay={150}>
               <h3>Objectives of the Alumni Cell</h3>
-              <ul className="mission-list">
+              <ul className={s("mission-list")}>
                 <li>
                   <strong>Strengthening Alumni Network</strong> — To create and
                   maintain a strong bond among alumni, faculty and current
@@ -1218,10 +1477,10 @@ function LandingPage() {
           STATISTICS
       ================================================= */}
 
-      <section className="stats-section">
-        <div className="stats-glow" aria-hidden="true" />
+      <section className={s("stats-section")}>
+        <div className={s("stats-glow")} aria-hidden="true" />
 
-        <div className="landing-container stats-grid">
+        <div className={s("landing-container stats-grid")}>
           <Stat
             target={stats.yearsOfExcellence || 25}
             suffix="+"
@@ -1252,10 +1511,10 @@ function LandingPage() {
           ALUMNI SERVICES
       ================================================= */}
 
-      <section className="features-section">
-        <div className="landing-container">
-          <Reveal className="center-heading">
-            <span className="section-tag">ALUMNI SERVICES</span>
+      <section className={s("features-section")}>
+        <div className={s("landing-container")}>
+          <Reveal className={s("center-heading")}>
+            <span className={s("section-tag")}>ALUMNI SERVICES</span>
             <RevealHeading as="h2" direction="left">
               {(visible) => (
                 <>
@@ -1281,10 +1540,10 @@ function LandingPage() {
             </p>
           </Reveal>
 
-          <div className="features-grid">
-            <Reveal as={TiltCard} className="feature-card">
-              <div className="feature-number">01</div>
-              <div className="feature-icon-box">
+          <div className={s("features-grid")}>
+            <Reveal as={TiltCard} className={s("feature-card")}>
+              <div className={s("feature-number")}>01</div>
+              <div className={s("feature-icon-box")}>
                 <span>
                   <Users size={24} />
                 </span>
@@ -1297,12 +1556,12 @@ function LandingPage() {
               <button type="button" onClick={() => navigate("/register")}>
                 EXPLORE DIRECTORY <ArrowRight size={14} />
               </button>
-              <div className="feature-card-bar" />
+              <div className={s("feature-card-bar")} />
             </Reveal>
 
-            <Reveal as={TiltCard} className="feature-card" delay={100}>
-              <div className="feature-number">02</div>
-              <div className="feature-icon-box">
+            <Reveal as={TiltCard} className={s("feature-card")} delay={100}>
+              <div className={s("feature-number")}>02</div>
+              <div className={s("feature-icon-box")}>
                 <span>
                   <GraduationCap size={24} />
                 </span>
@@ -1318,12 +1577,12 @@ function LandingPage() {
               >
                 FIND OPPORTUNITIES <ArrowRight size={14} />
               </button>
-              <div className="feature-card-bar" />
+              <div className={s("feature-card-bar")} />
             </Reveal>
 
-            <Reveal as={TiltCard} className="feature-card" delay={200}>
-              <div className="feature-number">03</div>
-              <div className="feature-icon-box">
+            <Reveal as={TiltCard} className={s("feature-card")} delay={200}>
+              <div className={s("feature-number")}>03</div>
+              <div className={s("feature-icon-box")}>
                 <span>
                   <Calendar size={24} />
                 </span>
@@ -1336,12 +1595,12 @@ function LandingPage() {
               <button type="button" onClick={() => scrollToSection("events")}>
                 VIEW EVENTS <ArrowRight size={14} />
               </button>
-              <div className="feature-card-bar" />
+              <div className={s("feature-card-bar")} />
             </Reveal>
 
-            <Reveal as={TiltCard} className="feature-card" delay={300}>
-              <div className="feature-number">04</div>
-              <div className="feature-icon-box">
+            <Reveal as={TiltCard} className={s("feature-card")} delay={300}>
+              <div className={s("feature-number")}>04</div>
+              <div className={s("feature-icon-box")}>
                 <span>
                   <Landmark size={24} />
                 </span>
@@ -1354,7 +1613,7 @@ function LandingPage() {
               <button type="button" onClick={() => navigate("/register")}>
                 GET INVOLVED <ArrowRight size={14} />
               </button>
-              <div className="feature-card-bar" />
+              <div className={s("feature-card-bar")} />
             </Reveal>
           </div>
         </div>
@@ -1364,10 +1623,10 @@ function LandingPage() {
           ALUMNI ROLLING SHOWCASE
       ================================================= */}
 
-      <section className="directory-section alumni-showcase" id="directory">
-        <div className="landing-container">
-          <Reveal className="alumni-showcase-heading">
-            <span className="section-tag">OUR ALUMNI</span>
+      <section className={s("directory-section alumni-showcase")} id="directory">
+        <div className={s("landing-container")}>
+          <Reveal className={s("alumni-showcase-heading")}>
+            <span className={s("section-tag")}>OUR ALUMNI</span>
 
             <RevealHeading as="h2" direction="down">
               {(visible) => (
@@ -1385,10 +1644,10 @@ function LandingPage() {
             </p>
           </Reveal>
 
-          <div className="alumni-rolling-wrapper">
+          <div className={s("alumni-rolling-wrapper")}>
             {/* ROW 1 */}
-            <div className="alumni-marquee">
-              <div className="alumni-marquee-track">
+            <div className={s("alumni-marquee")}>
+              <div className={s("alumni-marquee-track")}>
                 {filledRow1.map((al, idx) => (
                   <AlumniRollingCard
                     key={`r1-${idx}-${al.id || idx}`}
@@ -1411,8 +1670,8 @@ function LandingPage() {
             </div>
 
             {/* ROW 2 */}
-            <div className="alumni-marquee alumni-marquee-reverse">
-              <div className="alumni-marquee-track">
+            <div className={s("alumni-marquee alumni-marquee-reverse")}>
+              <div className={s("alumni-marquee-track")}>
                 {filledRow2.map((al, idx) => (
                   <AlumniRollingCard
                     key={`r2-${idx}-${al.id || idx}`}
@@ -1435,8 +1694,8 @@ function LandingPage() {
             </div>
 
             {/* ROW 3 */}
-            <div className="alumni-marquee">
-              <div className="alumni-marquee-track alumni-marquee-slow">
+            <div className={s("alumni-marquee")}>
+              <div className={s("alumni-marquee-track alumni-marquee-slow")}>
                 {filledRow3.map((al, idx) => (
                   <AlumniRollingCard
                     key={`r3-${idx}-${al.id || idx}`}
@@ -1459,12 +1718,12 @@ function LandingPage() {
             </div>
           </div>
 
-          <div className="alumni-showcase-footer">
+          <div className={s("alumni-showcase-footer")}>
             <span></span>
 
             <button type="button" onClick={() => navigate("/register")}>
               EXPLORE ALUMNI NETWORK
-              <span className="btn-arrow">
+              <span className={s("btn-arrow")}>
                 <ArrowRight size={18} />
               </span>
             </button>
@@ -1478,11 +1737,11 @@ function LandingPage() {
           EVENTS
       ================================================= */}
 
-      <section className="events-section" id="events">
-        <div className="landing-container">
-          <Reveal className="events-header">
+      <section className={s("events-section")} id="events">
+        <div className={s("landing-container")}>
+          <Reveal className={s("events-header")}>
             <div>
-              <span className="section-tag">WHAT'S HAPPENING</span>
+              <span className={s("section-tag")}>WHAT'S HAPPENING</span>
               <RevealHeading as="h2" direction="right">
                 {(visible) => (
                   <>
@@ -1496,11 +1755,11 @@ function LandingPage() {
             </div>
             <button
               type="button"
-              className="text-button"
+              className={s("text-button")}
               onClick={() => navigate("/register")}
             >
               VIEW ALL EVENTS
-              <span className="btn-arrow">
+              <span className={s("btn-arrow")}>
                 <ArrowRight size={18} />
               </span>
             </button>
@@ -1508,46 +1767,20 @@ function LandingPage() {
         </div>
 
         {/* Full-width scrolling track */}
-        <div className="events-marquee-outer">
-          <div className="events-marquee-track">
+        <div className={s("events-marquee-outer")}>
+          <div className={s("events-marquee-track")}>
             {displayEvents.map((ev, i) => (
-              <article className="event-card" key={`ev-${i}-${ev.id || i}`}>
-                <div className="event-date">
-                  <strong>{ev.day}</strong>
-                  <span>{ev.month}</span>
-                </div>
-                <div className="event-info">
-                  <span className="event-type">{ev.category || "EVENT"}</span>
-                  <h3>{ev.title}</h3>
-                  <p>{ev.description}</p>
-                  <span className="event-location">
-                    <MapPin size={11} /> {ev.venue}
-                  </span>
-                </div>
-              </article>
+              <EventCard key={`ev-${i}-${ev.id || i}`} ev={ev} />
             ))}
 
-            {/* ── duplicates for seamless infinite loop ── */}
+            {/* duplicates for seamless infinite loop */}
             {displayEvents.map((ev, i) => (
-              <article className="event-card" key={`ev-dup-${i}-${ev.id || i}`}>
-                <div className="event-date">
-                  <strong>{ev.day}</strong>
-                  <span>{ev.month}</span>
-                </div>
-                <div className="event-info">
-                  <span className="event-type">{ev.category || "EVENT"}</span>
-                  <h3>{ev.title}</h3>
-                  <p>{ev.description}</p>
-                  <span className="event-location">
-                    <MapPin size={11} /> {ev.venue}
-                  </span>
-                </div>
-              </article>
+              <EventCard key={`ev-dup-${i}-${ev.id || i}`} ev={ev} />
             ))}
           </div>
 
           {/* Right fade shadow */}
-          <div className="events-marquee-shadow" />
+          <div className={s("events-marquee-shadow")} />
         </div>
       </section>
 
@@ -1555,10 +1788,10 @@ function LandingPage() {
           ACHIEVEMENTS
       ================================================= */}
 
-      <section className="achievement-section">
-        <div className="landing-container">
-          <Reveal className="center-heading">
-            <span className="section-tag">ALUMNI ACHIEVEMENTS</span>
+      <section className={s("achievement-section")}>
+        <div className={s("landing-container")}>
+          <Reveal className={s("center-heading")}>
+            <span className={s("section-tag")}>ALUMNI ACHIEVEMENTS</span>
 
             <RevealHeading as="h2" direction="up">
               {(visible) => (
@@ -1580,8 +1813,8 @@ function LandingPage() {
             </RevealHeading>
           </Reveal>
 
-          <div className="achievement-grid">
-            <Reveal className="achievement-card">
+          <div className={s("achievement-grid")}>
+            <Reveal className={s("achievement-card")}>
               <span>
                 <Trophy size={30} />
               </span>
@@ -1589,7 +1822,7 @@ function LandingPage() {
               <small>Building businesses</small>
             </Reveal>
 
-            <Reveal className="achievement-card" delay={80}>
+            <Reveal className={s("achievement-card")} delay={80}>
               <span>
                 <Rocket size={30} />
               </span>
@@ -1597,7 +1830,7 @@ function LandingPage() {
               <small>Creating new ideas</small>
             </Reveal>
 
-            <Reveal className="achievement-card" delay={160}>
+            <Reveal className={s("achievement-card")} delay={160}>
               <span>
                 <Laptop size={30} />
               </span>
@@ -1605,7 +1838,7 @@ function LandingPage() {
               <small>Driving innovation</small>
             </Reveal>
 
-            <Reveal className="achievement-card" delay={240}>
+            <Reveal className={s("achievement-card")} delay={240}>
               <span>
                 <Microscope size={30} />
               </span>
@@ -1613,7 +1846,7 @@ function LandingPage() {
               <small>Expanding knowledge</small>
             </Reveal>
 
-            <Reveal className="achievement-card" delay={320}>
+            <Reveal className={s("achievement-card")} delay={320}>
               <span>
                 <GraduationCap size={28} />
               </span>
@@ -1621,7 +1854,7 @@ function LandingPage() {
               <small>Learning globally</small>
             </Reveal>
 
-            <Reveal className="achievement-card" delay={400}>
+            <Reveal className={s("achievement-card")} delay={400}>
               <span>
                 <Medal size={30} />
               </span>
@@ -1636,10 +1869,10 @@ function LandingPage() {
           MOBILE APP PROMOTION
       ================================================= */}
 
-      <section className="app-section">
-        <div className="landing-container app-grid">
-          <Reveal className="app-content">
-            <span className="section-tag">ALUMNI ON MOBILE</span>
+      <section className={s("app-section")}>
+        <div className={s("landing-container app-grid")}>
+          <Reveal className={s("app-content")}>
+            <span className={s("section-tag")}>ALUMNI ON MOBILE</span>
 
             <RevealHeading as="h2" direction="left">
               {(visible) => (
@@ -1662,7 +1895,7 @@ function LandingPage() {
               stay connected directly from your phone.
             </p>
 
-            <div className="app-buttons">
+            <div className={s("app-buttons")}>
               <button type="button">
                 <span>
                   <PlayCircle size={20} />
@@ -1685,23 +1918,23 @@ function LandingPage() {
             </div>
           </Reveal>
 
-          <Reveal className="phone-mockup" delay={150}>
-            <div className="phone-frame">
-              <div className="phone-notch"></div>
+          <Reveal className={s("phone-mockup")} delay={150}>
+            <div className={s("phone-frame")}>
+              <div className={s("phone-notch")}></div>
 
-              <div className="phone-screen">
-                <div className="phone-header">
+              <div className={s("phone-screen")}>
+                <div className={s("phone-header")}>
                   VEC
                   <span>●</span>
                 </div>
 
-                <div className="phone-welcome">
+                <div className={s("phone-welcome")}>
                   <small>WELCOME BACK</small>
 
                   <strong>Alumni Network</strong>
                 </div>
 
-                <div className="phone-stat-row">
+                <div className={s("phone-stat-row")}>
                   <div>
                     <strong>10K+</strong>
                     <small>Alumni</small>
@@ -1713,17 +1946,17 @@ function LandingPage() {
                   </div>
                 </div>
 
-                <div className="phone-card">
+                <div className={s("phone-card")}>
                   <Users size={16} />
                   <span>Find Alumni</span>→
                 </div>
 
-                <div className="phone-card">
+                <div className={s("phone-card")}>
                   <Briefcase size={16} />
                   <span>Career Opportunities</span>→
                 </div>
 
-                <div className="phone-card">
+                <div className={s("phone-card")}>
                   <GraduationCap size={16} />
                   <span>Find a Mentor</span>→
                 </div>
@@ -1737,13 +1970,13 @@ function LandingPage() {
           FOOTER
       ================================================= */}
 
-      <footer id="footer" className="lp-footer">
+      <footer id="footer" className={s("lp-footer")}>
         {/* ---------- CONTACT DETAILS ---------- */}
-        <div className="lp-footer-contact">
-          <div className="lp-footer-contact-inner">
-            <div className="lp-footer-address-block">
+        <div className={s("lp-footer-contact")}>
+          <div className={s("lp-footer-contact-inner")}>
+            <div className={s("lp-footer-address-block")}>
               <h3>Contact Address</h3>
-              <p className="lp-footer-address">
+              <p className={s("lp-footer-address")}>
                 Velammal Engineering College (Autonomous)
                 <br />
                 (Unit of Velammal Educational Trust),
@@ -1754,7 +1987,7 @@ function LandingPage() {
               </p>
             </div>
 
-            <div className="lp-footer-contact-info">
+            <div className={s("lp-footer-contact-info")}>
               <p>
                 Contact: <a href="tel:04426590758">044 26590758</a>
               </p>
@@ -1771,13 +2004,13 @@ function LandingPage() {
                   href="/Term_and_Conditions"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="lp-footer-privacy"
+                  className={s("lp-footer-privacy")}
                 >
                   Privacy, Terms and Conditions
                 </a>
               </div>
 
-              <div className="lp-footer-socials">
+              <div className={s("lp-footer-socials")}>
                 <a
                   href="#"
                   target="_blank"
@@ -1815,27 +2048,14 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* ---------- MAP ---------- */}
-        <div className="lp-footer-map">
-          <iframe
-            title="Google Maps"
-            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1757.9530530830932!2d80.19081618175407!3d13.149609328912868!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5264a10c856599%3A0xac3348f41097ba7f!2sVelammal%20Engineering%20College!5e1!3m2!1sen!2sin!4v1723700873764!5m2!1sen!2sin"
-            width="400"
-            height="260"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-          />
-        </div>
-
         {/* ---------- QUICK LINKS ---------- */}
-        <div className="lp-footer-quick">
+        <div className={s("lp-footer-quick")}>
           <h3>Quick Links</h3>
 
-          <div className="lp-footer-quick-grid">
+          <div className={s("lp-footer-quick-grid")}>
             {/* Profile */}
             <div>
-              <h4 className="lp-quick-head">Profile</h4>
+              <h4 className={s("lp-quick-head")}>Profile</h4>
               <ul>
                 <li>
                   <Link to="/abt-us">About Us</Link>
@@ -1871,7 +2091,7 @@ function LandingPage() {
 
             {/* Academics */}
             <div>
-              <h4 className="lp-quick-head">Academics</h4>
+              <h4 className={s("lp-quick-head")}>Academics</h4>
               <ul>
                 <li>
                   <a href="/departments">Departments</a>
@@ -1899,7 +2119,7 @@ function LandingPage() {
 
             {/* Important */}
             <div>
-              <h4 className="lp-quick-head">Important</h4>
+              <h4 className={s("lp-quick-head")}>Important</h4>
               <ul>
                 <li>
                   <a
@@ -1942,8 +2162,32 @@ function LandingPage() {
           </div>
         </div>
 
+        {/* ---------- MAP ---------- */}
+        <div className={s("lp-footer-map")}>
+          <div className={s("lp-footer-map-header")}>
+            <h3>Campus Location</h3>
+            <a
+              href="https://maps.google.com/?cid=12408375836417538687"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={s("lp-footer-map-link")}
+            >
+              View Full Map ↗
+            </a>
+          </div>
+          <iframe
+            title="Google Maps"
+            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1757.9530530830932!2d80.19081618175407!3d13.149609328912868!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5264a10c856599%3A0xac3348f41097ba7f!2sVelammal%20Engineering%20College!5e1!3m2!1sen!2sin!4v1723700873764!5m2!1sen!2sin"
+            width="100%"
+            height="290"
+            style={{ border: 0, width: "100%" }}
+            allowFullScreen
+            loading="lazy"
+          />
+        </div>
+
         {/* ---------- COPYRIGHT ---------- */}
-        <div className="lp-footer-bottom">
+        <div className={s("lp-footer-bottom")}>
           <p>
             <a href="https://velammal.edu.in/webteam" rel="noopener noreferrer">
               © WebOps VEC

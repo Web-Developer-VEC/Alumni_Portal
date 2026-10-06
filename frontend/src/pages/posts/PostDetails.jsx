@@ -87,6 +87,10 @@ function mapPostToJob(p) {
     eligibility: p.eligibility,
     location: p.location,
     type: p.type,
+    // Optional facet fields — only populated when the backend sends them.
+    // The filter sidebar only shows a facet once real values appear here.
+    domain: p.domain || p.category || p.specialization || null,
+    batch: p.batch || p.graduationBatch || p.eligibleBatch || null,
     freshers: p.freshers,
     remote: p.remote,
     referralAvailable: p.referralAvailable,
@@ -160,14 +164,6 @@ const REPORT_REASONS = [
   "Other",
 ];
 
-const FILTERS = [
-  { value: "all", label: "All" },
-  { value: "internships", label: "Internships" },
-  { value: "full-time", label: "Full-time" },
-  { value: "referrals", label: "Referrals Available" },
-  { value: "freshers", label: "Freshers 2025/2026" },
-];
-
 /* -------------------------------------------------------------------------- */
 /*  Icons — plain inline SVG, no external font/network dependency             */
 /* -------------------------------------------------------------------------- */
@@ -192,6 +188,15 @@ function Icon({ name, className = "", filled = false }) {
         <svg {...base} {...stroke}>
           <circle cx="11" cy="11" r="7" />
           <path d="m21 21-4.3-4.3" />
+        </svg>
+      );
+    case "tune":
+      return (
+        <svg {...base} {...stroke}>
+          <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0" />
+          <circle cx="16" cy="6" r="2" />
+          <circle cx="8" cy="12" r="2" />
+          <circle cx="18" cy="18" r="2" />
         </svg>
       );
     case "verified":
@@ -423,19 +428,155 @@ function useOutsideClick(ref, handler) {
   }, [ref, handler]);
 }
 
-function jobTypeTags(job) {
-  const tags = [];
-  if (job.type === "Internship") tags.push("internships");
-  if (job.type === "Full-time") tags.push("full-time");
-  if (
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(
+    () => window.matchMedia?.(query).matches ?? false,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
+
+function isReferralJob(job) {
+  return Boolean(
     job.referralAvailable ||
-    job.directReferral ||
-    job.highVolumeReferrals ||
-    job.pledge
-  )
-    tags.push("referrals");
-  if (job.freshers) tags.push("freshers");
-  return tags;
+      job.directReferral ||
+      job.highVolumeReferrals ||
+      job.pledge,
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Sidebar filter facets — every option and count below is derived from the  */
+/*  jobs actually returned by the API. Nothing here is a hardcoded list; a    */
+/*  section simply doesn't render if no job in the current data has a value  */
+/*  for that field.                                                          */
+/* -------------------------------------------------------------------------- */
+
+// Extracts a numeric LPA figure from a free-text package string
+// ("₹10-15 LPA", "12 LPA", "₹12,00,000 per annum"). Commas are stripped first
+// so "60,000" is read as 60000, not "60" and "000".
+function parsePackageValue(pkg) {
+  if (!pkg) return null;
+  const s = String(pkg).toLowerCase().replace(/,/g, "");
+  const matches = s.match(/\d+(\.\d+)?/g);
+  if (!matches) return null;
+  const nums = matches.map(Number).filter((n) => !Number.isNaN(n));
+  if (!nums.length) return null;
+  const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+  if (/lpa|lakh|lac/.test(s)) return avg;
+  if (avg >= 1000) return avg / 100000; // plain annual rupees → LPA
+  return avg;
+}
+
+// Monthly / hourly / weekly pay is a stipend, never an LPA package.
+const isStipend = (job) =>
+  job.type === "Internship" ||
+  /month|\/\s*mo\b|\bpm\b|p\.m|stipend|week|hour|\bday\b/i.test(
+    String(job.package || ""),
+  );
+
+function compensationTier(job) {
+  if (isStipend(job)) return null; // keeps internship stipends out of LPA tiers
+  const val = parsePackageValue(job.package);
+  if (val == null) return null;
+  if (val < 10) return "6 – 10 LPA (Standard Tier)";
+  if (val < 15) return "10 – 15 LPA (Dream Tier)";
+  return "15+ LPA (Super Dream)";
+}
+
+// Falls back to pulling a 4-digit year out of the eligibility text when the
+// post has no explicit batch/graduationBatch field.
+function extractBatch(job) {
+  if (job.batch) return String(job.batch);
+  const match = String(job.eligibility || "").match(/20\d{2}/);
+  return match ? match[0] : null;
+}
+
+function engagementLabel(job) {
+  if (!job.type) return null;
+  return job.ppo ? `${job.type} + PPO` : job.type;
+}
+
+/* Shared width for banner, search row and cards while the filter panel is closed */
+const NARROW_STYLE = { width: "100%", maxWidth: "77rem", margin: "0 auto" };
+
+/* Sort options (shown in the sort card) */
+const SORT_OPTIONS = [
+  {
+    value: "relevant",
+    label: "Most Relevant",
+    // desc: "Best match for your search, referrals & fresh posts",
+  },
+  { value: "recent", label: "Most Recent", /*desc: "Newest posts first" */},
+  { value: "likes", label: "Most Popular",/* desc: "Most liked by the community" */},
+  {
+    value: "deadline",
+    label: "Application Deadline",
+    /*desc: "Closing soonest first",*/
+  },
+];
+
+// Higher score = more relevant. Combines search match, referral availability,
+// freshers-friendly, community likes and how recent the post is.
+function relevanceScore(job, q) {
+  let s = 0;
+  if (q) {
+    if (job.role?.toLowerCase().includes(q)) s += 5;
+    if (job.company?.toLowerCase().includes(q)) s += 4;
+    if (job.skills?.some((x) => x.toLowerCase().includes(q))) s += 3;
+  }
+  if (isReferralJob(job)) s += 3;
+  if (job.freshers) s += 1;
+  s += Math.min(job.likes || 0, 20) / 10;
+  const days = (Date.now() - job.createdTs) / 86400000;
+  s += Math.max(0, 3 - days / 10);
+  return s;
+}
+
+/* Filter state helpers */
+const EMPTY_FILTERS = () => ({
+  referralOnly: false,
+  domains: new Set(),
+  batch: null,
+  comps: new Set(),
+  location: null,
+  engagement: null,
+});
+
+const countActive = (f) =>
+  (f.referralOnly ? 1 : 0) +
+  f.domains.size +
+  (f.batch ? 1 : 0) +
+  f.comps.size +
+  (f.location ? 1 : 0) +
+  (f.engagement ? 1 : 0);
+
+const toggleInSet = (set, v) => {
+  const next = new Set(set);
+  if (next.has(v)) next.delete(v);
+  else next.add(v);
+  return next;
+};
+
+// Aggregates jobs into { value, count } facet options, most common first.
+function useFacetCounts(jobs, getValue) {
+  return useMemo(() => {
+    const map = new Map();
+    jobs.forEach((job) => {
+      const v = getValue(job);
+      if (!v) return;
+      map.set(v, (map.get(v) || 0) + 1);
+    });
+    return [...map.entries()]
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [jobs, getValue]);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -946,7 +1087,12 @@ function PdfLightbox({
   }, [onClose, onGo]);
 
   return createPortal(
-    <div className={styles.pdfLightbox} role="dialog" aria-modal="true">
+    <div
+      className={styles.pdfLightbox}
+      style={{ zIndex: 2000 }}
+      role="dialog"
+      aria-modal="true"
+    >
       <div className={styles.pdfLightboxBar}>
         <span className={styles.pdfLightboxTitle}>{title}</span>
         <span className={styles.pdfCount}>
@@ -1240,7 +1386,12 @@ function ImageLightbox({ images, index, onChange, onClose, alt }) {
   };
 
   return createPortal(
-    <div className={styles.imgLightbox} role="dialog" aria-modal="true">
+    <div
+      className={styles.imgLightbox}
+      style={{ zIndex: 2000 }}
+      role="dialog"
+      aria-modal="true"
+    >
       <div className={styles.imgLightboxBar}>
         {multiple ? (
           <span className={styles.imgLightboxCount}>
@@ -1450,11 +1601,6 @@ function JobCard({ job, conversations, onReport, showToast }) {
                 {initials(job.alumni.name)}
               </div>
             )}
-            {job.alumni.verified && (
-              <span className={styles.verifiedBadge} title="Verified Alumni">
-                <Icon name="verified" className={styles.icon12} />
-              </span>
-            )}
           </div>
           <div className={styles.alumniInfo}>
             <div className={styles.alumniNameRow}>
@@ -1630,8 +1776,6 @@ function JobCard({ job, conversations, onReport, showToast }) {
               </button>
             </>
           )}
-
-          
 
           {currentImage && (
             <div
@@ -1950,7 +2094,7 @@ function StatsBanner({ jobs }) {
       <div className={styles.statsBgBlob2} />
       <div className={styles.statsContent}>
         <div>
-          <h1 className={styles.statsTitle}>JOB POSTS</h1>
+          <h1 className={styles.statsTitle}>JOB BOARD</h1>
           <p className={styles.statsDesc}>
             High-impact engineering, data, and leadership opportunities curated
             directly by graduates.
@@ -1980,24 +2124,70 @@ function StatsBanner({ jobs }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Search + filters                                                          */
+/*  Sort card (dropdown)                                                      */
 /* -------------------------------------------------------------------------- */
-function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
-  const filtersRef = useRef(null);
-  const [atEnd, setAtEnd] = useState(false);
+function SortMenu({ sort, setSort }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useOutsideClick(ref, () => setOpen(false));
+  const current = SORT_OPTIONS.find((o) => o.value === sort) || SORT_OPTIONS[0];
 
-  const updateFade = () => {
-    const el = filtersRef.current;
-    if (!el) return;
-    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 4);
-  };
+  return (
+    <div className={styles.sortMenuWrap} ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={styles.sortMenuBtn}
+      >
+        <span>{current.label}</span>
+        <Icon name="unfold_more" className={styles.icon18} />
+      </button>
+      {open && (
+        <div className={styles.sortCard} role="listbox">
+          <p className={styles.sortCardTitle}>Sort by</p>
+          {SORT_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              role="option"
+              aria-selected={sort === o.value}
+              onClick={() => {
+                setSort(o.value);
+                setOpen(false);
+              }}
+              className={cx(
+                styles.sortOption,
+                sort === o.value && styles.sortOptionActive,
+              )}
+            >
+              <span className={styles.sortOptionText}>
+                <span className={styles.sortOptionLabel}>{o.label}</span>
+                <span className={styles.sortOptionDesc}>{o.desc}</span>
+              </span>
+              {sort === o.value && (
+                <Icon name="verified" className={styles.sortOptionCheck} />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
-  useEffect(() => {
-    updateFade();
-    window.addEventListener("resize", updateFade);
-    return () => window.removeEventListener("resize", updateFade);
-  }, []);
-
+/* -------------------------------------------------------------------------- */
+/*  Search + sort + Filters button                                            */
+/* -------------------------------------------------------------------------- */
+function Controls({
+  search,
+  setSearch,
+  sort,
+  setSort,
+  onOpenFilters,
+  activeCount,
+}) {
   return (
     <div className={styles.controls}>
       <div className={styles.controlsLeft}>
@@ -2010,40 +2200,21 @@ function Controls({ search, setSearch, sort, setSort, filter, setFilter }) {
             className={styles.controlsSearchInput}
           />
         </div>
-        <div className={styles.sortWrap}>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className={styles.sortSelect}
-          >
-            <option value="recent">Most Recent</option>
-            <option value="likes">Most Popular</option>
-            <option value="deadline">Application Deadline</option>
-          </select>
-          <Icon name="unfold_more" className={styles.sortIcon} />
-        </div>
-      </div>
-
-      <div className={styles.filtersWrap}>
-        <div
-          ref={filtersRef}
-          onScroll={updateFade}
-          className={styles.filtersRow}
+        <SortMenu sort={sort} setSort={setSort} />
+        <button
+          type="button"
+          onClick={onOpenFilters}
+          className={cx(
+            styles.filterToggleBtn,
+            activeCount > 0 && styles.filterToggleBtnActive,
+          )}
         >
-          {FILTERS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              className={cx(
-                styles.filterBtn,
-                filter === f.value && styles.filterBtnActive,
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-        <div className={cx(styles.fadeHint, atEnd && styles.fadeHintHidden)} />
+          <Icon name="tune" className={styles.icon18} />
+          Filters
+          {activeCount > 0 && (
+            <span className={styles.filterToggleCount}>{activeCount}</span>
+          )}
+        </button>
       </div>
     </div>
   );
@@ -2092,28 +2263,320 @@ function ErrorState({ message, onRetry }) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Filter panel ("Filter Roles" card)                                        */
+/*  Desktop: sidebar card with an X to close. Filters apply live.             */
+/*  Mobile: sheet sliding from the top; changes apply only on "Apply".        */
+/* -------------------------------------------------------------------------- */
+function FilterCheckbox({ checked, onChange, label, count }) {
+  return (
+    <label className={styles.filterCheckboxLabel}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className={styles.filterCheckbox}
+      />
+      <span className={styles.filterCheckboxText}>{label}</span>
+      {typeof count === "number" && (
+        <span className={styles.filterCount}>{count}</span>
+      )}
+    </label>
+  );
+}
+
+function FilterPillButton({ active, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cx(styles.filterPillBtn, active && styles.filterPillBtnActive)}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FilterSidebar({
+  jobs,
+  value,
+  onChange,
+  onReset,
+  onClose,
+  onApply,
+  isMobile,
+}) {
+  const domainFacets = useFacetCounts(jobs, (j) => j.domain);
+  const batchFacets = useFacetCounts(jobs, extractBatch);
+  const compFacets = useFacetCounts(jobs, compensationTier);
+  const locationFacets = useFacetCounts(jobs, (j) => j.location);
+  const engagementFacets = useFacetCounts(jobs, engagementLabel);
+
+  const set = (patch) => onChange({ ...value, ...patch });
+  const hasActive = countActive(value) > 0;
+
+  // mobile: slide-from-top animation + scroll lock
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!isMobile) return;
+    const t = setTimeout(() => setVisible(true), 10);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = prev;
+    };
+  }, [isMobile]);
+
+  const closeAnimated = () => {
+    if (!isMobile) return onClose();
+    setVisible(false);
+    setTimeout(onClose, 220);
+  };
+  const applyAnimated = () => {
+    setVisible(false);
+    setTimeout(onApply, 220);
+  };
+
+  const card = (
+    <div className={styles.filterCard}>
+      <div className={styles.filterCardHeader}>
+        <h3 className={styles.filterCardTitle}>Filter Roles</h3>
+        <div className={styles.filterHeaderActions}>
+          {hasActive && (
+            <button
+              type="button"
+              onClick={onReset}
+              className={styles.filterResetBtn}
+            >
+              Reset
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={closeAnimated}
+            aria-label="Close filters"
+            className={styles.filterCloseBtn}
+          >
+            <Icon name="close" className={styles.icon20} />
+          </button>
+        </div>
+      </div>
+
+      <div className={cx(styles.filterSection, styles.filterToggleSection)}>
+        <div className={styles.filterToggleRow}>
+          <div>
+            <p className={styles.filterToggleLabel}>Alumni Referral</p>
+            <p className={styles.filterToggleSub}>
+              Only jobs with verified alum referrals
+            </p>
+          </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={value.referralOnly}
+              onChange={() => set({ referralOnly: !value.referralOnly })}
+            />
+            <span className={styles.toggleSlider} />
+          </label>
+        </div>
+      </div>
+
+      {domainFacets.length > 0 && (
+        <div className={styles.filterSection}>
+          <div className={styles.filterSectionHeader}>
+            <span className={styles.filterSectionTitle}>
+              Domain / Specialty
+            </span>
+            {value.domains.size > 0 && (
+              <span className={styles.filterSelectedTag}>
+                Selected {value.domains.size}
+              </span>
+            )}
+          </div>
+          <div className={styles.filterList}>
+            {domainFacets.map(({ value: v, count }) => (
+              <FilterCheckbox
+                key={v}
+                checked={value.domains.has(v)}
+                onChange={() => set({ domains: toggleInSet(value.domains, v) })}
+                label={v}
+                count={count}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {batchFacets.length > 0 && (
+        <div className={styles.filterSection}>
+          <span className={styles.filterSectionTitle}>Graduating Batch</span>
+          <div className={styles.filterPillGrid}>
+            {batchFacets.map(({ value: v }) => (
+              <FilterPillButton
+                key={v}
+                active={value.batch === v}
+                onClick={() => set({ batch: value.batch === v ? null : v })}
+              >
+                {v}
+              </FilterPillButton>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {compFacets.length > 0 && (
+        <div className={styles.filterSection}>
+          <div className={styles.filterSectionHeader}>
+            <span className={styles.filterSectionTitle}>
+              Compensation Range
+            </span>
+            {value.comps.size > 0 && (
+              <span className={styles.filterSelectedTag}>
+                Selected {value.comps.size}
+              </span>
+            )}
+          </div>
+          <div className={styles.filterList}>
+            {compFacets.map(({ value: v, count }) => (
+              <FilterCheckbox
+                key={v}
+                checked={value.comps.has(v)}
+                onChange={() => set({ comps: toggleInSet(value.comps, v) })}
+                label={v}
+                count={count}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {locationFacets.length > 0 && (
+        <div className={styles.filterSection}>
+          <span className={styles.filterSectionTitle}>Primary Location</span>
+          <div className={styles.filterPillGrid}>
+            {locationFacets.map(({ value: v }) => (
+              <FilterPillButton
+                key={v}
+                active={value.location === v}
+                onClick={() =>
+                  set({ location: value.location === v ? null : v })
+                }
+              >
+                {v}
+              </FilterPillButton>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {engagementFacets.length > 0 && (
+        <div className={cx(styles.filterSection, styles.filterSectionLast)}>
+          <span className={styles.filterSectionTitle}>Engagement Type</span>
+          <div className={styles.filterPillGrid}>
+            {engagementFacets.map(({ value: v }) => (
+              <FilterPillButton
+                key={v}
+                active={value.engagement === v}
+                onClick={() =>
+                  set({ engagement: value.engagement === v ? null : v })
+                }
+              >
+                {v}
+              </FilterPillButton>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Desktop: same sidebar card as before
+  if (!isMobile) return <aside className={styles.filterSidebar}>{card}</aside>;
+
+  // Mobile: sheet from the top + Apply button
+  return createPortal(
+    <div
+      className={styles.filterSheetOverlay}
+      onClick={closeAnimated}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Filter roles"
+    >
+      <div
+        className={cx(styles.filterSheet, visible && styles.filterSheetVisible)}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={styles.filterSheetBody}>{card}</div>
+        <div className={styles.filterSheetFooter}>
+          <button
+            type="button"
+            onClick={applyAnimated}
+            className={styles.filterApplyBtn}
+          >
+            Apply{countActive(value) > 0 ? ` (${countActive(value)})` : ""}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Page                                                                      */
 /* -------------------------------------------------------------------------- */
 export default function AlumniJobFeed({ onReport, conversations = [] }) {
   const { jobs, loading, error, reload } = usePosts();
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("recent");
-  const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("relevant");
+
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+  const [filters, setFilters] = useState(EMPTY_FILTERS); // applied
+  const [draft, setDraft] = useState(EMPTY_FILTERS); // mobile, until Apply
+
   const { showToast, Toast } = useToast();
 
+  const openFilters = () => {
+    if (filtersOpen) {
+      setFiltersOpen(false);
+      return;
+    }
+    setDraft(filters);
+    setFiltersOpen(true);
+  };
+  const applyFilters = () => {
+    setFilters(draft);
+    setFiltersOpen(false);
+  };
+  const resetPanel = () =>
+    isMobile ? setDraft(EMPTY_FILTERS()) : setFilters(EMPTY_FILTERS());
+
   const visibleJobs = useMemo(() => {
+    const q = search.toLowerCase().trim();
     let list = jobs.filter((job) => {
-      const matchesFilter =
-        filter === "all" || jobTypeTags(job).includes(filter);
-      const q = search.toLowerCase().trim();
       const matchesSearch =
         !q ||
         job.company?.toLowerCase().includes(q) ||
         job.role?.toLowerCase().includes(q) ||
         job.skills?.some((s) => s.toLowerCase().includes(q));
-      return matchesFilter && matchesSearch;
+      return (
+        matchesSearch &&
+        (!filters.referralOnly || isReferralJob(job)) &&
+        (filters.domains.size === 0 ||
+          (job.domain && filters.domains.has(job.domain))) &&
+        (!filters.batch || extractBatch(job) === filters.batch) &&
+        (filters.comps.size === 0 ||
+          filters.comps.has(compensationTier(job))) &&
+        (!filters.location || job.location === filters.location) &&
+        (!filters.engagement || engagementLabel(job) === filters.engagement)
+      );
     });
 
+    if (sort === "relevant")
+      list = [...list].sort(
+        (a, b) => relevanceScore(b, q) - relevanceScore(a, q),
+      );
     if (sort === "recent")
       list = [...list].sort((a, b) => b.createdTs - a.createdTs);
     if (sort === "likes") list = [...list].sort((a, b) => b.likes - a.likes);
@@ -2121,11 +2584,12 @@ export default function AlumniJobFeed({ onReport, conversations = [] }) {
       list = [...list].sort((a, b) => a.deadlineTs - b.deadlineTs);
 
     return list;
-  }, [jobs, search, sort, filter]);
+  }, [jobs, search, sort, filters]);
 
   const resetFilters = () => {
     setSearch("");
-    setFilter("all");
+    setFilters(EMPTY_FILTERS());
+    setDraft(EMPTY_FILTERS());
   };
 
   return (
@@ -2134,36 +2598,59 @@ export default function AlumniJobFeed({ onReport, conversations = [] }) {
       {/* <TopHeader /> */}
       <main className={styles.main}>
         <div className={styles.container}>
-          <StatsBanner jobs={jobs} />
+          <div style={!filtersOpen ? NARROW_STYLE : undefined}>
+            <StatsBanner jobs={jobs} />
+          </div>
 
-          <Controls
-            search={search}
-            setSearch={setSearch}
-            sort={sort}
-            setSort={setSort}
-            filter={filter}
-            setFilter={setFilter}
-          />
+          <div className={styles.contentGrid}>
+            {filtersOpen && (
+              <FilterSidebar
+                jobs={jobs}
+                value={isMobile ? draft : filters}
+                onChange={isMobile ? setDraft : setFilters}
+                onReset={resetPanel}
+                onClose={() => setFiltersOpen(false)}
+                onApply={applyFilters}
+                isMobile={isMobile}
+              />
+            )}
 
-          {loading ? (
-            <LoadingState />
-          ) : error ? (
-            <ErrorState message={error} onRetry={reload} />
-          ) : visibleJobs.length === 0 ? (
-            <EmptyState onReset={resetFilters} />
-          ) : (
-            <div className={styles.jobList}>
-              {visibleJobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  conversations={conversations}
-                  onReport={onReport}
-                  showToast={showToast}
+            <div className={styles.mainCol}>
+              <div style={!filtersOpen ? NARROW_STYLE : undefined}>
+                <Controls
+                  search={search}
+                  setSearch={setSearch}
+                  sort={sort}
+                  setSort={setSort}
+                  onOpenFilters={openFilters}
+                  activeCount={countActive(filters)}
                 />
-              ))}
+              </div>
+
+              {loading ? (
+                <LoadingState />
+              ) : error ? (
+                <ErrorState message={error} onRetry={reload} />
+              ) : visibleJobs.length === 0 ? (
+                <EmptyState onReset={resetFilters} />
+              ) : (
+                <div
+                  className={styles.jobList}
+                  style={!filtersOpen ? NARROW_STYLE : undefined}
+                >
+                  {visibleJobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      conversations={conversations}
+                      onReport={onReport}
+                      showToast={showToast}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </main>
 

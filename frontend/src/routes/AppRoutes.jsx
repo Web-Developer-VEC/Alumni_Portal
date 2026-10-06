@@ -30,6 +30,9 @@ function AppRoute() {
             <Route path="/register" element={<Register />} />
             <Route path="/jobs" element={<AlumniJobFeed />} />
             <Route path="/createpost" element={<CreatePost />} />
+            <Route path="/feedback" element={<FeedbackForm />} /> 
+      
+      
 
             <Route path="/members" element={<Members />} />
             <Route path="/events" element={<Events />} />
@@ -38,20 +41,24 @@ function AppRoute() {
                 <Route path="gallery" element={<Gallery />}/>
                 <Route path="events" element={<Events />} />
             </Route >
+
             <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AlumniJobFeed />} />
+                <Route path="gallery" element={<Gallery />}/>
                 <Route path="members" element={<Members />} />
                 <Route path="alumni-approval" element={<AlumniApproval />} />
                 <Route path="post-approval" element={<PostApproval />} />
                  <Route path="events" element={<Events />} />
             </Route>
+
             <Route path="/alumni" element={<AlumniLayout/>}>
-                <Route index element={<AlumniJobFeed />} /> 
+                <Route index element={<AlumniJobFeed />} />
+                <Route path="createpost" element={<UploadPost />} />
+                <Route path="gallery" element={<Gallery />}/>
                 <Route path="members" element={<Members />} />
-                <Route path="createpost" element={<CreatePost />} />
-                 <Route path="events" element={<Events />} />
+                <Route path="events" element={<Events />} />
             </Route>
-            <Route path="/feedback" element={<FeedbackForm />} /> 
+            
             <Route path="*" element={<NotFound />} />
         </Routes>
     );
