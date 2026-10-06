@@ -5,7 +5,6 @@ import Otp from "../../service/Otp.js";
 import { sendEmail } from "../../service/sendEmail.js";
 import { getOtpEmailTemplate } from "../../utils/emailTemplates.js";
 import jwt from "jsonwebtoken";
-import alumniprofile from "../../models/alumniprofile.js";
 
 // Generate a random 6-digit OTP
 const generateOTP = () => {
@@ -39,7 +38,6 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
       }
       // If user is in PENDING status, allow user to send OTP
     }
-  }
 
     // Generate OTP
     const otpCode = generateOTP();
