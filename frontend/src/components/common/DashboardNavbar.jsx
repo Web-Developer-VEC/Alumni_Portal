@@ -447,6 +447,7 @@ const Navbar = () => {
 
         <nav className={styles.desktopNavigation}>
 
+
           {visibleNavigationItems.map(
             (item) => {
 
