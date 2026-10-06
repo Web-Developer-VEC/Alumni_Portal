@@ -8,6 +8,7 @@ import galleryRoutes from "./gallery/gallery.routes.js";
 import hodRoutes from "./hod/hod.routes.js"
 import eventRoutes from "./event/event.route.js";
 import landingRoutes from "./landing/landing.routes.js";
+import generalRoutes from "./general/general.routes.js";
 
 router.use("/event", eventRoutes);
 router.use("/events", eventRoutes);
@@ -17,6 +18,7 @@ router.use("/upload", uploadRoutes);
 router.use("/alumni",alumniroute)
 router.use("/gallery", galleryRoutes);
 router.use("/landing", landingRoutes);
+router.use("/general", generalRoutes);
 
 router.use("/hod", hodRoutes);
 
