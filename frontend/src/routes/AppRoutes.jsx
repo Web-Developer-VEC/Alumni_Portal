@@ -59,6 +59,8 @@ function AppRoute() {
                 <Route path="members" element={<Members />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/:id" element={<EventDetails />} />
+                <Route path="mentor" element={<Mentorship />} />
+                
             </Route>
             
             <Route path="*" element={<NotFound />} />
