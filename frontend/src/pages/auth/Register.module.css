@@ -24,12 +24,15 @@
 
 html, body, #root { min-height: 100%; }
 
+html { -webkit-text-size-adjust: 100%; }
+
 body {
   margin: 0;
   font-family: 'DM Sans', system-ui, sans-serif;
   color: var(--ink);
   background: #fff;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 button, input, select { font: inherit; }
@@ -55,8 +58,9 @@ button { cursor: pointer; }
 
 .layout {
   width: min(1180px, 100%);
+  min-width: 0;
   display: grid;
-  grid-template-columns: minmax(340px, 1fr) 580px;
+  grid-template-columns: minmax(340px, 1fr) minmax(0, 580px);
   gap: 64px;
   align-items: center;
 }
@@ -64,7 +68,7 @@ button { cursor: pointer; }
 /* =========================================================
    LEFT INTRO
    ========================================================= */
-.intro { padding: 14px 0; }
+.intro { padding: 14px 0; min-width: 0; }
 .college-brand { display: flex; align-items: flex-start; gap: 13px; margin-bottom: 68px; }
 .brand-line { width: 4px; height: 40px; flex: 0 0 auto; border-radius: 999px; background: var(--yellow); }
 .college-name { margin: 0; color: var(--maroon); font-size: 12px; font-weight: 800; letter-spacing: 0.13em; }
@@ -86,6 +90,7 @@ button { cursor: pointer; }
 .benefit-icon {
   width: 38px;
   height: 38px;
+  flex: 0 0 38px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -101,11 +106,11 @@ button { cursor: pointer; }
 
 /* =========================================================
    MAIN CARD
-   Height now grows with content (no more clipped fields).
    ========================================================= */
 .panel {
   position: relative;
   width: 100%;
+  min-width: 0;
   min-height: 740px;
   padding: 30px 38px 28px;
   overflow: hidden;
@@ -125,7 +130,6 @@ button { cursor: pointer; }
   background: linear-gradient(90deg, var(--maroon) 0 72%, var(--yellow) 72% 100%);
 }
 
-/* decorative ring sits BEHIND content so it never draws over buttons */
 .panel::after {
   content: '';
   position: absolute;
@@ -189,7 +193,7 @@ button { cursor: pointer; }
 }
 
 /* =========================================================
-   STEPPER (completed steps now fill the connector line)
+   STEPPER
    ========================================================= */
 .stepper {
   position: relative;
@@ -238,7 +242,7 @@ button { cursor: pointer; }
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.step-label { color: #9b9599; font-size: 10px; font-weight: 700; }
+.step-label { color: #9b9599; font-size: 10px; font-weight: 700; text-align: center; }
 
 .step.active .step-circle,
 .step.done .step-circle {
@@ -262,6 +266,7 @@ button { cursor: pointer; }
   font-size: 12px;
   font-weight: 600;
   line-height: 1.45;
+  overflow-wrap: anywhere;
   animation: alert-in 0.22s ease;
 }
 .alert.success { background: #eefaf3; border-color: #c2e8d1; color: var(--success); }
@@ -293,7 +298,6 @@ button { cursor: pointer; }
   line-height: 1.25;
 }
 
-/* helper text directly under the email field */
 .form > p {
   margin: -8px 0 0;
   color: #7c757a;
@@ -306,6 +310,7 @@ button { cursor: pointer; }
 .form select {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   height: 48px;
   border: 1px solid #d9d3d6 !important;
   border-radius: 11px !important;
@@ -332,8 +337,8 @@ button { cursor: pointer; }
   box-shadow: var(--ring) !important;
 }
 
-/* ---------- input wrapper (icon on the left, eye button on the right) ---------- */
-.input-wrap { position: relative; width: 100%; }
+/* ---------- input wrapper ---------- */
+.input-wrap { position: relative; width: 100%; min-width: 0; }
 
 .input-icon {
   position: absolute;
@@ -372,20 +377,17 @@ button { cursor: pointer; }
 .eye-btn:hover { background: var(--maroon-soft); color: var(--maroon-dark); }
 .eye-btn:focus-visible { outline: 3px solid rgba(114, 13, 37, 0.35); outline-offset: 1px; }
 
-/* field wrapper used by Field / Select / ReadOnlyField / password fields */
 .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 
-/* small helper lines (password strength, match status) */
 .hint { font-size: 11.5px; font-weight: 600; color: #7c757a; }
 .hint.ok { color: var(--success); }
 .hint.bad { color: var(--danger); }
 
-/* OTP heading */
 .otp-title { margin: 0 0 4px; color: #25191e; font-size: 12px; font-weight: 700; }
-.otp-hint { margin: 0; color: #7c757a; font-size: 12px; line-height: 1.5; }
+.otp-hint { margin: 0; color: #7c757a; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .otp-hint b { color: var(--ink); }
 
-/* Fallbacks so layout still works if Tailwind utilities are not applied */
+/* Fallbacks if Tailwind utilities are not applied */
 .form .grid { display: grid; }
 .form .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .form .col-span-2 { grid-column: span 2 / span 2; }
@@ -397,11 +399,18 @@ button { cursor: pointer; }
 .form .block { display: block; }
 
 /* date */
-.form input[type="date"] { color-scheme: light; }
+.form input[type="date"] {
+  color-scheme: light;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+}
 .form input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: pointer; }
 .form input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+.form input[type="date"]::-webkit-date-and-time-value { text-align: left; min-height: 1.2em; }
 
-/* select with custom chevron + grey "empty" state */
+/* select with custom chevron */
 .form select {
   appearance: none;
   -webkit-appearance: none;
@@ -417,11 +426,10 @@ button { cursor: pointer; }
 
 /* =========================================================
    DETAILS SECTION CARD
-   Grows to fill the panel, so Back/Continue always sit at the
-   bottom and no field (e.g. LinkedIn URL) is ever clipped.
    ========================================================= */
 .details-section {
   flex: 1 1 auto;
+  min-width: 0;
   padding: 0 0 20px;
   border: 1px solid #e3dde0;
   border-radius: 16px;
@@ -444,7 +452,12 @@ button { cursor: pointer; }
   text-transform: uppercase;
 }
 
-.details-section > :not(h3) { margin-left: 18px; margin-right: 18px; }
+/* children keep width:auto so margins + width never exceed the card */
+.details-section > :not(h3) {
+  margin-left: 18px;
+  margin-right: 18px;
+  min-width: 0;
+}
 .details-section > h3 + * { margin-top: 18px; }
 
 .details-section > .grid { row-gap: 16px; column-gap: 16px; }
@@ -457,10 +470,7 @@ button { cursor: pointer; }
 }
 .details-section > p + .grid { margin-top: 14px; }
 
-/* ---------- academic (read-only) ---------- */
 .details-section.academic-section > .grid { align-content: start; }
-
-
 
 /* ---------- profile photo (file input) ---------- */
 .profile-photo-field { margin-top: 16px; }
@@ -469,6 +479,8 @@ button { cursor: pointer; }
 .form input[type="file"] {
   display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: 48px;
   padding: 5px 8px;
   border: 1px solid #d9d3d6;
@@ -553,8 +565,6 @@ button { cursor: pointer; }
 
 /* =========================================================
    OTP BOXES
-   (previously the generic input rule shrank the digits and
-   removed centering)
    ========================================================= */
 .form .otp-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
 
@@ -575,7 +585,7 @@ button { cursor: pointer; }
 .button-row {
   margin-top: 6px;
   display: grid;
-  grid-template-columns: 116px 1fr;
+  grid-template-columns: 116px minmax(0, 1fr);
   gap: 11px;
   flex: 0 0 auto;
 }
@@ -613,7 +623,7 @@ button { cursor: pointer; }
 /* =========================================================
    EMAIL / OTP EXTRAS
    ========================================================= */
-.links { display: flex; justify-content: space-between; align-items: center; }
+.links { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 .link { border: 0; background: transparent; color: var(--maroon); font-size: 12px; font-weight: 800; padding: 0; }
 .link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -636,7 +646,7 @@ button { cursor: pointer; }
 /* =========================================================
    SUCCESS
    ========================================================= */
-.success-panel { margin-top: 48px; display: grid; gap: 18px; text-align: center; }
+.success-panel { margin-top: 48px; display: grid; gap: 18px; text-align: center; min-width: 0; }
 .success-icon {
   width: 62px;
   height: 62px;
@@ -654,7 +664,7 @@ button { cursor: pointer; }
 .success-copy { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
 .reference { padding: 13px; border-radius: 11px; background: var(--yellow-soft); border: 1px solid #f1e3a9; }
 .reference small { display: block; color: #82765d; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; }
-.reference strong { display: block; margin-top: 5px; color: var(--maroon); font-size: 17px; letter-spacing: 0.08em; }
+.reference strong { display: block; margin-top: 5px; color: var(--maroon); font-size: 17px; letter-spacing: 0.08em; overflow-wrap: anywhere; }
 .summary { border: 1px solid var(--border); border-radius: 11px; overflow: hidden; text-align: left; }
 .summary-row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 14px; border-bottom: 1px solid #eee9eb; font-size: 12px; }
 .summary-row:last-child { border-bottom: 0; }
@@ -664,75 +674,235 @@ button { cursor: pointer; }
 /* =========================================================
    RESPONSIVE
    ========================================================= */
+
+/* ---------- small laptop ---------- */
 @media (max-width: 1050px) {
   .register-page { padding: 22px 28px; }
-  .layout { grid-template-columns: 1fr 540px; gap: 36px; }
+
+  .layout {
+    grid-template-columns: minmax(260px, 1fr) minmax(0, 520px);
+    gap: 32px;
+  }
+
   .intro h1 { font-size: 48px; }
   .college-brand { margin-bottom: 50px; }
 }
 
+/* ---------- tablet: hide intro, single centred card ---------- */
 @media (max-width: 850px) {
-  .register-page { padding: 18px; align-items: flex-start; }
-  .layout { display: block; width: min(640px, 100%); }
+  .register-page {
+    padding: 18px;
+    align-items: flex-start;
+  }
+
+  .layout {
+    display: block;
+    width: min(640px, 100%);
+  }
+
   .intro { display: none; }
-  .panel { margin: 0 auto; min-height: 0; }
+
+  .panel {
+    margin: 0 auto;
+    min-height: 0;
+  }
 }
 
-@media (max-width: 700px) {
-  .details-section > .grid.grid-cols-2 { grid-template-columns: 1fr !important; }
-  .details-section > .grid .col-span-2 { grid-column: auto !important; }
-}
+/* ---------- mobile ---------- */
+@media (max-width: 768px) {
+  .register-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 0;
+    display: block;
+  }
 
-@media (max-width: 560px) {
-  .register-page { padding: 10px; }
-  .panel { padding: 26px 18px 22px; border-radius: 21px; }
-  .kicker { margin-top: 20px; }
-  .title { font-size: 25px; }
-  .subtitle { margin-bottom: 16px; }
-  .details-section h3 { padding-left: 15px; padding-right: 15px; }
-  .details-section > :not(h3) { margin-left: 15px; margin-right: 15px; }
-  .details-section.academic-section::after { margin-left: 15px; margin-right: 15px; }
-  .button-row { grid-template-columns: 100px 1fr; }
+  .layout {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: block;
+  }
 
-  /* 16px stops iOS Safari zooming into inputs */
+  .panel {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 22px 16px 28px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .top-row { margin-bottom: 28px; font-size: 13px; }
+  .top-row button { font-size: 13px; }
+
+  .kicker { margin-top: 18px; font-size: 10px; }
+
+  .title { font-size: 27px; line-height: 1.15; }
+
+  .subtitle { font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+
+  /* Stepper */
+  .stepper { margin-bottom: 24px; }
+  .step-label { font-size: 9px; white-space: nowrap; }
+  .step-circle { width: 30px; height: 30px; font-size: 12px; }
+
+  /* Alerts */
+  .alert { font-size: 13px; line-height: 1.4; }
+
+  /* Forms */
+  .form { gap: 14px; }
+
+  /* FIX: minmax(0, 1fr) lets columns shrink; no width:100% next to margins */
+  .form .grid,
+  .form .grid-cols-2,
+  .details-section > .grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    row-gap: 16px;
+    column-gap: 0;
+  }
+
+  .form .col-span-2 { grid-column: auto !important; }
+
+  /* Details card */
+  .details-section {
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-radius: 15px;
+  }
+
+  .details-section h3 {
+    padding: 13px 14px;
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  /* FIX: children are auto width, so margin + content always fit the card */
+  .details-section > :not(h3) {
+    width: auto;
+    max-width: none;
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+
+  .details-section > h3 + * { margin-top: 16px; }
+
+  /* Fields */
+  .field { min-width: 0; }
+  .field label,
+  .form label { font-size: 13px; }
+  .field label { margin-bottom: 0; }
+
+  /* 16px prevents iOS Safari from zooming when an input is focused */
   .form input:not([type="checkbox"]):not([type="file"]),
-  .form select { font-size: 16px !important; }
-  .form .otp-grid > input:not([type="checkbox"]):not([type="file"]) { font-size: 20px !important; height: 52px; }
+  .form select {
+    height: 48px;
+    min-height: 48px;
+    font-size: 16px !important;
+  }
+
+  .form input::placeholder { font-size: 14px; }
+  .form input[type="tel"]::placeholder { font-size: 14px; }
+
+  /* File upload */
+  .profile-photo-field { margin-top: 16px; }
+
+  .form input[type="file"] {
+    height: 48px;
+    padding: 5px;
+    font-size: 12px;
+  }
+
+  .form input[type="file"]::file-selector-button {
+    height: 36px;
+    padding: 0 12px;
+    margin-right: 8px;
+    font-size: 11px;
+  }
+
+  /* Buttons */
+  .button-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .button-row .button { flex: 1 1 0; min-width: 0; }
+  .button-row .button.secondary { flex: 0 0 96px; }
+
+  .button {
+    height: 48px;
+    min-height: 48px;
+    font-size: 14px;
+    padding: 0 14px;
+  }
+
+  /* OTP */
+  .form .otp-grid { gap: 7px; }
+
+  .form .otp-grid > input:not([type="checkbox"]):not([type="file"]) {
+    height: 50px;
+    font-size: 20px !important;
+  }
+
+  .otp-hint { font-size: 13px; line-height: 1.5; }
+  .otp-title { font-size: 17px; }
+
+  .links { gap: 12px; }
+  .link { font-size: 13px; }
+
+  .secure { font-size: 12px; line-height: 1.4; }
+
+  /* Engagement checkboxes */
+  .form label:has(> input[type="checkbox"]) {
+    min-height: 52px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* Success */
+  .success-panel { margin-top: 32px; }
+  .success-title { font-size: 24px; }
+  .success-copy { font-size: 14px; line-height: 1.55; }
+  .summary-row { gap: 4px 10px; flex-wrap: wrap; }
 }
 
+/* ---------- small phones ---------- */
 @media (max-width: 420px) {
-  .panel { padding-left: 14px; padding-right: 14px; }
-  .step-label { font-size: 9px; }
-  .stepper::before { left: 17%; right: 17%; }
-  .form .otp-grid { gap: 6px; }
-  .button-row { grid-template-columns: 92px 1fr; }
+  .panel { padding-left: 12px; padding-right: 12px; }
+
+  .title { font-size: 25px; }
+
+  .step-circle { width: 28px; height: 28px; }
+
+  .details-section > :not(h3) {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .form .otp-grid { gap: 5px; }
+
+  .form .otp-grid > input:not([type="checkbox"]):not([type="file"]) {
+    height: 46px;
+    font-size: 18px !important;
+  }
+
+  .button { font-size: 13px; }
+  .button-row .button.secondary { flex-basis: 84px; }
 }
 
+/* ---------- accessibility ---------- */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-
-/* =========================================================
-   REGISTRATION STATUS (pending / accepted / rejected)
-   ========================================================= */
-.success-icon.pending { background: var(--yellow); color: var(--maroon-dark); box-shadow: 0 0 0 8px rgba(255, 210, 28, 0.28); }
-.success-icon.accepted { background: var(--success); box-shadow: 0 0 0 8px rgba(23, 99, 61, 0.1); }
-.success-icon.rejected { background: var(--danger); box-shadow: 0 0 0 8px rgba(163, 38, 28, 0.1); }
-
-.pill {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 11px;
+.required-star {
+  color: #d92d20;
   font-weight: 800;
 }
-.pill.pending { background: var(--yellow-soft); color: #7a5f00; border: 1px solid #f1e3a9; }
-.pill.accepted { background: #eefaf3; color: var(--success); border: 1px solid #c2e8d1; }
-.pill.rejected { background: #fdf1f0; color: var(--danger); border: 1px solid #f4c9c5; }
-
-.status-note { margin: 0; color: #8a8387; font-size: 11.5px; line-height: 1.5; }
-.status-note.warn { color: var(--danger); }
-
-.button:disabled,
-.button.secondary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }

@@ -1,7 +1,8 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mail, Eye, EyeOff, Clock, Check, X } from "lucide-react";
 import styles from "./Register.module.css";
 import { useLocation } from "react-router-dom";
+import ThemeDropdown from "../../components/common/ThemeDropdown";
 
 const API_BASE_URL = "http://localhost:5000";
 const steps = ["Email & OTP", "Password", "Details"];
@@ -16,21 +17,212 @@ function readSaved() {
   }
 }
 
+// Map one raw status value to "accepted" | "rejected" | "pending" (null if empty).
+function mapUserStatus(raw) {
+  const value = String(raw ?? "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+  if (!value) return null;
+  if (["REJECTED", "REJECT", "DECLINED", "DENIED"].includes(value)) return "rejected";
+  if (
+    [
+      "PENDING",
+      "SUBMITTED",
+      "UNDER_REVIEW",
+      "IN_REVIEW",
+      "AWAITING_APPROVAL",
+      "WAITING",
+      "INCOMPLETE",
+      "UNVERIFIED",
+      "NEW",
+    ].includes(value)
+  ) {
+    return "pending";
+  }
+  // Anything else (APPROVED, ACCEPTED, ACTIVE, VERIFIED, ...) means the admin acted.
+  return "accepted";
+}
+
+// Combine every status field the backend might use (user record + profile).
+function resolveStatus(user, profile) {
+  console.log("STATUS DEBUG:", {
+    userStatus: user?.status,
+    userApprovalStatus: user?.approvalStatus,
+    userRegistrationStatus: user?.registrationStatus,
+    userIsApproved: user?.isApproved,
+    profileStatus: profile?.status,
+    profileApprovalStatus: profile?.approvalStatus,
+    profileRegistrationStatus: profile?.registrationStatus,
+    profileIsApproved: profile?.isApproved,
+  });
+
+  if (user?.isApproved === true || profile?.isApproved === true) return "accepted";
+
+  const values = [
+    user?.approvalStatus,
+    user?.registrationStatus,
+    user?.status,
+    profile?.approvalStatus,
+    profile?.registrationStatus,
+    profile?.status,
+  ]
+    .map(mapUserStatus)
+    .filter(Boolean);
+
+  if (values.includes("rejected")) return "rejected";
+  if (values.includes("accepted")) return "accepted";
+  return "pending";
+}
+
+// Load the saved alumni profile of an existing account (null if none yet).
+async function fetchProfile(userEmail) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/alumni/get_profile?email=${encodeURIComponent(userEmail)}`
+    );
+    const data = await response.json().catch(() => ({}));
+
+    console.log("GET PROFILE STATUS:", response.status);
+    console.log("GET PROFILE RESPONSE:", data);
+
+    if (!response.ok) return null;
+    return data.alumni || data.profile || data.data?.alumni || data.data?.profile || null;
+  } catch (err) {
+    console.error("Fetch profile error:", err);
+    return null;
+  }
+}
+
+const draftKey = (userEmail) =>
+  `alumniDraft:${String(userEmail).trim().toLowerCase()}`;
+
+function readDraft(userEmail) {
+  try {
+    return JSON.parse(localStorage.getItem(draftKey(userEmail)));
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft(userEmail) {
+  try {
+    if (userEmail) localStorage.removeItem(draftKey(userEmail));
+  } catch {
+    /* ignore */
+  }
+}
+
+// Drop empty values so a blank draft field never overwrites saved data.
+function nonEmpty(object) {
+  return Object.fromEntries(
+    Object.entries(object || {}).filter(
+      ([, value]) =>
+        value !== "" &&
+        value !== null &&
+        value !== undefined &&
+        !(Array.isArray(value) && value.length === 0)
+    )
+  );
+}
+
+// Convert a backend alumni profile to the form field names.
+function profileToForm(profile) {
+  if (!profile) return {};
+
+  return {
+    name: profile.fullName || profile.name || "",
+    dateOfBirth: profile.dateOfBirth ? String(profile.dateOfBirth).split("T")[0] : "",
+    gender: profile.gender || "",
+    mobileNumber: profile.mobileNumber || profile.mobile || "",
+    registerNumber: profile.registerNumber || "",
+    programme: profile.programme || "",
+    department: profile.department || "",
+    batch: profile.batch || "",
+    address: profile.address || "",
+    city: profile.city || "",
+    state: profile.state || "",
+    country: profile.country || "",
+    pincode: profile.pincode || "",
+    currentStatus: profile.currentStatus || "",
+    company: profile.company || "",
+    jobTitle: profile.jobTitle || profile.designation || "",
+    industry: profile.industry || "",
+    workLocation: profile.workLocation || "",
+    officialEmail: profile.officialEmail || "",
+    linkedinUrl: profile.linkedinUrl || profile.linkedInUrl || "",
+    engagements: Array.isArray(profile.alumniEngagement) ? profile.alumniEngagement : [],
+  };
+}
+
+// A profile counts as "submitted" when the core required fields exist.
+function hasCoreProfile(profile) {
+  if (!profile) return false;
+  const f = profileToForm(profile);
+  return !!(f.name && f.mobileNumber && f.programme && f.department && f.batch);
+}
+
+function firstIncompleteScreen(form) {
+  // SCREEN 1 — Personal
+  // Required: Name + Mobile
+  if (!form.name || !form.mobileNumber) {
+    return 1;
+  }
+
+  // SCREEN 2 — Academic
+  // Required: Programme + Department + Batch
+  if (!form.programme || !form.department || !form.batch) {
+    return 2;
+  }
+
+  /*
+   * SCREEN 3 — Address
+   *
+   * Address is OPTIONAL.
+   * Therefore we DO NOT return 3 here.
+   *
+   * A returning user can skip Address and continue
+   * directly to Professional Information.
+   */
+
+  // SCREEN 4 — Professional
+  // Required: Current Status
+  if (!form.currentStatus) {
+    return 4;
+  }
+
+  const needsEmploymentDetails = [
+    "Employed",
+    "Self-Employed",
+    "Entrepreneur",
+  ].includes(form.currentStatus);
+
+  // Company + Job Title are required only for employment statuses
+  if (needsEmploymentDetails && (!form.company || !form.jobTitle)) {
+    return 4;
+  }
+
+  // SCREEN 5 — Alumni Engagement
+  return 5;
+}
+
 export default function Register() {
   const location = useLocation();
   const [step, setStep] = useState(1);
   const [otpSent, setOtpSent] = useState(false);
-  const [submitted, setSubmitted] = useState(readSaved); // { referenceId, firstName, email } | null
+  // { referenceId, firstName, email, status, reason } | null
+  const [submitted, setSubmitted] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [checking, setChecking] = useState(false);
 
-
-  const registrationStatus = "pending";
-  const statusReason = ""; // rejection reason from the admin, if any
+  const registrationStatus = submitted?.status || "pending";
+  const statusReason = submitted?.reason || ""; // rejection reason from the admin, if any
 
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [existingUser, setExistingUser] = useState(null);
+  const [continueRegistration, setContinueRegistration] = useState(false);
+  const [resumeMode, setResumeMode] = useState(false);
 
   const [name, setName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -63,6 +255,35 @@ export default function Register() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Autosave the Details form (except the photo) while the user fills it in.
+  useEffect(() => {
+    if (step !== 3 || !email || submitted) return;
+
+    const draft = {
+      detailsScreen,
+      name, dateOfBirth, gender, mobileNumber,
+      registerNumber, programme, department, batch,
+      address, city, state, country, pincode,
+      currentStatus, company, jobTitle, industry,
+      workLocation, officialEmail, linkedinUrl,
+      engagements,
+    };
+
+    try {
+      localStorage.setItem(draftKey(email), JSON.stringify(draft));
+    } catch {
+      /* storage full / blocked - ignore */
+    }
+  }, [
+    step, email, submitted, detailsScreen,
+    name, dateOfBirth, gender, mobileNumber,
+    registerNumber, programme, department, batch,
+    address, city, state, country, pincode,
+    currentStatus, company, jobTitle, industry,
+    workLocation, officialEmail, linkedinUrl,
+    engagements,
+  ]);
+
   const clearMessages = () => {
     setMessage("");
     setError("");
@@ -70,24 +291,128 @@ export default function Register() {
 
   const goTo = (nextStep) => {
     clearMessages();
+
+    // Existing incomplete users are locked to Details.
+    if (resumeMode && nextStep !== 3) {
+      return;
+    }
+
     setStep(nextStep);
+  };
+
+  const resumeRegistration = async (user) => {
+    const userEmail = String(user.email).trim().toLowerCase();
+
+    // This registration is incomplete: drop any stale "submitted" record.
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+
+    clearMessages();
+
+    setEmail(userEmail);
+    setOtp("");
+    setOtpSent(false);
+
+    // Lock this user to Details only.
+    setResumeMode(true);
+
+    // Get saved server profile + browser draft
+    const profile = await fetchProfile(userEmail);
+    const draft = readDraft(userEmail);
+
+    /*
+     * Combine:
+     * 1. Server profile
+     * 2. Local browser draft
+     *
+     * Draft values take priority because they may contain
+     * information entered after the last server save.
+     */
+    const form = {
+      ...profileToForm(profile),
+      ...nonEmpty(draft),
+    };
+
+    // Restore Personal
+    setName(form.name || "");
+    setDateOfBirth(form.dateOfBirth || "");
+    setGender(form.gender || "");
+    setMobileNumber(form.mobileNumber || "");
+
+    // Restore Academic
+    setRegisterNumber(form.registerNumber || "");
+    setProgramme(form.programme || "");
+    setDepartment(form.department || "");
+    setBatch(form.batch || "");
+
+    // Restore Address
+    setAddress(form.address || "");
+    setCity(form.city || "");
+    setState(form.state || "");
+    setCountry(form.country || "");
+    setPincode(form.pincode || "");
+
+    // Restore Professional
+    setCurrentStatus(form.currentStatus || "");
+    setCompany(form.company || "");
+    setJobTitle(form.jobTitle || "");
+    setIndustry(form.industry || "");
+    setWorkLocation(form.workLocation || "");
+    setOfficialEmail(form.officialEmail || "");
+    setLinkedinUrl(form.linkedinUrl || "");
+
+    // Restore Engagement
+    setEngagements(Array.isArray(form.engagements) ? form.engagements : []);
+
+    /*
+     * Find the first incomplete Details section.
+     */
+    const nextScreen = firstIncompleteScreen(form);
+
+    setDetailsScreen(nextScreen);
+
+    // Existing incomplete user goes directly to Details.
+    setStep(3);
+
+    setMessage(
+      `Welcome back! Continue your registration from ${nextScreen === 1
+        ? "Personal Information"
+        : nextScreen === 2
+          ? "Academic Information"
+          : nextScreen === 3
+            ? "Address"
+            : nextScreen === 4
+              ? "Professional Information"
+              : "Alumni Engagement"
+      }.`
+    );
   };
 
   const sendOtp = async (e) => {
     e.preventDefault();
     clearMessages();
 
-    if (!email.trim()) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
       setError("Please enter your email address.");
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    // FIXED EMAIL VALIDATION
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
 
+    setEmail(normalizedEmail);
+
     try {
+      setChecking(true);
+
       const response = await fetch(
         `${API_BASE_URL}/api/auth/send-otp`,
         {
@@ -96,21 +421,187 @@ export default function Register() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: email.trim(),
+            email: normalizedEmail,
           }),
         }
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to send OTP.");
+      console.log("SEND OTP STATUS:", response.status);
+      console.log("SEND OTP RESPONSE:", data);
+
+      // =====================================================
+      // 1. APPROVED USER
+      // Backend:
+      // {
+      //   message: "Email already exists. Please Login.",
+      //   existUser: true
+      // }
+      // =====================================================
+
+      if (
+        data.existUser === true &&
+        String(data.message || "")
+          .toUpperCase()
+          .includes("PLEASE LOGIN")
+      ) {
+        const profile = await fetchProfile(normalizedEmail);
+
+        setExistingUser(null);
+        setContinueRegistration(false);
+        setResumeMode(false);
+
+        setSubmitted({
+          referenceId:
+            profile?._id ||
+            profile?.id ||
+            "—",
+
+          firstName:
+            String(
+              profile?.fullName ||
+              profile?.name ||
+              ""
+            )
+              .trim()
+              .split(" ")[0],
+
+          email: normalizedEmail,
+
+          status: "accepted",
+
+          reason: "",
+        });
+
+        return;
       }
 
-      setMessage("OTP sent successfully. Please check your email.");
+      // =====================================================
+      // 2. REJECTED USER
+      //
+      // Backend sends:
+      // {
+      //   message: "Your registration has been rejected.",
+      //   existUser: true,
+      //   reason: existingUser.rejectReason
+      // }
+      // =====================================================
+
+      if (
+        data.existUser === true &&
+        String(data.message || "")
+          .toUpperCase()
+          .includes("REJECTED")
+      ) {
+        const profile = await fetchProfile(normalizedEmail);
+
+        setExistingUser(null);
+        setContinueRegistration(false);
+        setResumeMode(false);
+
+        setSubmitted({
+          referenceId:
+            profile?._id ||
+            profile?.id ||
+            "—",
+
+          firstName:
+            String(
+              profile?.fullName ||
+              profile?.name ||
+              ""
+            )
+              .trim()
+              .split(" ")[0],
+
+          email: normalizedEmail,
+
+          status: "rejected",
+
+          // IMPORTANT:
+          // Get rejection reason DIRECTLY from backend
+          reason:
+            data.reason ||
+            "No rejection reason was provided.",
+        });
+
+        return;
+      }
+
+      // =====================================================
+      // 3. PENDING USER / NEW USER
+      //
+      // Your backend allows PENDING users to send OTP.
+      // Therefore both pending users and new users reach
+      // this section.
+      // =====================================================
+
+      if (!response.ok) {
+        setError(
+          data.message || "Failed to send OTP."
+        );
+        return;
+      }
+
+      setExistingUser(null);
+      setContinueRegistration(false);
+      setResumeMode(false);
+
+      setOtp("");
       setOtpSent(true);
-    } catch (error) {
-      setError(error.message || "Unable to send OTP.");
+
+      setMessage(
+        data.message || "OTP sent successfully."
+      );
+
+    } catch (err) {
+      console.error("SEND OTP ERROR:", err);
+
+      setError(
+        err.message ||
+        "Unable to connect to the server."
+      );
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    clearMessages();
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    try {
+      setChecking(true);
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      console.log("RESEND OTP RESPONSE:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to resend OTP.");
+      }
+
+      setOtp("");
+      setOtpSent(true);
+      setMessage(data.message || "A new OTP has been sent to your email.");
+    } catch (err) {
+      console.error("RESEND OTP ERROR:", err);
+      setError(err.message || "Unable to resend OTP.");
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -124,6 +615,10 @@ export default function Register() {
     }
 
     try {
+      setChecking(true);
+
+      const normalizedEmail = email.trim().toLowerCase();
+
       const response = await fetch(
         `${API_BASE_URL}/api/auth/register`,
         {
@@ -132,70 +627,69 @@ export default function Register() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: email.trim(),
-            otp,
+            email: normalizedEmail,
+            otp: otp,
           }),
         }
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid OTP.");
+      console.log("VERIFY OTP STATUS:", response.status);
+      console.log("VERIFY OTP RESPONSE:", data);
+
+      // =====================================================
+      // CHECK FOR EXISTING REGISTRATION PROGRESS
+      // =====================================================
+
+
+      const profile = await fetchProfile(normalizedEmail);
+      const draft = readDraft(normalizedEmail);
+
+      console.log("RESUME CHECK:", {
+        profile,
+        draft,
+      });
+
+      if (profile || draft) {
+        console.log(
+          "Existing registration progress found. Resuming registration."
+        );
+
+        await resumeRegistration({
+          email: normalizedEmail,
+        });
+
+        return;
       }
+
+      // =====================================================
+      // GENUINELY NEW USER
+      // =====================================================
+
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+
+      setResumeMode(false);
+      setContinueRegistration(false);
+      setExistingUser(null);
 
       setMessage("Email verified successfully.");
+
       setStep(2);
-    } catch (error) {
-      setError(error.message || "OTP verification failed.");
-    }
-  };
 
-  const continuePassword = async (e) => {
-    e.preventDefault();
-    clearMessages();
+    } catch (err) {
+      console.error("VERIFY OTP ERROR:", err);
 
-    if (!password || !confirmPassword) {
-      setError("Please fill in both password fields.");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must contain at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/auth/set-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password,
-          }),
-        }
+      setError(
+        err.message ||
+        "OTP verification failed."
       );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to set password.");
-      }
-
-      setMessage("Account created successfully. Complete your profile.");
-      setDetailsScreen(1);
-      setStep(3);
-    } catch (error) {
-      setError(error.message || "Unable to create your account.");
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -251,6 +745,9 @@ export default function Register() {
       formData.append("country", country);
       formData.append("pincode", pincode);
 
+      formData.append("currentStatus", currentStatus);
+      formData.append("alumniEngagement", JSON.stringify(engagements));
+
       formData.append("company", company);
       formData.append("designation", jobTitle);
       formData.append("industry", industry);
@@ -262,49 +759,99 @@ export default function Register() {
         formData.append("profilePic", profilePhoto);
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/alumni/complete-profile`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/alumni/complete-profile`, {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to complete your profile."
-        );
+        throw new Error(data.message || "Failed to complete your profile.");
       }
 
       setMessage("Registration completed successfully!");
+      clearDraft(email);
 
       const saved = {
         referenceId: data.profile?._id || `AL-${Date.now()}`,
         firstName: name.trim().split(" ")[0],
         email,
+        status: "pending",
+        reason: "",
       };
 
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(saved)
-      );
-
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
       setSubmitted(saved);
-
-    } catch (error) {
-      console.error("Profile submission error:", error);
+    } catch (err) {
+      console.error("Profile submission error:", err);
       setError(
-        error.message ||
-        "Could not complete your registration. Please try again."
+        err.message || "Could not complete your registration. Please try again."
       );
     } finally {
       setSubmitting(false);
     }
   };
 
+  const continuePassword = async (e) => {
+    e.preventDefault();
+    clearMessages();
+
+    if (!password || !confirmPassword) {
+      setError("Please fill in both password fields.");
+      return;
+    }
+
+    if (
+      password.length < 8 ||
+      !/[A-Z]/.test(password) ||
+      !/[^A-Za-z0-9]/.test(password)
+    ) {
+      setError(
+        "Password must contain 8 characters, one capital letter, and one special character."
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/set-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log("SET PASSWORD RESPONSE:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to set password.");
+      }
+
+      setResumeMode(false);
+      setContinueRegistration(false);
+      setExistingUser(null);
+
+      setMessage("Account created successfully. Complete your profile.");
+
+      setDetailsScreen(1);
+      setStep(3);
+    } catch (err) {
+      console.error("SET PASSWORD ERROR:", err);
+      setError(err.message || "Unable to create your account.");
+    }
+  };
+
   const reset = () => {
+    clearDraft(email);
     localStorage.removeItem(STORAGE_KEY);
     clearMessages();
     setSubmitted(null);
@@ -319,6 +866,10 @@ export default function Register() {
     setGender("");
     setProfilePhoto(null);
     setMobileNumber("");
+    setRegisterNumber("");
+    setProgramme("");
+    setDepartment("");
+    setBatch("");
     setAddress("");
     setCity("");
     setState("");
@@ -333,7 +884,11 @@ export default function Register() {
     setLinkedinUrl("");
     setEngagements([]);
     setDetailsScreen(1);
+    setExistingUser(null);
+    setContinueRegistration(false);
+    setResumeMode(false);
   };
+
   useEffect(() => {
     if (location.state && location.state.username !== undefined) {
       setEmail(location.state.username);
@@ -384,7 +939,7 @@ export default function Register() {
             <span>Already have an account?</span>
             <button
               type="button"
-              onClick={() => window.location.href = "/login"}
+              onClick={() => (window.location.href = "/login")}
             >
               Sign in
             </button>
@@ -409,8 +964,7 @@ export default function Register() {
                     : "Tell us a little about yourself."}
               </p>
 
-              <Stepper step={step} />
-
+              {!resumeMode && <Stepper step={step} />}
               {message && <div className={`${styles["alert"]} ${styles["success"]}`}>{message}</div>}
               {error && <div className={`${styles["alert"]} ${styles["error"]}`}>{error}</div>}
 
@@ -421,17 +975,14 @@ export default function Register() {
                   otp={otp}
                   setOtp={setOtp}
                   otpSent={otpSent}
+                  loading={checking}
+                  continueRegistration={continueRegistration}
+                  setExistingUser={setExistingUser}
+                  setContinueRegistration={setContinueRegistration}
+                  clearMessages={clearMessages}
                   onSendOtp={sendOtp}
                   onVerifyOtp={verifyOtp}
-                  onResend={() => {
-                    clearMessages();
-                    setMessage("New OTP sent. Demo OTP: 123456");
-                  }}
-                  onChangeEmail={() => {
-                    setOtp("");
-                    setOtpSent(false);
-                    clearMessages();
-                  }}
+                  onResend={resendOtp}
                 />
               )}
 
@@ -442,7 +993,11 @@ export default function Register() {
                   confirmPassword={confirmPassword}
                   setConfirmPassword={setConfirmPassword}
                   onSubmit={continuePassword}
-                  onBack={() => goTo(1)}
+                  onBack={() => {
+                    if (!resumeMode) {
+                      goTo(1);
+                    }
+                  }}
                 />
               )}
 
@@ -498,6 +1053,7 @@ export default function Register() {
                   onBackToPassword={() => goTo(2)}
                   onComplete={completeRegistration}
                   setError={setError}
+                  resumeMode={resumeMode}
                 />
               )}
             </>
@@ -512,6 +1068,7 @@ function DetailsScreens({
   screen,
   setScreen,
   submitting,
+
   name,
   setName,
   dateOfBirth,
@@ -542,6 +1099,7 @@ function DetailsScreens({
   setCountry,
   pincode,
   setPincode,
+
   currentStatus,
   setCurrentStatus,
   company,
@@ -556,17 +1114,21 @@ function DetailsScreens({
   setOfficialEmail,
   linkedinUrl,
   setLinkedinUrl,
+
   engagements,
   setEngagements,
+
   onBackToPassword,
   onComplete,
   setError,
+  resumeMode,
 }) {
   const needsEmploymentDetails = ["Employed", "Self-Employed", "Entrepreneur"].includes(currentStatus);
 
   const next = () => {
     setError("");
 
+    // SCREEN 1 — Personal
     if (screen === 1) {
       if (!name.trim()) {
         setError("Please enter your full name.");
@@ -582,13 +1144,9 @@ function DetailsScreens({
       return;
     }
 
+    // SCREEN 2 — Academic
     if (screen === 2) {
-      if (
-        !registerNumber.trim() ||
-        !programme.trim() ||
-        !department.trim() ||
-        !batch.trim()
-      ) {
+      if (!programme.trim() || !department.trim() || !batch.trim()) {
         setError("Please fill in all required academic details.");
         return;
       }
@@ -597,44 +1155,62 @@ function DetailsScreens({
       return;
     }
 
+    // SCREEN 3 — Address (optional)
     if (screen === 3) {
       setScreen(4);
       return;
     }
 
-
-    if (screen === 3) {
-      setScreen(4);
-      return;
-    }
-
+    // SCREEN 4 — Professional
     if (screen === 4) {
       if (!currentStatus) {
         setError("Please select your current status.");
         return;
       }
+
       if (needsEmploymentDetails && !company.trim()) {
         setError("Please enter your company / organization.");
         return;
       }
+
       if (needsEmploymentDetails && !jobTitle.trim()) {
         setError("Please enter your job title / designation.");
         return;
       }
+
       setScreen(5);
       return;
     }
 
+    // SCREEN 5 — Engagement
     onComplete();
   };
 
   const back = () => {
-    if (screen === 1) return onBackToPassword();
+    /*
+     * Resumed users are NOT allowed to return to
+     * Password or Email/OTP.
+     */
+    if (screen === 1) {
+      if (resumeMode) {
+        return;
+      }
+
+      return onBackToPassword();
+    }
+
+    // Normal Details navigation
     setScreen(screen - 1);
   };
 
   return (
-    <form className={styles["form"]} onSubmit={(e) => { e.preventDefault(); if (!submitting) next(); }}>
+    <form
+      className={styles["form"]}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!submitting) next();
+      }}
+    >
       {screen === 1 && (
         <FormSection title="Personal Information">
           <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
@@ -654,7 +1230,7 @@ function DetailsScreens({
         <FormSection title="Academic Information">
           <div className={`${styles["grid"]} ${styles["grid-cols-2"]}`}>
             <Field
-              label="Register Number *"
+              label="Register Number "
               value={registerNumber}
               onChange={setRegisterNumber}
               placeholder="Enter your register number"
@@ -781,7 +1357,12 @@ function Stepper({ step }) {
 function Field({ label, value, onChange, placeholder, type = "text", autoComplete, icon, inputMode }) {
   return (
     <div className={styles["field"]}>
-      <label>{label}</label>
+      <label>
+        {label.replace(" *", "")}
+        {label.includes(" *") && (
+          <span className={styles["required-star"]}> *</span>
+        )}
+      </label>
       <div className={`${styles["input-wrap"]} ${icon ? styles["has-icon"] : ""}`}>
         {icon && <span className={styles["input-icon"]}>{icon}</span>}
         <input
@@ -814,18 +1395,30 @@ function Select({ label, value, onChange, options }) {
   return (
     <div className={styles["field"]}>
       <label>{label}</label>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Select {label.replace(" *", "").toLowerCase()}</option>
-        {options.map((option) => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
+      <ThemeDropdown
+        value={value}
+        options={options}
+        onChange={onChange}
+        placeholder={`Select ${label.replace(" *", "").toLowerCase()}`}
+      />
     </div>
   );
 }
 
 function EmailVerificationStep({
-  email, setEmail, otp, setOtp, otpSent, onSendOtp, onVerifyOtp, onResend, onChangeEmail,
+  email,
+  setEmail,
+  otp,
+  setOtp,
+  otpSent,
+  loading,
+  continueRegistration,
+  setExistingUser,
+  setContinueRegistration,
+  clearMessages,
+  onSendOtp,
+  onVerifyOtp,
+  onResend,
 }) {
   const refs = useRef([]);
 
@@ -862,18 +1455,36 @@ function EmailVerificationStep({
 
   if (!otpSent) {
     return (
-      <form className={styles["form"]} onSubmit={onSendOtp}>
+      <form
+        className={`${styles["form"]} ${styles["email-form"]}`}
+        onSubmit={onSendOtp}
+      >
         <Field
           label="Email address"
           icon={<Mail size={18} strokeWidth={2} />}
           value={email}
-          onChange={setEmail}
+          onChange={(value) => {
+            setEmail(value);
+            setExistingUser(null);
+            setContinueRegistration(false);
+            clearMessages();
+          }}
           type="email"
           placeholder="Enter your email address"
           autoComplete="email"
         />
         <p>We'll send a verification code to this email.</p>
-        <button className={styles["button"]}>Send OTP <span style={{ marginLeft: 10, fontSize: 18 }}>→</span></button>
+        <button className={styles["button"]} disabled={loading}>
+          {loading
+            ? "Checking…"
+            : continueRegistration
+              ? "Continue Registration"
+              : "Send OTP"}
+
+          {!loading && (
+            <span style={{ marginLeft: 10, fontSize: 18 }}>→</span>
+          )}
+        </button>
         <div className={styles["secure"]}>🔒 We'll never share your email with anyone.</div>
       </form>
     );
@@ -903,8 +1514,9 @@ function EmailVerificationStep({
       </div>
 
       <div className={styles["links"]}>
-        <button type="button" className={styles["link"]} onClick={onChangeEmail}>← Change email</button>
-        <button type="button" className={styles["link"]} onClick={onResend}>Resend code</button>
+        <button type="button" className={styles["link"]} onClick={onResend}>
+          Resend code
+        </button>
       </div>
       <button className={styles["button"]}>Verify email →</button>
     </form>
@@ -981,8 +1593,9 @@ function PasswordStep({ password, setPassword, confirmPassword, setConfirmPasswo
 }
 
 /* ------------------------------------------------------------------ */
-/* Shown after submitting. Checks the server every 15 seconds until     */
-/* the admin accepts or rejects the registration.                       */
+/* Shown after submitting (or when an existing user comes back).        */
+/* The status comes from the backend user record: PENDING / accepted /  */
+/* rejected.                                                            */
 /* ------------------------------------------------------------------ */
 function RegistrationStatus({ submitted, status, reason, onReset }) {
   const { referenceId, firstName, email } = submitted;
@@ -1005,7 +1618,7 @@ function RegistrationStatus({ submitted, status, reason, onReset }) {
     rejected: {
       icon: <X size={28} strokeWidth={2.6} />,
       title: "Registration Not Approved",
-      copy: `Sorry${greeting}, the admin could not approve this registration.${reason ? ` Reason: ${reason}` : ""}`,
+      copy: `Sorry${greeting}, the admin could not approve this registration.`,
       pill: "Not approved",
     },
     missing: {
@@ -1031,14 +1644,38 @@ function RegistrationStatus({ submitted, status, reason, onReset }) {
       </div>
 
       <div className={styles["summary"]}>
+
+        {/* STATUS */}
         <div className={styles["summary-row"]}>
           <span>Status</span>
-          <b className={`${styles["pill"]} ${status === "missing" ? styles["rejected"] : styles[status]}`}>{view.pill}</b>
+
+          <b
+            className={`${styles["pill"]} ${status === "missing"
+              ? styles["rejected"]
+              : styles[status]
+              }`}
+          >
+            {view.pill}
+          </b>
         </div>
+
+        {/* EMAIL */}
         <div className={styles["summary-row"]}>
           <span>Email</span>
           <span>{email}</span>
         </div>
+
+        {/* REJECTION REASON */}
+        {status === "rejected" && (
+          <div className={styles["summary-row"]}>
+            <span>Reason</span>
+
+            <span>
+              {reason || "No rejection reason was provided."}
+            </span>
+          </div>
+        )}
+
       </div>
 
       {status === "pending" && (
@@ -1047,9 +1684,17 @@ function RegistrationStatus({ submitted, status, reason, onReset }) {
         </p>
       )}
 
-      <button className={status === "pending" ? `${styles["button"]} ${styles["secondary"]}` : styles["button"]} onClick={onReset}>
-        Register another account
-      </button>
+      {status === "accepted" && (
+        <button
+          className={styles["button"]}
+          type="button"
+          onClick={() => {
+            window.location.href = "/login";
+          }}
+        >
+          Continue with Login →
+        </button>
+      )}
     </div>
   );
 }
