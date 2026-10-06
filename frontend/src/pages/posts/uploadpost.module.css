@@ -1,11 +1,4 @@
-/* =========================================================================
-   uploadpost.module.css — "Create a Post"
-   Layout:  1) header slot   2) title container   3) form box
-   Palette: same tokens as the Job Posts feed (post.module.css).
-   Look:    title container = feed stats banner, form box = registration card.
-   Tokens use an --up- prefix so they never clash with other pages' :root vars
-   (and they are on :root so the portal dialogs / date picker get them too).
-   ========================================================================= */
+
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@600;700;800&display=swap");
 
