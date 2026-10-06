@@ -1,27 +1,28 @@
 import api from "./api";
 
-/**
- * Fetch all events from backend
- */
+/* GET /api/hod/getevents */
 export const getAllEvents = async (params = {}) => {
-    const response = await api.get("/event", { params });
-    return response.data;
+  const response = await api.get("/hod/getevents", { params });
+  return response.data;
 };
 
-/**
- * Create a new event (supports FormData for image upload)
- */
+/* POST /api/hod/events  (FormData; cover file in field "image")
+   Don't set Content-Type for FormData: the browser adds the multipart boundary. */
 export const createEvent = async (eventData) => {
-    const isFormData = eventData instanceof FormData;
-    const response = await api.post("/event", eventData, {
-        headers: isFormData
-            ? { "Content-Type": "multipart/form-data" }
-            : { "Content-Type": "application/json" },
-    });
-    return response.data;
+  const response = await api.post("/hod/events", eventData);
+  return response.data;
 };
 
-export default {
-    getAllEvents,
-    createEvent,
+/* PUT /api/hod/updateevents/:id   (change .put to .patch if your route uses PATCH) */
+export const updateEvent = async (id, eventData) => {
+  const response = await api.put(`/hod/updateevents/${id}`, eventData);
+  return response.data;
 };
+
+/* DELETE /api/hod/deleteevents/:id */
+export const deleteEvent = async (id) => {
+  const response = await api.delete(`/hod/deleteevents/${id}`);
+  return response.data;
+};
+
+export default { getAllEvents, createEvent, updateEvent, deleteEvent };
