@@ -2,7 +2,7 @@
     width: 100%;
     min-height: 100vh;
     padding: 32px;
-    background: #faf8f2;
+    background: #ffffff;
     font-family: "Poppins", sans-serif;
 }
 
@@ -446,5 +446,1138 @@
 
     .album-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+/* =========================================================
+   HEADER / ADMIN EDIT
+========================================================= */
+
+.gallery-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.edit-button,
+.edit-done-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    height: 38px;
+    padding: 0 15px;
+
+    border: 1px solid #e4d7bd;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #7a1f2b;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.edit-button:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.edit-done-button {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.edit-done-button:hover {
+    background: #5f1822;
+}
+
+.edit-button:active,
+.edit-done-button:active {
+    transform: scale(0.96);
+}
+
+
+/* =========================================================
+   GALLERY DELETE
+========================================================= */
+
+.gallery-delete-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 8px;
+
+    background: rgba(122, 31, 43, 0.92);
+    color: #ffffff;
+
+    cursor: pointer;
+
+    z-index: 5;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.gallery-delete-button:hover {
+    background: #a7192c;
+    transform: scale(1.05);
+}
+
+
+/* =========================================================
+   EMPTY COVER
+========================================================= */
+
+.gallery-empty-cover {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f4f0e8;
+    color: #999;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   SELECTED IMAGE DELETE BAR
+========================================================= */
+
+.selected-delete-bar {
+    grid-column: 1 / -1;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    margin-top: -8px;
+    padding: 10px 13px;
+
+    border: 1px solid #eadfd0;
+    border-radius: 9px;
+
+    background: #fff;
+
+    box-shadow: 0 4px 15px rgba(60, 35, 20, 0.06);
+
+    color: #666;
+    font-size: 11px;
+}
+
+.selected-delete-bar button,
+.modal-delete-bar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    height: 34px;
+    padding: 0 12px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #7a1f2b;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.selected-delete-bar button:hover,
+.modal-delete-bar button:hover {
+    background: #5f1822;
+}
+
+
+/* =========================================================
+   + BLANK GALLERY CARD
+========================================================= */
+
+.blank-gallery-card {
+    min-height: 300px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    border: 2px dashed #dfd1b8;
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.55);
+
+    color: #777;
+
+    font-family: inherit;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.blank-gallery-card:hover {
+    border-color: #f5b301;
+    background: #fffdf7;
+    transform: translateY(-3px);
+}
+
+.blank-gallery-card strong {
+    color: #7a1f2b;
+    font-size: 14px;
+}
+
+.blank-gallery-card span {
+    color: #999;
+    font-size: 11px;
+}
+
+.blank-gallery-icon {
+    width: 54px;
+    height: 54px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 4px;
+
+    border-radius: 50%;
+
+    background: #f5b301;
+    color: #3a2b00;
+}
+
+
+/* =========================================================
+   ALBUM PHOTO WRAPPER
+========================================================= */
+
+.album-photo-wrapper {
+    position: relative;
+    aspect-ratio: 4 / 3;
+}
+
+.album-photo-selected {
+    outline: 3px solid #f5b301;
+    outline-offset: -3px;
+    border-radius: 9px;
+}
+
+
+/* =========================================================
+   PHOTO CHECKBOX
+========================================================= */
+
+.photo-checkbox {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+
+    z-index: 5;
+
+    width: 27px;
+    height: 27px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 6px;
+
+    background: rgba(255, 255, 255, 0.95);
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    cursor: pointer;
+}
+
+.photo-checkbox input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.photo-checkbox span {
+    width: 17px;
+    height: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1.5px solid #aaa;
+    border-radius: 4px;
+
+    color: transparent;
+}
+
+.photo-checkbox input:checked + span {
+    border-color: #7a1f2b;
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   MODAL DELETE BAR
+========================================================= */
+
+.modal-delete-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 18px;
+    padding-top: 15px;
+
+    border-top: 1px solid #eee;
+
+    color: #777;
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   ADD GALLERY MODAL
+========================================================= */
+
+.add-gallery-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 3000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(30, 20, 15, 0.65);
+    backdrop-filter: blur(4px);
+}
+
+.add-gallery-modal {
+    position: relative;
+
+    width: 100%;
+    max-width: 480px;
+
+    padding: 28px;
+
+    border-radius: 16px;
+
+    background: #ffffff;
+
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+}
+
+.add-gallery-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f7f3eb;
+    color: #666;
+
+    cursor: pointer;
+}
+
+.add-gallery-close:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.add-gallery-header {
+    margin-bottom: 22px;
+    padding-right: 35px;
+}
+
+.add-gallery-header span {
+    color: #f5b301;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.add-gallery-header h2 {
+    margin: 4px 0;
+
+    color: #7a1f2b;
+    font-size: 22px;
+}
+
+.add-gallery-header p {
+    margin: 0;
+
+    color: #888;
+    font-size: 12px;
+}
+
+.add-gallery-field {
+    margin-bottom: 18px;
+}
+
+.add-gallery-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #555;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.add-gallery-field input {
+    width: 100%;
+    height: 42px;
+
+    box-sizing: border-box;
+
+    padding: 0 12px;
+
+    border: 1px solid #ddd3c3;
+    border-radius: 7px;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.add-gallery-field input:focus {
+    border-color: #f5b301;
+}
+
+.image-upload-box {
+    min-height: 150px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    border: 2px dashed #dfd1b8;
+    border-radius: 10px;
+
+    background: #fffdf8;
+
+    color: #777;
+
+    text-align: center;
+
+    cursor: pointer;
+}
+
+.image-upload-box:hover {
+    border-color: #f5b301;
+}
+
+.image-upload-box input {
+    display: none;
+}
+
+.image-upload-box strong {
+    max-width: 90%;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #7a1f2b;
+    font-size: 12px;
+}
+
+.image-upload-box span {
+    color: #999;
+    font-size: 10px;
+}
+
+.add-gallery-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+
+    margin-top: 20px;
+}
+
+.cancel-button,
+.create-gallery-button {
+    height: 38px;
+
+    padding: 0 15px;
+
+    border-radius: 7px;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.cancel-button {
+    border: 1px solid #ddd3c3;
+    background: #ffffff;
+    color: #777;
+}
+
+.cancel-button:hover {
+    background: #f7f3eb;
+}
+
+.create-gallery-button {
+    border: none;
+    background: #f5b301;
+    color: #3a2b00;
+}
+
+.create-gallery-button:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.create-gallery-button:disabled,
+.cancel-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   LOCAL ADMIN EDIT MODE
+   These controls are frontend-only.
+========================================================= */
+
+.gallery-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.edit-button,
+.edit-done-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 15px;
+    border: 1px solid #e4d7bd;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #7a1f2b;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.edit-button:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.edit-done-button {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.edit-done-button:hover {
+    background: #5f1822;
+}
+
+.edit-button:active,
+.edit-done-button:active {
+    transform: scale(0.96);
+}
+
+.gallery-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.gallery-card-actions > button {
+    flex: 0 0 auto;
+}
+
+.insert-button {
+    height: 40px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid #e4d7bd;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #7a1f2b;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.insert-button:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.insert-button input {
+    display: none;
+}
+
+.gallery-delete-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: rgba(122, 31, 43, 0.92);
+    color: #ffffff;
+    cursor: pointer;
+    z-index: 5;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.gallery-delete-button:hover {
+    background: #a7192c;
+    transform: scale(1.05);
+}
+
+.selected-delete-bar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: -8px;
+    padding: 10px 13px;
+    border: 1px solid #eadfd0;
+    border-radius: 9px;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(60, 35, 20, 0.06);
+    color: #666;
+    font-size: 11px;
+}
+
+.selected-delete-bar button,
+.modal-delete-bar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 7px;
+    background: #7a1f2b;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.selected-delete-bar button:hover,
+.modal-delete-bar button:hover {
+    background: #5f1822;
+}
+
+.blank-gallery-card {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 2px dashed #dfd1b8;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55);
+    color: #777;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.blank-gallery-card:hover {
+    border-color: #f5b301;
+    background: #fffdf7;
+    transform: translateY(-3px);
+}
+
+.blank-gallery-card strong {
+    color: #7a1f2b;
+    font-size: 14px;
+}
+
+.blank-gallery-card span {
+    color: #999;
+    font-size: 11px;
+}
+
+.blank-gallery-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+    border-radius: 50%;
+    background: #f5b301;
+    color: #3a2b00;
+}
+
+.album-photo-wrapper {
+    position: relative;
+    aspect-ratio: 4 / 3;
+}
+
+.album-photo-selected {
+    outline: 3px solid #f5b301;
+    outline-offset: -3px;
+    border-radius: 9px;
+}
+
+.photo-checkbox {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 5;
+    width: 27px;
+    height: 27px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.photo-checkbox input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.photo-checkbox span {
+    width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #aaa;
+    border-radius: 4px;
+    color: transparent;
+}
+
+.photo-checkbox input:checked + span {
+    border-color: #7a1f2b;
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.modal-delete-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid #eeeeee;
+    color: #777;
+    font-size: 12px;
+}
+
+.add-gallery-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(30, 20, 15, 0.65);
+    backdrop-filter: blur(4px);
+}
+
+.add-gallery-modal {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    padding: 28px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+}
+
+.add-gallery-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: #f7f3eb;
+    color: #666;
+    cursor: pointer;
+}
+
+.add-gallery-close:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+.add-gallery-header {
+    margin-bottom: 22px;
+    padding-right: 35px;
+}
+
+.add-gallery-header span {
+    color: #f5b301;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.add-gallery-header h2 {
+    margin: 4px 0;
+    color: #7a1f2b;
+    font-size: 22px;
+}
+
+.add-gallery-header p {
+    margin: 0;
+    color: #888;
+    font-size: 12px;
+}
+
+.add-gallery-field {
+    margin-bottom: 18px;
+}
+
+.add-gallery-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #555;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.add-gallery-field input {
+    width: 100%;
+    height: 42px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    border: 1px solid #ddd3c3;
+    border-radius: 7px;
+    outline: none;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.add-gallery-field input:focus {
+    border-color: #f5b301;
+}
+
+.image-upload-box {
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 2px dashed #dfd1b8;
+    border-radius: 10px;
+    background: #fffdf8;
+    color: #777;
+    text-align: center;
+    cursor: pointer;
+}
+
+.image-upload-box:hover {
+    border-color: #f5b301;
+}
+
+.image-upload-box input {
+    display: none;
+}
+
+.image-upload-box strong {
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #7a1f2b;
+    font-size: 12px;
+}
+
+.image-upload-box span {
+    color: #999;
+    font-size: 10px;
+}
+
+.add-gallery-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.cancel-button,
+.create-gallery-button {
+    height: 38px;
+    padding: 0 15px;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancel-button {
+    border: 1px solid #ddd3c3;
+    background: #ffffff;
+    color: #777;
+}
+
+.cancel-button:hover {
+    background: #f7f3eb;
+}
+
+.create-gallery-button {
+    border: none;
+    background: #f5b301;
+    color: #3a2b00;
+}
+
+.create-gallery-button:hover {
+    background: #7a1f2b;
+    color: #ffffff;
+}
+
+@media (max-width: 700px) {
+    .gallery-header {
+        align-items: flex-start;
+    }
+
+    .gallery-header .edit-button,
+    .gallery-header .edit-done-button {
+        flex-shrink: 0;
+    }
+
+    .gallery-card-actions {
+        align-items: stretch;
+    }
+
+    .gallery-card-actions > button,
+    .insert-button {
+        flex: 1;
+    }
+
+    .selected-delete-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .selected-delete-bar button {
+        width: 100%;
+    }
+
+    .add-gallery-modal {
+        padding: 22px 18px;
+    }
+}
+
+/* =========================================================
+   ALBUM INSERT CARD
+   The insert option lives INSIDE View More as a blank image tile.
+========================================================= */
+
+.album-insert-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    border: 2px dashed #dfd1b8;
+    border-radius: 9px;
+    background: #fffdf8;
+    color: #777;
+
+    cursor: pointer;
+    text-align: center;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.album-insert-card:hover {
+    border-color: #f5b301;
+    background: #fffaf0;
+    transform: translateY(-2px);
+}
+
+.album-insert-card input {
+    display: none;
+}
+
+.album-insert-card strong {
+    color: #7a1f2b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.album-insert-card > span:last-child {
+    color: #999;
+    font-size: 9px;
+}
+
+.album-insert-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 2px;
+    border-radius: 50%;
+
+    background: #f5b301;
+    color: #3a2b00;
+}
+
+/* =========================================================
+   NEW GALLERY - MULTIPLE IMAGE SELECTION
+========================================================= */
+
+.new-gallery-upload-area {
+    width: 100%;
+}
+
+.new-gallery-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.new-gallery-preview {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 7px;
+    background: #eee;
+}
+
+.new-gallery-preview img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.new-gallery-preview button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+    background: rgba(122, 31, 43, 0.92);
+    color: #fff;
+    cursor: pointer;
+}
+
+.new-gallery-preview button:hover {
+    background: #5f1822;
+}
+
+.new-gallery-image-count {
+    margin: 8px 0 0;
+    color: #777;
+    font-size: 10px;
+    text-align: right;
+}
+
+@media (max-width: 700px) {
+    .new-gallery-preview-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
