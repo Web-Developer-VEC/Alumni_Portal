@@ -1,8 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./event.css";
-import api from "../../api/api";
-import { getAllEvents, createEvent } from "../../api/event";
+import {
+  getAllEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+} from "../../api/event";
 import {
   Calendar,
   Clock,
@@ -31,7 +41,6 @@ import {
   Film,
   Star,
   PlusCircle,
-  Link as LinkIcon,
 } from "lucide-react";
 
 const CATEGORY_LABELS = {
@@ -761,16 +770,22 @@ function useIsAdmin() {
       const user = sessionUser
         ? JSON.parse(sessionUser)
         : localUser
-        ? JSON.parse(localUser)
-        : null;
-      const role = String(
-        user?.role || user?.userRole || user?.user_role || ""
-      )
+          ? JSON.parse(localUser)
+          : null;
+      const role = String(user?.role || user?.userRole || user?.user_role || "")
         .trim()
         .toUpperCase();
-      return role === "ADMIN" || location.pathname.startsWith("/admin");
+      return (
+        role === "ADMIN" ||
+        role === "HOD" ||
+        location.pathname.startsWith("/admin") ||
+        location.pathname.startsWith("/hod")
+      );
     } catch {
-      return location.pathname.startsWith("/admin");
+      return (
+        location.pathname.startsWith("/admin") ||
+        location.pathname.startsWith("/hod")
+      );
     }
   }, [location.pathname]);
 }
@@ -796,8 +811,6 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
   });
 
   const [mediaList, setMediaList] = useState([]);
-  const [urlInput, setUrlInput] = useState("");
-  const [showUrlInput, setShowUrlInput] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
@@ -892,8 +905,6 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
       setMediaList([]);
     }
     setError("");
-    setUrlInput("");
-    setShowUrlInput(false);
   }, [eventToEdit, isOpen]);
 
   useEffect(() => {
@@ -951,8 +962,12 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
 
     setMediaList((prev) => {
       const combined = [...prev, ...newItems];
-      if (!combined.some((m) => m.isCover) && combined.length > 0) {
-        combined[0].isCover = true;
+      if (combined.length && !combined.some((m) => m.isCover)) {
+        const idx = Math.max(
+          combined.findIndex((m) => m.type === "image"),
+          0,
+        );
+        return combined.map((m, i) => ({ ...m, isCover: i === idx }));
       }
       return combined;
     });
@@ -978,44 +993,16 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
     if (e) e.stopPropagation();
     setMediaList((prev) => {
       const filtered = prev.filter((_, i) => i !== index);
-      if (filtered.length > 0 && !filtered.some((m) => m.isCover)) {
-        filtered[0].isCover = true;
+      if (filtered.length && !filtered.some((m) => m.isCover)) {
+        const idx = Math.max(
+          filtered.findIndex((m) => m.type === "image"),
+          0,
+        );
+        return filtered.map((m, i) => ({ ...m, isCover: i === idx }));
       }
       return filtered;
     });
   };
-
-  const handleAddUrl = (e) => {
-    if (e) e.preventDefault();
-    const trimmed = urlInput.trim();
-    if (!trimmed) return;
-    if (!/^https?:\/\//i.test(trimmed) && !trimmed.startsWith("data:")) {
-      setError("Please enter a valid URL starting with http:// or https://");
-      return;
-    }
-
-    const isVid = isVideoUrl(trimmed);
-    const newItem = {
-      id: `url-${Date.now()}-${Math.random()}`,
-      type: isVid ? "video" : "image",
-      url: trimmed,
-      name: isVid ? "Web Video" : "Web Image",
-      isCover: false,
-    };
-
-    setMediaList((prev) => {
-      const combined = [...prev, newItem];
-      if (!combined.some((m) => m.isCover) && combined.length > 0) {
-        combined[0].isCover = true;
-      }
-      return combined;
-    });
-
-    setUrlInput("");
-    setShowUrlInput(false);
-    setError("");
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -1030,12 +1017,17 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
       !formData.organizer.trim()
     ) {
       setError(
-        "Please fill all required fields: Title, Description, Date, Start Time, End Time, Venue, and Organizer."
+        "Please fill all required fields: Title, Description, Date, Start Time, End Time, Venue, and Organizer.",
       );
       return;
     }
 
     setSubmitting(true);
+    const coverItem = mediaList.find((m) => m.isCover) || mediaList[0];
+    if (coverItem?.type === "video") {
+      setError("The cover poster must be an image. Set an image as the cover.");
+      return;
+    }
 
     try {
       const fd = new FormData();
@@ -1064,10 +1056,9 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
       }
 
       // Find cover media file or image file for backend S3 single upload
-      const coverItem = mediaList.find((m) => m.isCover) || mediaList[0];
-      const fileItem = coverItem?.file || mediaList.find((m) => m.file)?.file;
-      if (fileItem) {
-        fd.append("image", fileItem);
+      // only the chosen cover is uploaded; if it's an existing image, send nothing
+      if (coverItem?.file) {
+        fd.append("image", coverItem.file);
       }
 
       // Collect all media items
@@ -1086,13 +1077,7 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
 
       if (eventToEdit) {
         const editId = eventToEdit._id || eventToEdit.id;
-        try {
-          await api.put(`/event/${editId}`, fd, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-        } catch (apiErr) {
-          console.warn("PUT /event/:id fallback, updating locally:", apiErr);
-        }
+        await updateEvent(editId, fd);
 
         savedEvent = {
           ...eventToEdit,
@@ -1124,11 +1109,11 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
           try {
             localStorage.setItem(
               `event_media_${editId}`,
-              JSON.stringify(mediaPayload)
+              JSON.stringify(mediaPayload),
             );
             localStorage.setItem(
               `event_media_title_${savedEvent.title.trim().toLowerCase()}`,
-              JSON.stringify(mediaPayload)
+              JSON.stringify(mediaPayload),
             );
           } catch (e) {}
         }
@@ -1152,12 +1137,12 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
           if (createdId) {
             localStorage.setItem(
               `event_media_${createdId}`,
-              JSON.stringify(mediaPayload)
+              JSON.stringify(mediaPayload),
             );
           }
           localStorage.setItem(
             `event_media_title_${formData.title.trim().toLowerCase()}`,
-            JSON.stringify(mediaPayload)
+            JSON.stringify(mediaPayload),
           );
         } catch (e) {}
 
@@ -1165,7 +1150,7 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
       }
       onClose();
     } catch (err) {
-      console.error("Save event error:", err);
+      console.error("Save event error:", err.response || err);
       const msg =
         err?.response?.data?.message ||
         err?.message ||
@@ -1227,15 +1212,13 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
               {mediaList.length > 0 && (
                 <div className="ev-media-summary-badge">
                   <span>
-                    {mediaList.length} total ({imageCount} photo{imageCount !== 1 ? "s" : ""}, {videoCount} video{videoCount !== 1 ? "s" : ""})
+                    {mediaList.length} total ({imageCount} photo
+                    {imageCount !== 1 ? "s" : ""}, {videoCount} video
+                    {videoCount !== 1 ? "s" : ""})
                   </span>
                 </div>
               )}
             </div>
-
-            <p className="ev-media-instruction-note">
-              Admins can upload multiple images and videos. The starred item (★) is your <strong>Primary Cover</strong>. Users can scroll all media with arrows in Event Details!
-            </p>
 
             <input
               ref={fileInputRef}
@@ -1258,7 +1241,8 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
                     Click to browse & upload multiple images and videos
                   </p>
                   <span className="ev-upload-hint">
-                    Supports JPG, PNG, WEBP, MP4, WEBM (Select multiple files at once)
+                    Supports JPG, PNG, WEBP, MP4, WEBM (Select multiple files at
+                    once)
                   </span>
                   <button
                     type="button"
@@ -1314,7 +1298,8 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
                         <div className="ev-media-badges-group">
                           {item.isCover && (
                             <span className="ev-media-badge-cover">
-                              <Star size={10} fill="currentColor" /> Cover Poster
+                              <Star size={10} fill="currentColor" /> Cover
+                              Poster
                             </span>
                           )}
                           {item.type === "video" && (
@@ -1352,7 +1337,9 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
                       </div>
 
                       <span className="ev-media-item-name" title={item.name}>
-                        {idx + 1}. {item.name || (item.type === "video" ? "Video" : "Photo")}
+                        {idx + 1}.{" "}
+                        {item.name ||
+                          (item.type === "video" ? "Video" : "Photo")}
                       </span>
                     </div>
                   ))}
@@ -1371,39 +1358,6 @@ function EventFormModal({ isOpen, eventToEdit, onClose, onSuccess }) {
                 </div>
               </div>
             )}
-
-            {/* Quick URL adder row for Web URLs */}
-            <div className="ev-media-extra-bar">
-              <button
-                type="button"
-                className="ev-media-url-toggle-btn"
-                onClick={() => setShowUrlInput(!showUrlInput)}
-              >
-                <LinkIcon size={12} />
-                <span>
-                  {showUrlInput ? "Hide Web URL input" : "+ Add by Web URL (MP4 / Image Link)"}
-                </span>
-              </button>
-
-              {showUrlInput && (
-                <div className="ev-media-url-input-group">
-                  <input
-                    type="url"
-                    placeholder="Paste direct MP4 video URL or image link (https://...)"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    className="ev-form-input ev-media-url-field"
-                  />
-                  <button
-                    type="button"
-                    className="ev-media-url-add-btn"
-                    onClick={handleAddUrl}
-                  >
-                    Add Media
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* TITLE */}
@@ -1733,8 +1687,8 @@ function Events() {
       const list = Array.isArray(data)
         ? data
         : Array.isArray(data?.events)
-        ? data.events
-        : [];
+          ? data.events
+          : [];
 
       // Enhance with any multi-media saved in localStorage by admin
       const enhancedList = list.map((ev) => {
@@ -1745,7 +1699,7 @@ function Events() {
             localStorage.getItem(`event_media_${id}`) ||
             (ev.title &&
               localStorage.getItem(
-                `event_media_title_${ev.title.trim().toLowerCase()}`
+                `event_media_title_${ev.title.trim().toLowerCase()}`,
               ));
           if (cached) {
             localMedia = JSON.parse(cached);
@@ -1754,10 +1708,12 @@ function Events() {
 
         if (Array.isArray(localMedia) && localMedia.length > 0) {
           const urls = localMedia.map((m) =>
-            typeof m === "string" ? m : m.url
+            typeof m === "string" ? m : m.url,
           );
           const vids = localMedia
-            .filter((m) => (typeof m === "object" ? m.type === "video" : isVideoUrl(m)))
+            .filter((m) =>
+              typeof m === "object" ? m.type === "video" : isVideoUrl(m),
+            )
             .map((m) => (typeof m === "string" ? m : m.url));
 
           return {
@@ -1777,7 +1733,7 @@ function Events() {
       setErrorMessage(
         err.response?.data?.message ||
           err.message ||
-          "Failed to load events from the server."
+          "Failed to load events from the server.",
       );
       setStatus("error");
     }
@@ -1817,15 +1773,28 @@ function Events() {
     setDeleting(true);
 
     try {
-      await api.delete(`/event/${id}`);
-    } catch (err) {
-      console.warn("Delete API returned error / not implemented on backend, updating locally:", err);
-    }
+      await deleteEvent(id);
 
-    setEvents((prev) => prev.filter((ev) => (ev._id || ev.id) !== id));
-    showToast(`"${eventToDelete.title}" has been deleted.`, "success");
-    setEventToDelete(null);
-    setDeleting(false);
+      // clear this browser's cached extra media for the event
+      try {
+        localStorage.removeItem(`event_media_${id}`);
+        localStorage.removeItem(
+          `event_media_title_${(eventToDelete.title || "").trim().toLowerCase()}`,
+        );
+      } catch {}
+
+      setEvents((prev) => prev.filter((ev) => (ev._id || ev.id) !== id));
+      showToast(`"${eventToDelete.title}" has been deleted.`, "success");
+      setEventToDelete(null);
+    } catch (err) {
+      console.error("Delete event error:", err);
+      showToast(
+        err?.response?.data?.message || "Could not delete the event.",
+        "error",
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleFormSuccess = (_savedEvent, message) => {
@@ -1922,26 +1891,6 @@ function Events() {
               </button>
             )}
           </div>
-
-          <div className="ev-filter-actions">
-            <button
-              type="button"
-              className={`ev-past-toggle-btn ${activeCategory === "past" ? "is-active" : ""}`}
-              onClick={() =>
-                setActiveCategory(activeCategory === "past" ? "all" : "past")
-              }
-              aria-pressed={activeCategory === "past"}
-              title="Show only past events"
-            >
-              <Clock size={14} />
-              <span>Past Events Only</span>
-              {typeof categoryCounts.past === "number" && (
-                <span className="ev-past-toggle-count">
-                  {categoryCounts.past}
-                </span>
-              )}
-            </button>
-          </div>
         </div>
 
         <div className="ev-container ev-category-row">
@@ -1976,7 +1925,7 @@ function Events() {
                 title="Create a new event"
               >
                 <Plus size={16} strokeWidth={2.4} />
-                <span>+ Events</span>
+                <span>Events</span>
               </button>
             </div>
           )}
@@ -2024,7 +1973,10 @@ function Events() {
               {events.length === 0 ? (
                 <>
                   <h3>No events scheduled yet</h3>
-                  <p>Check back later for upcoming alumni meets and college events.</p>
+                  <p>
+                    Check back later for upcoming alumni meets and college
+                    events.
+                  </p>
                   {isAdmin && (
                     <button
                       type="button"

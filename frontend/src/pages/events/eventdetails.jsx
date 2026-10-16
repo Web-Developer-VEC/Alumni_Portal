@@ -138,7 +138,7 @@ function getEventMedia(event) {
   if (event?.title) {
     try {
       const cachedTitle = localStorage.getItem(
-        `event_media_title_${event.title.trim().toLowerCase()}`
+        `event_media_title_${event.title.trim().toLowerCase()}`,
       );
       if (cachedTitle) {
         const parsed = JSON.parse(cachedTitle);
@@ -404,6 +404,7 @@ export default function EventDetailsPage() {
   // Fetch event and related events using getAllEvents
   useEffect(() => {
     let cancelled = false;
+    setEvent(initialEvent);
 
     async function loadEventData() {
       if (!id) return;
@@ -415,8 +416,8 @@ export default function EventDetailsPage() {
         const list = Array.isArray(data)
           ? data
           : Array.isArray(data?.events)
-          ? data.events
-          : [];
+            ? data.events
+            : [];
 
         if (!cancelled) {
           const found = list.find((e) => String(e._id || e.id) === String(id));
@@ -426,8 +427,14 @@ export default function EventDetailsPage() {
             setError("Could not find this event.");
           }
 
+          const cat = (found || initialEvent)?.category;
           const others = list
             .filter((e) => String(e._id || e.id) !== String(id))
+            .sort(
+              (a, b) =>
+                Number(b.category === cat) - Number(a.category === cat) ||
+                new Date(a.date) - new Date(b.date),
+            )
             .slice(0, 3);
           setRelatedEvents(others);
         }
@@ -437,7 +444,7 @@ export default function EventDetailsPage() {
           setError(
             err.response?.data?.message ||
               err.message ||
-              "Could not find this event."
+              "Could not find this event.",
           );
         }
       } finally {
@@ -494,7 +501,9 @@ export default function EventDetailsPage() {
     const handleKeyNav = (e) => {
       if (lightboxIndex !== null || showShareModal) return;
       if (e.key === "ArrowLeft") {
-        setHeroIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
+        setHeroIndex(
+          (prev) => (prev - 1 + mediaList.length) % mediaList.length,
+        );
       } else if (e.key === "ArrowRight") {
         setHeroIndex((prev) => (prev + 1) % mediaList.length);
       }
@@ -533,6 +542,8 @@ export default function EventDetailsPage() {
       navigate("/student/events");
     } else if (currentPath.startsWith("/admin")) {
       navigate("/admin/events");
+    } else if (currentPath.startsWith("/hod")) {
+      navigate("/hod/events");
     } else if (currentPath.startsWith("/alumni")) {
       navigate("/alumni/events");
     } else {
@@ -548,6 +559,7 @@ export default function EventDetailsPage() {
     let basePath = "/events";
     if (currentPath.startsWith("/student")) basePath = "/student/events";
     else if (currentPath.startsWith("/admin")) basePath = "/admin/events";
+    else if (currentPath.startsWith("/hod")) basePath = "/hod/events";
     else if (currentPath.startsWith("/alumni")) basePath = "/alumni/events";
 
     navigate(`${basePath}/${targetId}`, { state: { event: targetEvent } });
@@ -597,7 +609,9 @@ export default function EventDetailsPage() {
   const locationLabel = locationMeta.label;
   const daysRemaining = upcoming ? getDaysRemaining(event.date) : null;
   const gallery = getGallery(event);
-  const speakers = Array.isArray(event.guestSpeakers) ? event.guestSpeakers : [];
+  const speakers = Array.isArray(event.guestSpeakers)
+    ? event.guestSpeakers
+    : [];
   const highlights = Array.isArray(event.highlights) ? event.highlights : [];
 
   return (
@@ -773,7 +787,10 @@ export default function EventDetailsPage() {
           <h1 className="ev-hero-title">{event.title}</h1>
 
           {/* Integrated 4-Column Key Stats Row */}
-          <div className="ev-hero-stats-row" aria-label="Event overview details">
+          <div
+            className="ev-hero-stats-row"
+            aria-label="Event overview details"
+          >
             {/* Date */}
             <div className="ev-hero-stat-card">
               <div className="ev-hero-stat-icon">
@@ -821,8 +838,8 @@ export default function EventDetailsPage() {
                   {event.organizer
                     ? "ORGANIZER"
                     : upcoming && typeof event.capacity === "number"
-                    ? "CAPACITY"
-                    : "ORGANIZER"}
+                      ? "CAPACITY"
+                      : "ORGANIZER"}
                 </span>
                 <strong className="ev-hero-stat-val">
                   {event.organizer ||
@@ -859,7 +876,9 @@ export default function EventDetailsPage() {
                 <div className="ev-content-card-head">
                   <Mic2 size={20} className="ev-head-icon" />
                   <h2>
-                    {upcoming ? "Guest Speakers & Guests" : "Distinguished Speakers"}
+                    {upcoming
+                      ? "Guest Speakers & Guests"
+                      : "Distinguished Speakers"}
                   </h2>
                 </div>
                 <div className="ev-speakers-grid">
@@ -870,7 +889,9 @@ export default function EventDetailsPage() {
                       </div>
                       <div className="ev-speaker-info">
                         <span className="ev-speaker-name">{speaker}</span>
-                        <span className="ev-speaker-role">Featured Speaker</span>
+                        <span className="ev-speaker-role">
+                          Featured Speaker
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -917,19 +938,31 @@ export default function EventDetailsPage() {
                   <h2>Event Photo Gallery</h2>
                 </div>
 
-                {gallery.length > 0 ? (
+                {mediaList.length > 0 ? (
                   <div className="ev-gallery-preview-grid">
-                    {gallery.map((src, i) => (
+                    {mediaList.map((item, i) => (
                       <button
                         type="button"
-                        key={`${src}-${i}`}
+                        key={`${item.url}-${i}`}
                         className="ev-gallery-thumb-btn"
                         onClick={() => setLightboxIndex(i)}
-                        aria-label={`Open photo ${i + 1}`}
+                        aria-label={`Open ${item.type} ${i + 1}`}
                       >
-                        <img src={src} alt={`${event.title} photo ${i + 1}`} loading="lazy" />
+                        {item.type === "video" ? (
+                          <video src={item.url} muted preload="metadata" />
+                        ) : (
+                          <img
+                            src={item.url}
+                            alt={`${event.title} ${i + 1}`}
+                            loading="lazy"
+                          />
+                        )}
                         <div className="ev-gallery-thumb-overlay">
-                          <Images size={20} />
+                          {item.type === "video" ? (
+                            <Play size={20} />
+                          ) : (
+                            <Images size={20} />
+                          )}
                         </div>
                       </button>
                     ))}
@@ -948,11 +981,23 @@ export default function EventDetailsPage() {
                 <MapPin size={20} className="ev-head-icon" />
                 <h2>Venue & Location Details</h2>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
                 <p style={{ margin: 0, fontWeight: 700, fontSize: "15px" }}>
                   {event.venue || "Velammal Engineering College"}
                 </p>
-                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "13.5px" }}>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "var(--text-muted)",
+                    fontSize: "13.5px",
+                  }}
+                >
                   Mode: <strong>{locationLabel}</strong> • Organized by{" "}
                   <strong>{event.organizer || "Alumni Cell"}</strong>
                 </p>
@@ -965,7 +1010,9 @@ export default function EventDetailsPage() {
             <div className="ev-sidebar-card ev-sidebar-card--primary">
               <span
                 className={`ev-sidebar-badge ${
-                  upcoming ? "ev-sidebar-badge--open" : "ev-sidebar-badge--closed"
+                  upcoming
+                    ? "ev-sidebar-badge--open"
+                    : "ev-sidebar-badge--closed"
                 }`}
               >
                 {upcoming ? "Registration Open" : "Event Concluded"}
@@ -1011,8 +1058,6 @@ export default function EventDetailsPage() {
                 <Share2 size={15} />
                 <span>Share Event</span>
               </button>
-
-
             </div>
           </aside>
         </div>
@@ -1028,7 +1073,11 @@ export default function EventDetailsPage() {
                 type="button"
                 className="ev-view-all-link"
                 onClick={handleBack}
-                style={{ background: "none", border: "none", cursor: "pointer" }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
               >
                 View All Events <ArrowRight size={15} />
               </button>
@@ -1048,7 +1097,11 @@ export default function EventDetailsPage() {
                     <div className="ev-card-inner">
                       <div className="ev-card-media">
                         {item.imageUrl && (
-                          <img src={item.imageUrl} alt={item.title} loading="lazy" />
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            loading="lazy"
+                          />
                         )}
                       </div>
 
@@ -1062,7 +1115,9 @@ export default function EventDetailsPage() {
 
                       <div className="ev-card-body">
                         <span className="ev-card-date-chip">
-                          {parts.weekday ? `${parts.weekday.slice(0, 3)}, ` : ""}
+                          {parts.weekday
+                            ? `${parts.weekday.slice(0, 3)}, `
+                            : ""}
                           {parts.day} {parts.month}
                         </span>
 
@@ -1102,11 +1157,11 @@ export default function EventDetailsPage() {
           title={event.title}
           onClose={() => setLightboxIndex(null)}
           onPrev={() =>
-            setLightboxIndex((i) => (i - 1 + mediaList.length) % mediaList.length)
+            setLightboxIndex(
+              (i) => (i - 1 + mediaList.length) % mediaList.length,
+            )
           }
-          onNext={() =>
-            setLightboxIndex((i) => (i + 1) % mediaList.length)
-          }
+          onNext={() => setLightboxIndex((i) => (i + 1) % mediaList.length)}
         />
       )}
 
