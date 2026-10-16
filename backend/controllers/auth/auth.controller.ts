@@ -29,11 +29,11 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
 
     if (existingUser) {
       if (existingUser.status === "APPROVED") {
-        res.status(400).json({ message: "Email already exists" });
+        res.status(400).json({ message: "Email already exists. Please Login.", existUser: true });
         return;
       }
       if (existingUser.status === "REJECTED") {
-        res.status(400).json({ message: "Your registration has been rejected." });
+        res.status(400).json({ message: "Your registration has been rejected.", existUser: true, reason: existingUser.rejectReason });
         return;
       }
       // If user is in PENDING status, allow user to send OTP
