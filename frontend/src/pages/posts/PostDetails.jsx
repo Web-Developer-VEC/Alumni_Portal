@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal, flushSync } from "react-dom";
 // import * as pdfjsLib from "pdfjs-dist";
 // import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import heroBg from "../../assets/jobpostheroimg.jpg"
 import styles from "./post.module.css";
 
 import api from "../../api/api";
@@ -2089,37 +2090,39 @@ function StatsBanner({ jobs }) {
   );
 
   return (
-    <div className={styles.statsBanner}>
-      <div className={styles.statsBgBlob1} />
-      <div className={styles.statsBgBlob2} />
-      <div className={styles.statsContent}>
-        <div>
-          <h1 className={styles.statsTitle}>JOB BOARD</h1>
-          <p className={styles.statsDesc}>
-            High-impact engineering, data, and leadership opportunities curated
-            directly by graduates.
+    <section
+      className={styles.hero}
+      style={{ backgroundImage: `url(${heroBg})` }}
+    >
+      <div className={styles.heroShade} />
+      <div className={styles.heroInner}>
+        <div className={styles.heroText}>
+          <h1 className={styles.heroTitle}>JOB BOARD</h1>
+          <p className={styles.heroDesc}>
+            The exclusive gateway for Velammal Engineering College students to
+            access premium career opportunities, referrals, and mentorship from
+            our global alumni network.
           </p>
         </div>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>{jobs.length}</span>
-            <span className={styles.statLabel}>Active Openings</span>
+
+        <div className={styles.heroStats}>
+          <div className={styles.heroStatCard}>
+            <span className={styles.heroStatLabel}>Active Openings</span>
+            <span className={styles.heroStatValue}>{jobs.length}</span>
           </div>
-          <div className={styles.statCard}>
-            <span className={cx(styles.statValue, styles.statValuePurple)}>
-              {referrerCount}
-            </span>
-            <span className={styles.statLabel}>Active Referrers</span>
+          <div className={styles.heroStatCard}>
+            <span className={styles.heroStatLabel}>Active Referrers</span>
+            <span className={styles.heroStatValue}>{referrerCount}</span>
           </div>
-          <div className={styles.statCard}>
-            <span className={cx(styles.statValue, styles.statValueTeal)}>
+          <div className={styles.heroStatCard}>
+            <span className={styles.heroStatLabel}>Latest Post</span>
+            <span className={styles.heroStatValue}>
               {latest ? timeAgo(latest) : "—"}
             </span>
-            <span className={styles.statLabel}>Latest Post</span>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -2597,12 +2600,10 @@ export default function AlumniJobFeed({ onReport, conversations = [] }) {
       <FontStyles />
       {/* <TopHeader /> */}
       <main className={styles.main}>
-        <div className={styles.container}>
-          <div style={!filtersOpen ? NARROW_STYLE : undefined}>
-            <StatsBanner jobs={jobs} />
-          </div>
+  <StatsBanner jobs={jobs} />
 
-          <div className={styles.contentGrid}>
+  <div className={styles.container}>
+    <div className={styles.contentGrid}>
             {filtersOpen && (
               <FilterSidebar
                 jobs={jobs}
